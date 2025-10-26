@@ -1,0 +1,523 @@
+{% extends "layout.html" %}
+{% load static %}
+
+{% block title %}InvoicePro - Billing System{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/bill.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo">
+            <i class="fas fa-file-invoice-dollar"></i>
+            <h1 class="bg-orange-500 text-3xl">InvoicePro</h1>
+        </div>
+        <ul class="menu">
+            <li class="menu-item active" data-tab="dashboard">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </li>
+            <li class="menu-item" data-tab="invoices">
+                <i class="fas fa-file-invoice"></i>
+                <span>Invoices</span>
+            </li>
+            <li class="menu-item" data-tab="products">
+                <i class="fas fa-box"></i>
+                <span>Products</span>
+            </li>
+            <li class="menu-item" data-tab="clients">
+                <i class="fas fa-users"></i>
+                <span>Clients</span>
+            </li>
+            <li class="menu-item">
+                <i class="fas fa-chart-bar"></i>
+                <span>Reports</span>
+            </li>
+            <li class="menu-item">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Dashboard Tab -->
+        <div class="tab-content active" id="dashboard">
+            <div class="header">
+                <h2>Dashboard</h2>
+                <div class="user-info">
+                    <div class="user-avatar">SA</div>
+                    <div>
+                        <div>Sahil Acharya</div>
+                        <div style="font-size: 12px; color: var(--gray);">Administrator</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="stats-container">
+                <div class="stat-card stat-1">
+                    <div class="stat-icon">
+                        <i class="fas fa-file-invoice"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="totalInvoices">142</h3>
+                        <p>Total Invoices</p>
+                    </div>
+                </div>
+                <div class="stat-card stat-2">
+                    <div class="stat-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="paidAmount">$24,580</h3>
+                        <p>Paid Invoices</p>
+                    </div>
+                </div>
+                <div class="stat-card stat-3">
+                    <div class="stat-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="pendingAmount">$8,420</h3>
+                        <p>Pending Invoices</p>
+                    </div>
+                </div>
+                <div class="stat-card stat-4">
+                    <div class="stat-icon">
+                        <i class="fas fa-exclamation-circle"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="overdueAmount">$3,150</h3>
+                        <p>Overdue Invoices</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <button class="btn btn-primary" id="createInvoiceBtn">
+                    <i class="fas fa-plus"></i> Create Invoice
+                </button>
+                <button class="btn btn-success" id="addProductBtn">
+                    <i class="fas fa-plus-circle"></i> Add Product
+                </button>
+                <button class="btn btn-warning" id="filterInvoicesBtn">
+                    <i class="fas fa-filter"></i> Filter Invoices
+                </button>
+                <button class="btn btn-danger" id="bulkDeleteBtn">
+                    <i class="fas fa-trash"></i> Bulk Delete
+                </button>
+                <button class="btn btn-light" id="printBtn">
+                    <i class="fas fa-print"></i> Print
+                </button>
+                <button class="btn btn-light" id="refreshBtn">
+                    <i class="fas fa-sync"></i> Refresh
+                </button>
+            </div>
+
+            <!-- Invoice Table -->
+            <div class="invoice-section">
+                <div class="section-header">
+                    <h3>Recent Bills</h3>
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="searchInput" placeholder="Search invoices...">
+                    </div>
+                </div>
+                <table id="invoicesTable">
+                    <thead>
+                        <tr>
+                            <th>Bill No #</th>
+                            <th>Client</th>
+                            <th>Date</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="invoicesTableBody">
+                        <!-- Invoices will be dynamically added here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Products Tab -->
+        <div class="tab-content" id="products">
+            <div class="header">
+                <h2>Product Management</h2>
+                <div class="user-info">
+                    <div class="user-avatar">SA</div>
+                    <div>
+                        <div>Sahil Acharya</div>
+                        <div style="font-size: 12px; color: var(--gray);">Administrator</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn btn-primary" id="addNewProductBtn">
+                    <i class="fas fa-plus"></i> Add New Product
+                </button>
+                <button class="btn btn-light" id="importProductsBtn">
+                    <i class="fas fa-file-import"></i> Import Products
+                </button>
+                <button class="btn btn-light" id="exportProductsBtn">
+                    <i class="fas fa-file-export"></i> Export Products
+                </button>
+            </div>
+
+            <div class="invoice-section">
+                <div class="section-header">
+                    <h3>All Products</h3>
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="productSearchInput" placeholder="Search products...">
+                    </div>
+                </div>
+                <div class="product-list" id="productList">
+                    <!-- Products will be dynamically added here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Clients Tab -->
+        <div class="tab-content" id="clients">
+            <div class="header">
+                <h2>Client Management</h2>
+                <div class="user-info">
+                    <div class="user-avatar">SA</div>
+                    <div>
+                        <div>Sahil Acharya</div>
+                        <div style="font-size: 12px; color: var(--gray);">Administrator</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Client Action Buttons -->
+            <div class="action-buttons">
+                <button class="btn btn-primary" id="addClientBtn">
+                    <i class="fas fa-plus"></i> Add New Client
+                </button>
+                <button class="btn btn-light" id="importClientsBtn">
+                    <i class="fas fa-file-import"></i> Import Clients
+                </button>
+                <button class="btn btn-light" id="exportClientsBtn">
+                    <i class="fas fa-file-export"></i> Export Clients
+                </button>
+                <button class="btn btn-warning" id="bulkClientActionBtn">
+                    <i class="fas fa-cog"></i> Bulk Actions
+                </button>
+            </div>
+
+            <!-- Client Stats -->
+            <div class="stats-container">
+                <div class="stat-card stat-1">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="totalClients">0</h3>
+                        <p>Total Clients</p>
+                    </div>
+                </div>
+                <div class="stat-card stat-2">
+                    <div class="stat-icon">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="activeClients">0</h3>
+                        <p>Active Clients</p>
+                    </div>
+                </div>
+                <div class="stat-card stat-3">
+                    <div class="stat-icon">
+                        <i class="fas fa-file-invoice"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="clientInvoices">0</h3>
+                        <p>Total Invoices</p>
+                    </div>
+                </div>
+                <div class="stat-card stat-4">
+                    <div class="stat-icon">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="clientRevenue">$0</h3>
+                        <p>Total Revenue</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Client List Section -->
+            <div class="invoice-section">
+                <div class="section-header">
+                    <h3>All Clients</h3>
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="clientSearchInput" placeholder="Search clients...">
+                    </div>
+                </div>
+                <table id="clientsTable">
+                    <thead>
+                        <tr>
+                            <th>Client ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Address</th>
+                            <th>Phone</th>
+                            <th>Total Invoices</th>
+                            <th>Total Spent</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="clientsTableBody">
+                        <!-- Clients will be dynamically added here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>InvoicePro Billing System &copy; 2023. All rights reserved.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Create Invoice Modal -->
+<div class="modal" id="createInvoiceModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Create New Invoice</h3>
+            <button class="close-btn" id="closeInvoiceModal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <!-- Three column row for invoice details -->
+            <div class="form-row-3">
+                <div class="form-group">
+                    <label for="invoiceNumber">Invoice Number</label>
+                    <input type="text" id="invoiceNumber" class="form-control" value="INV-001" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="invoiceDate">Invoice Date</label>
+                    <input type="date" id="invoiceDate" class="form-control" value="">
+                </div>
+                <div class="form-group" style="position: relative;">
+                    <label for="clientName">Client Name</label>
+                    <input type="text" id="clientName" class="form-control client-search-input" 
+                           placeholder="Type client name (Tab to complete)...">
+                    <div class="search-hint" id="client-search-hint" style="display: none; position: absolute; background: white; border: 1px solid #ddd; max-height: 150px; overflow-y: auto; z-index: 1000; width: 100%;">
+                        <!-- Client suggestions will appear here -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Three column row for client details -->
+            <div class="form-row-3">
+                <div class="form-group">
+                    <label for="clientId">Client ID</label>
+                    <input type="text" id="clientId" class="form-control" placeholder="Auto-filled" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="clientEmail">Client Email</label>
+                    <input type="email" id="clientEmail" class="form-control" placeholder="Auto-filled" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="clientAddress">Client Address</label>
+                    <textarea id="clientAddress" class="form-control" rows="2" placeholder="Auto-filled" readonly></textarea>
+                </div>
+            </div>
+            
+            <div class="invoice-items">
+                <div class="invoice-items-header">
+                    <h4>Invoice Items</h4>
+                </div>
+                
+                <table class="invoice-items-table">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Description</th>
+                            <th>Quantity</th>
+                            <th>Price</th>
+                            <th>Total</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="invoiceItemsBody">
+                        <!-- Invoice items will be added here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Fixed Add Item Button -->
+        <div class="fixed-add-item-container">
+            <button class="add-item-btn" id="addItemBtn">
+                <i class="fas fa-plus"></i> Add Item
+            </button>
+        </div>
+        
+        <!-- Discount, Tax and Totals Section - Compact -->
+        <div class="modal-body-continued">
+            <div class="invoice-items">
+                <!-- Single row for discount and tax -->
+                <div class="form-row-2-compact">
+                    <div class="form-group">
+                        <label for="globalDiscount">Global Discount (%)</label>
+                        <input type="number" id="globalDiscount" class="form-control" value="0" min="0" max="100" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label for="globalTax">Tax (%)</label>
+                        <input type="number" id="globalTax" class="form-control" value="0" min="0" max="100" step="0.01">
+                    </div>
+                </div>
+                
+                <!-- Compact Totals Section -->
+                <div class="invoice-totals-compact">
+                    <table>
+                        <tr>
+                            <td>Subtotal:</td>
+                            <td id="subtotalAmount">$0.00</td>
+                        </tr>
+                        <tr>
+                            <td>Discount:</td>
+                            <td id="discountAmount">$0.00</td>
+                        </tr>
+                        <tr>
+                            <td>Tax:</td>
+                            <td id="taxAmount">$0.00</td>
+                        </tr>
+                        <tr class="total-row">
+                            <td>Total:</td>
+                            <td id="totalAmount">$0.00</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <div class="modal-footer">
+            <button class="btn btn-light" id="cancelInvoiceBtn">Cancel</button>
+            <button class="btn btn-primary" id="saveInvoiceBtn">Save Invoice</button>
+        </div>
+    </div>
+</div>
+
+<!-- Add Product Modal - SIMPLIFIED -->
+<div class="modal" id="addProductModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Add New Product</h3>
+            <button class="close-btn" id="closeProductModal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label for="productName">Product Name *</label>
+                <input type="text" id="productName" class="form-control" placeholder="Enter product name" required>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-col">
+                    <div class="form-group">
+                        <label for="productPrice">Price ($) *</label>
+                        <input type="number" id="productPrice" class="form-control" placeholder="0.00" min="0" step="0.01" required>
+                    </div>
+                </div>
+                <div class="form-col">
+                    <div class="form-group">
+                        <label for="productCategory">Category</label>
+                        <select id="productCategory" class="form-control">
+                            <option value="">Select Category</option>
+                            <option value="service">Service</option>
+                            <option value="product">Product</option>
+                            <option value="software">Software</option>
+                            <option value="consulting">Consulting</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-light" id="cancelProductBtn">Cancel</button>
+            <button class="btn btn-primary" id="saveProductBtn">Save Product</button>
+        </div>
+    </div>
+</div>
+
+<!-- Add Client Modal - SIMPLIFIED -->
+<div class="modal" id="addClientModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Add New Client</h3>
+            <button class="close-btn" id="closeClientModal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label for="clientNameInput">Client Name *</label>
+                <input type="text" id="clientNameInput" class="form-control" placeholder="Enter client name" required>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-col">
+                    <div class="form-group">
+                        <label for="clientEmailInput">Email Address *</label>
+                        <input type="email" id="clientEmailInput" class="form-control" placeholder="Enter email address" required>
+                    </div>
+                </div>
+                <div class="form-col">
+                    <div class="form-group">
+                        <label for="clientPhoneInput">Phone Number *</label>
+                        <input type="tel" id="clientPhoneInput" class="form-control" placeholder="Enter phone number" required>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="clientAddressInput">Address *</label>
+                <textarea id="clientAddressInput" class="form-control" rows="3" placeholder="Enter complete address" required></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-light" id="cancelClientBtn">Cancel</button>
+            <button class="btn btn-primary" id="saveClientBtn">Save Client</button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+{% block extra_js %}
+<script>
+// Simple and safe data structure
+window.djangoData = {
+    products: {{ product|safe }},
+    clients: {{ customer|safe }},
+    csrfToken: "{{ csrf_token }}"
+};
+</script>
+
+<script>
+// SAFETY CHECK - Add this right before loading bill.js
+if (typeof window.djangoData === 'undefined') {
+    window.djangoData = {
+        products: [],
+        clients: [],
+        csrfToken: "{{ csrf_token }}"
+    };
+}
+
+// Debug to see what's happening
+console.log('DjangoData exists:', typeof window.djangoData !== 'undefined');
+console.log('Products:', window.djangoData.products);
+console.log('Clients:', window.djangoData.clients);
+</script>
+
+<script src="{% static 'js/bill.js' %}"></script>
+{% endblock %}

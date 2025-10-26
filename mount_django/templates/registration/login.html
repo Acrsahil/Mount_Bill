@@ -1,0 +1,97 @@
+{% extends "layout.html" %}
+{% load static %}
+
+    {% block title %}Login - InvoicePro{% endblock %}
+
+    {% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+    {% endblock %}
+
+    {% block content %}
+    <div class="login-container">
+        <div class="login-header">
+            <h1><i class="fas fa-file-invoice-dollar"></i> InvoicePro</h1>
+            <p>Access your billing dashboard</p>
+        </div>
+
+        <div class="login-body">
+            {% if form.errors %}
+            <div class="error-message">
+                <i class="fas fa-exclamation-circle"></i>
+                Your username and password didn't match. Please try again.
+            </div>
+            {% endif %}
+
+            {% if next %}
+            {% if user.is_authenticated %}
+            <div class="error-message">
+                <i class="fas fa-exclamation-triangle"></i>
+                Your account doesn't have access to this page.
+            </div>
+            {% else %}
+            <div class="error-message">
+                <i class="fas fa-lock"></i>
+                Please login to access this page.
+            </div>
+            {% endif %}
+            {% endif %}
+
+            <form method="post" id="loginForm">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label for="id_username">
+                        <i class="fas fa-user"></i> Username
+                    </label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-user"></i>
+                        <input type="text" 
+                            name="username" 
+                            id="id_username" 
+                            class="form-control" 
+                            placeholder="Enter your username"
+                            required
+                            autofocus>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="id_password">
+                        <i class="fas fa-key"></i> Password
+                    </label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-key"></i>
+                        <input type="password" 
+                            name="password" 
+                            id="id_password" 
+                            class="form-control" 
+                            placeholder="Enter your password"
+                            required>
+                        <button type="button" class="password-toggle">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-login" id="loginButton">
+                    <i class="fas fa-sign-in-alt"></i>
+                    <span>Sign In</span>
+                </button>
+
+                <input type="hidden" name="next" value="{{ next }}">
+            </form>
+
+            <div class="login-footer">
+                <p>
+                    <a href="/admin/" class="admin-link">
+                        <i class="fas fa-cog"></i> Admin Access
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
+    {% endblock %}
+
+    {% block extra_js %}
+    <script src="{% static 'js/login.js' %}"></script>
+    {% endblock %}
