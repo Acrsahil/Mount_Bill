@@ -411,7 +411,7 @@
     </div>
 </div>
 
-<!-- Add Product Modal - SIMPLIFIED -->
+<!-- Add Product Modal - WITH SUGGESTIONS -->
 <div class="modal" id="addProductModal">
     <div class="modal-content">
         <div class="modal-header">
@@ -419,9 +419,13 @@
             <button class="close-btn" id="closeProductModal">&times;</button>
         </div>
         <div class="modal-body">
-            <div class="form-group">
+            <div class="form-group" style="position: relative;">
                 <label for="productName">Product Name *</label>
-                <input type="text" id="productName" class="form-control" placeholder="Enter product name" required>
+                <input type="text" id="productName" class="form-control product-name-search-input" 
+                       placeholder="Type product name to see existing products (Tab to complete)...">
+                <div class="search-hint" id="product-name-search-hint" style="display: none; position: absolute; background: white; border: 1px solid #ddd; max-height: 150px; overflow-y: auto; z-index: 1000; width: 100%;">
+                    <!-- Product suggestions will appear here -->
+                </div>
             </div>
             
             <div class="form-row">
@@ -432,15 +436,13 @@
                     </div>
                 </div>
                 <div class="form-col">
-                    <div class="form-group">
+                    <div class="form-group" style="position: relative;">
                         <label for="productCategory">Category</label>
-                        <select id="productCategory" class="form-control">
-                            <option value="">Select Category</option>
-                            <option value="service">Service</option>
-                            <option value="product">Product</option>
-                            <option value="software">Software</option>
-                            <option value="consulting">Consulting</option>
-                        </select>
+                        <input type="text" id="productCategory" class="form-control product-category-search-input" 
+                               placeholder="Type category name (Tab to complete)...">
+                        <div class="search-hint" id="product-category-search-hint" style="display: none; position: absolute; background: white; border: 1px solid #ddd; max-height: 150px; overflow-y: auto; z-index: 1000; width: 100%;">
+                            <!-- Category suggestions will appear here -->
+                        </div>
                     </div>
                 </div>
             </div>
@@ -498,6 +500,7 @@
 // Simple and safe data structure
 window.djangoData = {
     products: {{ product|safe }},
+    product_cat: {{ product_cat|safe }},
     clients: {{ customer|safe }},
     csrfToken: "{{ csrf_token }}"
 };
@@ -508,6 +511,7 @@ window.djangoData = {
 if (typeof window.djangoData === 'undefined') {
     window.djangoData = {
         products: [],
+        product_cat: [],
         clients: [],
         csrfToken: "{{ csrf_token }}"
     };
@@ -516,6 +520,7 @@ if (typeof window.djangoData === 'undefined') {
 // Debug to see what's happening
 console.log('DjangoData exists:', typeof window.djangoData !== 'undefined');
 console.log('Products:', window.djangoData.products);
+console.log('Product Categories:', window.djangoData.product_cat);
 console.log('Clients:', window.djangoData.clients);
 </script>
 

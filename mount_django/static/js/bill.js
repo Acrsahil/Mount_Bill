@@ -13,6 +13,7 @@ if (typeof window.djangoData === 'undefined') {
     console.error('❌ window.djangoData is undefined! Creating empty data.');
     window.djangoData = {
         products: [],
+        product_cat: [],
         clients: [],
         csrfToken: ""
     };
@@ -20,6 +21,7 @@ if (typeof window.djangoData === 'undefined') {
 
 // Use ACTUAL database products from Django with safety
 const products = Array.isArray(window.djangoData.products) ? window.djangoData.products : [];
+const productCategories = Array.isArray(window.djangoData.product_cat) ? window.djangoData.product_cat : [];
 
 // Client data with safety
 let clients = Array.isArray(window.djangoData.clients) ? window.djangoData.clients : [];
@@ -35,6 +37,7 @@ let globalTax = 0;
 
 console.log('✅ Data loaded successfully:');
 console.log('Products count:', products.length);
+console.log('Product Categories count:', productCategories.length);
 console.log('Clients count:', clients.length);
 
 // DOM Elements
@@ -77,6 +80,9 @@ const globalTaxInput = document.getElementById('globalTax');
 
 // Track currently selected hint for keyboard navigation
 let currentSelectedHintIndex = -1;
+let currentSelectedProductHintIndex = -1;
+let currentSelectedProductNameHintIndex = -1;
+let currentSelectedCategoryHintIndex = -1;
 
 // Initialize the app
 document.addEventListener('DOMContentLoaded', function() {
@@ -95,10 +101,360 @@ document.addEventListener('DOMContentLoaded', function() {
     // Setup client search functionality
     setupClientSearch();
 
+    // Setup product name search functionality
+    setupProductNameSearch();
+
+    // Setup category search functionality
+    setupCategorySearch();
+
     // Debug: Check if products loaded correctly
     console.log('Database products loaded:', products);
+    console.log('Product categories loaded:', productCategories);
     console.log('Clients loaded:', clients);
 });
+
+// PRODUCT NAME SEARCH AND AUTO-COMPLETE FUNCTIONS (FOR ADD PRODUCT MODAL)
+function setupProductNameSearch() {
+    const productNameInput = document.getElementById('productName');
+    const productNameSearchHint = document.getElementById('product-name-search-hint');
+    
+    if (!productNameInput || !productNameSearchHint) return;
+    
+    // Event listeners for product name search
+    productNameInput.addEventListener('focus', handleProductNameSearchFocus);
+    productNameInput.addEventListener('input', handleProductNameSearch);
+    productNameInput.addEventListener('keydown', handleProductNameSearchKeydown);
+    productNameInput.addEventListener('blur', handleProductNameSearchBlur);
+}
+
+function handleProductNameSearchFocus(e) {
+    const hintContainer = document.getElementById('product-name-search-hint');
+    if (hintContainer) {
+        showProductNameSuggestions();
+        
+        // Add click event to hints
+        hintContainer.querySelectorAll('.hint-item').forEach(item => {
+            item.addEventListener('mousedown', function(e) {
+                e.preventDefault();
+                selectProductNameFromHint(this);
+            });
+        });
+    }
+}
+
+function handleProductNameSearch(e) {
+    const searchTerm = e.target.value.toLowerCase();
+    showProductNameSuggestions(searchTerm);
+}
+
+function handleProductNameSearchKeydown(e) {
+    const hintContainer = document.getElementById('product-name-search-hint');
+    if (!hintContainer || hintContainer.style.display === 'none') {
+        return;
+    }
+
+    const hintItems = hintContainer.querySelectorAll('.hint-item');
+    const visibleHintItems = Array.from(hintItems).filter(item => item.style.display !== 'none');
+    
+    if (e.key === 'Tab' || e.key === 'Enter') {
+        e.preventDefault();
+        
+        if (currentSelectedProductNameHintIndex >= 0 && currentSelectedProductNameHintIndex < visibleHintItems.length) {
+            // Select the currently highlighted hint
+            selectProductNameFromHint(visibleHintItems[currentSelectedProductNameHintIndex]);
+        } else {
+            // Select the first matching product
+            const searchTerm = e.target.value.toLowerCase();
+            let matchedProduct = null;
+
+            if (searchTerm === '') {
+                matchedProduct = products[0];
+            } else {
+                matchedProduct = products.find(p => 
+                    p.name.toLowerCase().startsWith(searchTerm)
+                );
+
+                if (!matchedProduct) {
+                    matchedProduct = products.find(p => 
+                        p.name.toLowerCase().includes(searchTerm)
+                    );
+                }
+            }
+
+            if (matchedProduct) {
+                fillProductDetails(matchedProduct);
+                hideProductNameSearchHint();
+            }
+        }
+    } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        // Navigate down through hints
+        if (visibleHintItems.length > 0) {
+            currentSelectedProductNameHintIndex = (currentSelectedProductNameHintIndex + 1) % visibleHintItems.length;
+            updateProductNameHintSelection(visibleHintItems);
+        }
+    } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        // Navigate up through hints
+        if (visibleHintItems.length > 0) {
+            currentSelectedProductNameHintIndex = (currentSelectedProductNameHintIndex - 1 + visibleHintItems.length) % visibleHintItems.length;
+            updateProductNameHintSelection(visibleHintItems);
+        }
+    } else if (e.key === 'Escape') {
+        hideProductNameSearchHint();
+    }
+}
+
+function updateProductNameHintSelection(visibleHintItems) {
+    // Remove selection from all items
+    visibleHintItems.forEach(item => {
+        item.style.backgroundColor = '';
+        item.style.color = '';
+    });
+    
+    // Add selection to current item
+    if (currentSelectedProductNameHintIndex >= 0 && currentSelectedProductNameHintIndex < visibleHintItems.length) {
+        visibleHintItems[currentSelectedProductNameHintIndex].style.backgroundColor = '#007bff';
+        visibleHintItems[currentSelectedProductNameHintIndex].style.color = 'white';
+    }
+}
+
+function handleProductNameSearchBlur(e) {
+    setTimeout(() => {
+        hideProductNameSearchHint();
+    }, 200);
+}
+
+function showProductNameSuggestions(searchTerm = '') {
+    const hintContainer = document.getElementById('product-name-search-hint');
+    if (!hintContainer) return;
+    
+    const filteredProducts = searchTerm 
+        ? products.filter(product => 
+            product.name.toLowerCase().includes(searchTerm) ||
+            (product.category && product.category.toLowerCase().includes(searchTerm))
+          )
+        : products;
+    
+    if (filteredProducts.length > 0) {
+        hintContainer.innerHTML = filteredProducts.map(product => `
+            <div class="hint-item" data-product-name="${product.name}" 
+                 data-product-price="${product.price}" 
+                 data-product-category="${product.category || ''}">
+                ${product.name} - $${product.price} ${product.category ? `(${product.category})` : ''}
+            </div>
+        `).join('');
+        hintContainer.style.display = 'block';
+        
+        // Reset selection
+        currentSelectedProductNameHintIndex = -1;
+        
+        // Reattach click events
+        hintContainer.querySelectorAll('.hint-item').forEach(item => {
+            item.addEventListener('mousedown', function(e) {
+                e.preventDefault();
+                selectProductNameFromHint(this);
+            });
+        });
+    } else {
+        hintContainer.style.display = 'none';
+    }
+}
+
+function selectProductNameFromHint(hintElement) {
+    const productName = hintElement.getAttribute('data-product-name');
+    const productPrice = hintElement.getAttribute('data-product-price');
+    const productCategory = hintElement.getAttribute('data-product-category');
+
+    // Fill the form with product details
+    document.getElementById('productName').value = productName;
+    document.getElementById('productPrice').value = productPrice;
+    document.getElementById('productCategory').value = productCategory;
+
+    hideProductNameSearchHint();
+    
+    // Move focus to price field for quick editing
+    setTimeout(() => {
+        const priceInput = document.getElementById('productPrice');
+        if (priceInput) {
+            priceInput.focus();
+            priceInput.select();
+        }
+    }, 50);
+}
+
+function fillProductDetails(product) {
+    document.getElementById('productName').value = product.name;
+    document.getElementById('productPrice').value = product.price;
+    document.getElementById('productCategory').value = product.category || '';
+}
+
+function hideProductNameSearchHint() {
+    const hintContainer = document.getElementById('product-name-search-hint');
+    if (hintContainer) {
+        hintContainer.style.display = 'none';
+        currentSelectedProductNameHintIndex = -1;
+    }
+}
+
+// CATEGORY SEARCH AND AUTO-COMPLETE FUNCTIONS (FOR ADD PRODUCT MODAL)
+function setupCategorySearch() {
+    const categoryInput = document.getElementById('productCategory');
+    const categorySearchHint = document.getElementById('product-category-search-hint');
+    
+    if (!categoryInput || !categorySearchHint) return;
+    
+    // Event listeners for category search
+    categoryInput.addEventListener('focus', handleCategorySearchFocus);
+    categoryInput.addEventListener('input', handleCategorySearch);
+    categoryInput.addEventListener('keydown', handleCategorySearchKeydown);
+    categoryInput.addEventListener('blur', handleCategorySearchBlur);
+}
+
+function handleCategorySearchFocus(e) {
+    const hintContainer = document.getElementById('product-category-search-hint');
+    if (hintContainer) {
+        showCategorySuggestions();
+        
+        // Add click event to hints
+        hintContainer.querySelectorAll('.hint-item').forEach(item => {
+            item.addEventListener('mousedown', function(e) {
+                e.preventDefault();
+                selectCategoryFromHint(this);
+            });
+        });
+    }
+}
+
+function handleCategorySearch(e) {
+    const searchTerm = e.target.value.toLowerCase();
+    showCategorySuggestions(searchTerm);
+}
+
+function handleCategorySearchKeydown(e) {
+    const hintContainer = document.getElementById('product-category-search-hint');
+    if (!hintContainer || hintContainer.style.display === 'none') {
+        return;
+    }
+
+    const hintItems = hintContainer.querySelectorAll('.hint-item');
+    const visibleHintItems = Array.from(hintItems).filter(item => item.style.display !== 'none');
+    
+    if (e.key === 'Tab' || e.key === 'Enter') {
+        e.preventDefault();
+        
+        if (currentSelectedCategoryHintIndex >= 0 && currentSelectedCategoryHintIndex < visibleHintItems.length) {
+            // Select the currently highlighted hint
+            selectCategoryFromHint(visibleHintItems[currentSelectedCategoryHintIndex]);
+        } else {
+            // Select the first matching category
+            const searchTerm = e.target.value.toLowerCase();
+            let matchedCategory = null;
+
+            if (searchTerm === '') {
+                matchedCategory = productCategories[0];
+            } else {
+                matchedCategory = productCategories.find(c => 
+                    c.name.toLowerCase().startsWith(searchTerm)
+                );
+
+                if (!matchedCategory) {
+                    matchedCategory = productCategories.find(c => 
+                        c.name.toLowerCase().includes(searchTerm)
+                    );
+                }
+            }
+
+            if (matchedCategory) {
+                document.getElementById('productCategory').value = matchedCategory.name;
+                hideCategorySearchHint();
+            }
+        }
+    } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        // Navigate down through hints
+        if (visibleHintItems.length > 0) {
+            currentSelectedCategoryHintIndex = (currentSelectedCategoryHintIndex + 1) % visibleHintItems.length;
+            updateCategoryHintSelection(visibleHintItems);
+        }
+    } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        // Navigate up through hints
+        if (visibleHintItems.length > 0) {
+            currentSelectedCategoryHintIndex = (currentSelectedCategoryHintIndex - 1 + visibleHintItems.length) % visibleHintItems.length;
+            updateCategoryHintSelection(visibleHintItems);
+        }
+    } else if (e.key === 'Escape') {
+        hideCategorySearchHint();
+    }
+}
+
+function updateCategoryHintSelection(visibleHintItems) {
+    // Remove selection from all items
+    visibleHintItems.forEach(item => {
+        item.style.backgroundColor = '';
+        item.style.color = '';
+    });
+    
+    // Add selection to current item
+    if (currentSelectedCategoryHintIndex >= 0 && currentSelectedCategoryHintIndex < visibleHintItems.length) {
+        visibleHintItems[currentSelectedCategoryHintIndex].style.backgroundColor = '#007bff';
+        visibleHintItems[currentSelectedCategoryHintIndex].style.color = 'white';
+    }
+}
+
+function handleCategorySearchBlur(e) {
+    setTimeout(() => {
+        hideCategorySearchHint();
+    }, 200);
+}
+
+function showCategorySuggestions(searchTerm = '') {
+    const hintContainer = document.getElementById('product-category-search-hint');
+    if (!hintContainer) return;
+    
+    const filteredCategories = searchTerm 
+        ? productCategories.filter(category => 
+            category.name.toLowerCase().includes(searchTerm)
+          )
+        : productCategories;
+    
+    if (filteredCategories.length > 0) {
+        hintContainer.innerHTML = filteredCategories.map(category => `
+            <div class="hint-item" data-category-name="${category.name}">
+                ${category.name}
+            </div>
+        `).join('');
+        hintContainer.style.display = 'block';
+        
+        // Reset selection
+        currentSelectedCategoryHintIndex = -1;
+        
+        // Reattach click events
+        hintContainer.querySelectorAll('.hint-item').forEach(item => {
+            item.addEventListener('mousedown', function(e) {
+                e.preventDefault();
+                selectCategoryFromHint(this);
+            });
+        });
+    } else {
+        hintContainer.style.display = 'none';
+    }
+}
+
+function selectCategoryFromHint(hintElement) {
+    const categoryName = hintElement.getAttribute('data-category-name');
+    document.getElementById('productCategory').value = categoryName;
+    hideCategorySearchHint();
+}
+
+function hideCategorySearchHint() {
+    const hintContainer = document.getElementById('product-category-search-hint');
+    if (hintContainer) {
+        hintContainer.style.display = 'none';
+        currentSelectedCategoryHintIndex = -1;
+    }
+}
 
 // CLIENT SEARCH AND AUTO-COMPLETE FUNCTIONS
 function setupClientSearch() {
@@ -539,17 +895,26 @@ function closeInvoiceModalFunc() {
 }
 
 function openAddProductModal() {
-    // Reset form - only fields that exist
+    // Reset form
     document.getElementById('productName').value = '';
     document.getElementById('productPrice').value = '';
     document.getElementById('productCategory').value = '';
 
     // Show modal
     addProductModal.style.display = 'flex';
+
+    // Auto-focus on product name field
+    setTimeout(() => {
+        const productNameInput = document.getElementById('productName');
+        if (productNameInput) {
+            productNameInput.focus();
+        }
+    }, 100);
 }
 
 function closeProductModalFunc() {
     addProductModal.style.display = 'none';
+    hideSearchHints();
 }
 
 function addInvoiceItem() {
@@ -621,12 +986,8 @@ function renderInvoiceItems() {
         placeholder="Type product name (Tab to complete)..."
         value="${item.productName || ''}"
         style="width: 100%;">
-    <div class="search-hint" id="search-hint-${item.id}" style="display: none; position: absolute; background: white; border: 1px solid #ddd; max-height: 150px; overflow-y: auto; z-index: 1000; width: 100%;">
-        ${products.map(p => `
-        <div class="hint-item" data-product-id="${p.id}" data-product-name="${p.name}" data-price="${p.price}" data-category="${p.category || ''}">
-            ${p.name} - $${p.price}
-        </div>
-        `).join('')}
+    <div class="search-hint product-search-hint" id="search-hint-${item.id}" style="display: none; position: absolute; background: white; border: 1px solid #ddd; max-height: 150px; overflow-y: auto; z-index: 1000; width: 100%;">
+        <!-- Product suggestions will be dynamically added here -->
     </div>
 </td>
 <td><input type="text" class="item-description" data-id="${item.id}" value="${item.description}" style="width: 100%;"></td>
@@ -661,8 +1022,8 @@ function handleProductSearchFocus(e) {
     const hintContainer = document.getElementById(`search-hint-${itemId}`);
 
     if (hintContainer) {
-        hintContainer.style.display = 'block';
-
+        showProductSuggestions(itemId);
+        
         // Add click event to hints
         hintContainer.querySelectorAll('.hint-item').forEach(item => {
             item.addEventListener('mousedown', function(e) {
@@ -677,93 +1038,119 @@ function handleProductSearchFocus(e) {
 function handleProductSearch(e) {
     const itemId = parseInt(e.target.getAttribute('data-id'));
     const searchTerm = e.target.value.toLowerCase();
-    const hintContainer = document.getElementById(`search-hint-${itemId}`);
-
-    if (!hintContainer) return;
-
-    // Filter hints based on search
-    const hintItems = hintContainer.querySelectorAll('.hint-item');
-
-    hintItems.forEach(item => {
-        const productName = item.getAttribute('data-product-name').toLowerCase();
-        if (productName.includes(searchTerm)) {
-            item.style.display = 'block';
-        } else {
-            item.style.display = 'none';
-        }
-    });
+    showProductSuggestions(itemId, searchTerm);
 }
 
-// Handle keyboard events for tab completion
+// Handle keyboard events for product search
 function handleProductSearchKeydown(e) {
-    if (e.key === 'Tab') {
+    const itemId = parseInt(e.target.getAttribute('data-id'));
+    const hintContainer = document.getElementById(`search-hint-${itemId}`);
+    
+    if (!hintContainer || hintContainer.style.display === 'none') {
+        return;
+    }
+
+    const hintItems = hintContainer.querySelectorAll('.hint-item');
+    const visibleHintItems = Array.from(hintItems).filter(item => item.style.display !== 'none');
+    
+    if (e.key === 'Tab' || e.key === 'Enter') {
         e.preventDefault();
-
-        const itemId = parseInt(e.target.getAttribute('data-id'));
-        const searchTerm = e.target.value.toLowerCase();
-
-        // Find matching product from DATABASE products
-        let matchedProduct = null;
-
-        if (searchTerm === '') {
-            matchedProduct = products[0];
+        
+        if (currentSelectedProductHintIndex >= 0 && currentSelectedProductHintIndex < visibleHintItems.length) {
+            // Select the currently highlighted hint
+            selectProductFromHint(itemId, visibleHintItems[currentSelectedProductHintIndex]);
         } else {
-            matchedProduct = products.find(p => 
-                p.name.toLowerCase().startsWith(searchTerm)
-            );
+            // Select the first matching product
+            const searchTerm = e.target.value.toLowerCase();
+            let matchedProduct = null;
 
-            if (!matchedProduct) {
+            if (searchTerm === '') {
+                matchedProduct = products[0];
+            } else {
                 matchedProduct = products.find(p => 
-                    p.name.toLowerCase().includes(searchTerm)
+                    p.name.toLowerCase().startsWith(searchTerm)
                 );
+
+                if (!matchedProduct) {
+                    matchedProduct = products.find(p => 
+                        p.name.toLowerCase().includes(searchTerm)
+                    );
+                }
             }
-        }
 
-        if (matchedProduct) {
-            const searchInput = document.querySelector(`.product-search-input[data-id="${itemId}"]`);
-            if (searchInput) {
-                searchInput.value = matchedProduct.name;
+            if (matchedProduct) {
+                const searchInput = document.querySelector(`.product-search-input[data-id="${itemId}"]`);
+                if (searchInput) {
+                    searchInput.value = matchedProduct.name;
 
-                const item = invoiceItems.find(i => i.id === itemId);
-                if (item) {
-                    item.productId = matchedProduct.id;
-                    item.productName = matchedProduct.name;
-                    item.description = matchedProduct.category || 'Product';
-                    item.price = Number(matchedProduct.price);
+                    const item = invoiceItems.find(i => i.id === itemId);
+                    if (item) {
+                        item.productId = matchedProduct.id;
+                        item.productName = matchedProduct.name;
+                        item.description = matchedProduct.category || 'Product';
+                        item.price = Number(matchedProduct.price);
 
-                    const row = searchInput.closest('tr');
-                    if (row) {
-                        const descriptionInput = row.querySelector('.item-description');
-                        const priceInput = row.querySelector('.item-price');
+                        const row = searchInput.closest('tr');
+                        if (row) {
+                            const descriptionInput = row.querySelector('.item-description');
+                            const priceInput = row.querySelector('.item-price');
 
-                        if (descriptionInput) descriptionInput.value = matchedProduct.category || 'Product';
-                        if (priceInput) priceInput.value = matchedProduct.price;
-                    }
+                            if (descriptionInput) descriptionInput.value = matchedProduct.category || 'Product';
+                            if (priceInput) priceInput.value = matchedProduct.price;
+                        }
 
-                    updateItemTotal(itemId);
-                    updateTotals();
+                        updateItemTotal(itemId);
+                        updateTotals();
 
-                    const hintContainer = document.getElementById(`search-hint-${itemId}`);
-                    if (hintContainer) {
-                        hintContainer.style.display = 'none';
-                    }
+                        const hintContainer = document.getElementById(`search-hint-${itemId}`);
+                        if (hintContainer) {
+                            hintContainer.style.display = 'none';
+                        }
 
-                    const quantityInput = row.querySelector('.item-quantity');
-                    if (quantityInput) {
-                        setTimeout(() => {
-                            quantityInput.focus();
-                            quantityInput.select();
-                        }, 50);
+                        const quantityInput = row.querySelector('.item-quantity');
+                        if (quantityInput) {
+                            setTimeout(() => {
+                                quantityInput.focus();
+                                quantityInput.select();
+                            }, 50);
+                        }
                     }
                 }
             }
         }
+    } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        // Navigate down through hints
+        if (visibleHintItems.length > 0) {
+            currentSelectedProductHintIndex = (currentSelectedProductHintIndex + 1) % visibleHintItems.length;
+            updateProductHintSelection(visibleHintItems);
+        }
+    } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        // Navigate up through hints
+        if (visibleHintItems.length > 0) {
+            currentSelectedProductHintIndex = (currentSelectedProductHintIndex - 1 + visibleHintItems.length) % visibleHintItems.length;
+            updateProductHintSelection(visibleHintItems);
+        }
     } else if (e.key === 'Escape') {
-        const itemId = parseInt(e.target.getAttribute('data-id'));
         const hintContainer = document.getElementById(`search-hint-${itemId}`);
         if (hintContainer) {
             hintContainer.style.display = 'none';
         }
+    }
+}
+
+function updateProductHintSelection(visibleHintItems) {
+    // Remove selection from all items
+    visibleHintItems.forEach(item => {
+        item.style.backgroundColor = '';
+        item.style.color = '';
+    });
+    
+    // Add selection to current item
+    if (currentSelectedProductHintIndex >= 0 && currentSelectedProductHintIndex < visibleHintItems.length) {
+        visibleHintItems[currentSelectedProductHintIndex].style.backgroundColor = '#007bff';
+        visibleHintItems[currentSelectedProductHintIndex].style.color = 'white';
     }
 }
 
@@ -774,16 +1161,55 @@ function handleProductSearchBlur(e) {
         const hintContainer = document.getElementById(`search-hint-${itemId}`);
         if (hintContainer) {
             hintContainer.style.display = 'none';
+            currentSelectedProductHintIndex = -1;
         }
     }, 200);
+}
+
+// Show product suggestions
+function showProductSuggestions(itemId, searchTerm = '') {
+    const hintContainer = document.getElementById(`search-hint-${itemId}`);
+    if (!hintContainer) return;
+    
+    const filteredProducts = searchTerm 
+        ? products.filter(product => 
+            product.name.toLowerCase().includes(searchTerm) ||
+            (product.category && product.category.toLowerCase().includes(searchTerm))
+          )
+        : products;
+    
+    if (filteredProducts.length > 0) {
+        hintContainer.innerHTML = filteredProducts.map(product => `
+            <div class="hint-item" data-product-id="${product.id}" 
+                 data-product-name="${product.name}" 
+                 data-product-price="${product.price}" 
+                 data-product-category="${product.category || ''}">
+                ${product.name} - $${product.price} ${product.category ? `(${product.category})` : ''}
+            </div>
+        `).join('');
+        hintContainer.style.display = 'block';
+        
+        // Reset selection
+        currentSelectedProductHintIndex = -1;
+        
+        // Reattach click events
+        hintContainer.querySelectorAll('.hint-item').forEach(item => {
+            item.addEventListener('mousedown', function(e) {
+                e.preventDefault();
+                selectProductFromHint(itemId, this);
+            });
+        });
+    } else {
+        hintContainer.style.display = 'none';
+    }
 }
 
 // Select product from hint
 function selectProductFromHint(itemId, hintElement) {
     const productId = hintElement.getAttribute('data-product-id');
     const productName = hintElement.getAttribute('data-product-name');
-    const price = hintElement.getAttribute('data-price');
-    const category = hintElement.getAttribute('data-category');
+    const price = hintElement.getAttribute('data-product-price');
+    const category = hintElement.getAttribute('data-product-category');
 
     const product = products.find(p => p.id === parseInt(productId));
     if (!product) return;
@@ -813,6 +1239,7 @@ function selectProductFromHint(itemId, hintElement) {
     const hintContainer = document.getElementById(`search-hint-${itemId}`);
     if (hintContainer) {
         hintContainer.style.display = 'none';
+        currentSelectedProductHintIndex = -1;
     }
 
     // Update calculations
@@ -951,98 +1378,285 @@ function loadProducts() {
     });
 }
 
-// Save invoice
-function saveInvoice() {
-    const clientName = document.getElementById('clientName').value;
-    const clientEmail = document.getElementById('clientEmail').value;
-    const clientAddress = document.getElementById('clientAddress').value;
-    const invoiceDateValue = document.getElementById('invoiceDate').value;
+// Save complete invoice to database
+async function saveInvoice() {
+    console.log('🔍 saveInvoice function called');
+    
+    const clientName = document.getElementById('clientName').value.trim();
+    const invoiceDate = document.getElementById('invoiceDate').value;
+    const globalDiscount = parseFloat(document.getElementById('globalDiscount').value) || 0;
+    const globalTax = parseFloat(document.getElementById('globalTax').value) || 0;
 
+    console.log('📋 Form data:', { 
+        clientName, 
+        invoiceDate, 
+        globalDiscount, 
+        globalTax,
+        itemsCount: invoiceItems.length,
+        items: invoiceItems
+    });
+
+    // Validation
     if (!clientName) {
-        alert('Please enter client name');
+        showAlert('Please enter client name', 'error');
+        document.getElementById('clientName').focus();
         return;
     }
 
     if (invoiceItems.length === 0) {
-        alert('Please add at least one item to the invoice');
+        showAlert('Please add at least one item to the invoice', 'error');
         return;
     }
 
-    // Calculate total amount using global discount and tax
-    let subtotal = 0;
-    invoiceItems.forEach(item => {
-        subtotal += item.quantity * item.price;
-    });
+    // Show loading state
+    const saveBtn = document.getElementById('saveInvoiceBtn');
+    const originalText = saveBtn.innerHTML;
+    
+    saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving Invoice...';
+    saveBtn.disabled = true;
 
-    const discountValue = (subtotal * globalDiscount) / 100;
-    const taxableAmount = subtotal - discountValue;
-    const taxValue = (taxableAmount * globalTax) / 100;
-    const total = taxableAmount + taxValue;
+    try {
+        // Prepare data for sending
+        const invoiceData = {
+            clientName: clientName,
+            invoiceDate: invoiceDate,
+            items: invoiceItems.map(item => ({
+                productName: item.productName || '',
+                description: item.description || '',
+                quantity: item.quantity || 1,
+                price: item.price || 0
+            })),
+            globalDiscount: globalDiscount,
+            globalTax: globalTax
+        };
 
-    // Create new invoice
-    const newInvoice = {
-        id: nextInvoiceNumber,
-        number: invoiceNumber.value,
-        client: clientName,
-        issueDate: invoiceDateValue,
-        amount: total,
-        status: 'pending',
-        subtotal: subtotal,
-        discount: discountValue,
-        tax: taxValue
-    };
+        console.log('📦 Prepared invoice data for sending:', invoiceData);
+        console.log('🔑 CSRF Token available:', !!window.djangoData.csrfToken);
 
-    // Add to invoices array
-    invoices.unshift(newInvoice);
-    nextInvoiceNumber++;
+        // Test URL - try different variations
+        const url = '/bill/save-invoice/';
+        console.log('🌐 Attempting to fetch from:', url);
 
-    // Update UI
-    loadInvoices();
-    updateStats();
+        // Make the request with detailed error handling
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': window.djangoData.csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify(invoiceData)
+        });
 
-    // Close modal
-    closeInvoiceModalFunc();
+        console.log('✅ Fetch completed, status:', response.status, response.statusText);
 
-    alert('Invoice created successfully!');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
+        }
+
+        const result = await response.json();
+        console.log('📨 Response JSON:', result);
+
+        if (result.success) {
+            console.log('🎉 Invoice saved successfully');
+            
+            // Show success message
+            showAlert(result.message, 'success');
+            
+            // Update the invoices list
+            if (result.invoice) {
+                const newInvoice = {
+                    id: result.invoice.id,
+                    number: result.invoice.number,
+                    client: result.invoice.client,
+                    issueDate: result.invoice.date,
+                    amount: result.invoice.total_amount,
+                    status: 'pending'
+                };
+                
+                invoices.unshift(newInvoice);
+                loadInvoices();
+            }
+            
+            // Close modal after short delay
+            setTimeout(() => {
+                closeInvoiceModalFunc();
+                
+                // Reset form
+                document.getElementById('clientName').value = '';
+                document.getElementById('clientId').value = '';
+                document.getElementById('clientEmail').value = '';
+                document.getElementById('clientAddress').value = '';
+                
+                // Clear invoice items
+                invoiceItems = [];
+                renderInvoiceItems();
+                updateTotals();
+                
+            }, 2000);
+            
+        } else {
+            console.log('❌ Server returned error:', result.error);
+            showAlert('Error: ' + (result.error || 'Failed to save invoice'), 'error');
+        }
+
+    } catch (error) {
+        console.error('💥 Detailed error information:');
+        console.error('Error name:', error.name);
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
+        
+        // More specific error messages
+        if (error.name === 'TypeError' && error.message.includes('fetch')) {
+            showAlert('Network error: Cannot connect to server. Make sure the server is running and the URL is correct.', 'error');
+        } else if (error.message.includes('404')) {
+            showAlert('Error 404: URL not found. Please check if the save-invoice URL is configured correctly.', 'error');
+        } else if (error.message.includes('403')) {
+            showAlert('Error 403: Permission denied. Check CSRF token.', 'error');
+        } else if (error.message.includes('500')) {
+            showAlert('Server error: There was a problem on the server side.', 'error');
+        } else {
+            showAlert('Error: ' + error.message, 'error');
+        }
+    } finally {
+        // Restore button state
+        saveBtn.innerHTML = originalText;
+        saveBtn.disabled = false;
+    }
 }
-
 // Save product - SIMPLIFIED
-function saveProduct() {
-    const productName = document.getElementById('productName').value;
-    const productPrice = parseFloat(document.getElementById('productPrice').value);
-    const productCategory = document.getElementById('productCategory').value;
+// Save product to database via AJAX
+async function saveProduct() {
+    const productName = document.getElementById('productName').value.trim();
+    const productPrice = document.getElementById('productPrice').value;
+    const productCategory = document.getElementById('productCategory').value.trim();
 
+    // Client-side validation
     if (!productName) {
-        alert('Please enter product name');
+        showAlert('Please enter product name', 'error');
+        document.getElementById('productName').focus();
         return;
     }
 
-    if (!productPrice || productPrice <= 0) {
-        alert('Please enter a valid price');
+    if (!productPrice || parseFloat(productPrice) <= 0 || isNaN(productPrice)) {
+        showAlert('Please enter a valid price', 'error');
+        document.getElementById('productPrice').focus();
         return;
     }
 
-    // Create new product with only existing fields
-    const newProduct = {
-        id: nextProductId,
-        name: productName,
-        price: productPrice,
-        category: productCategory
-    };
+    // Show loading state
+    const saveBtn = document.getElementById('saveProductBtn');
+    const originalText = saveBtn.innerHTML;
+    
+    saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+    saveBtn.disabled = true;
 
-    // Add to products array
-    products.push(newProduct);
-    nextProductId++;
+    try {
+        // Prepare data for sending
+        const productData = {
+            name: productName,
+            price: parseFloat(productPrice),
+            category: productCategory
+        };
 
-    // Update UI
-    loadProducts();
+        console.log('Saving product:', productData);
 
-    // Close modal
-    closeProductModalFunc();
+        // Send AJAX request to Django
+        const response = await fetch('/bill/save-product/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': window.djangoData.csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify(productData)
+        });
 
-    alert('Product added successfully!');
+        const result = await response.json();
+        console.log('Server response:', result);
+
+        if (result.success) {
+            // Add the new product to the local products array
+            products.push(result.product);
+            
+            // Update the global nextProductId
+            nextProductId = Math.max(nextProductId, result.product.id + 1);
+            
+            // Update UI
+            loadProducts();
+            
+            // Show success message
+            showAlert(result.message, 'success');
+            
+            // Close modal after short delay
+            setTimeout(() => {
+                closeProductModalFunc();
+                
+                // Reset form
+                document.getElementById('productName').value = '';
+                document.getElementById('productPrice').value = '';
+                document.getElementById('productCategory').value = '';
+            }, 1500);
+            
+        } else {
+            showAlert('Error: ' + (result.error || 'Failed to save product'), 'error');
+        }
+
+    } catch (error) {
+        console.error('Error saving product:', error);
+        showAlert('Network error. Please check your connection and try again.', 'error');
+    } finally {
+        // Restore button state
+        saveBtn.innerHTML = originalText;
+        saveBtn.disabled = false;
+    }
 }
 
+// Helper function to show alerts
+function showAlert(message, type = 'info') {
+    // Remove any existing alerts
+    const existingAlert = document.querySelector('.custom-alert');
+    if (existingAlert) {
+        existingAlert.remove();
+    }
+
+    // Create alert element
+    const alert = document.createElement('div');
+    alert.className = `custom-alert alert-${type}`;
+    alert.innerHTML = `
+        <div class="alert-content">
+            <span class="alert-message">${message}</span>
+            <button class="alert-close" onclick="this.parentElement.parentElement.remove()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    `;
+
+    // Add styles
+    alert.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 10000;
+        min-width: 300px;
+        max-width: 500px;
+        background: ${type === 'success' ? '#d4edda' : type === 'error' ? '#f8d7da' : '#d1ecf1'};
+        border: 1px solid ${type === 'success' ? '#c3e6cb' : type === 'error' ? '#f5c6cb' : '#bee5eb'};
+        border-radius: 5px;
+        padding: 15px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        color: ${type === 'success' ? '#155724' : type === 'error' ? '#721c24' : '#0c5460'};
+    `;
+
+    document.body.appendChild(alert);
+
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+        if (alert.parentElement) {
+            alert.remove();
+        }
+    }, 5000);
+}
 // EDIT PRODUCT - SIMPLIFIED
 function editProduct(productId) {
     const product = products.find(p => p.id === productId);
@@ -1230,6 +1844,10 @@ function hideSearchHints() {
     document.querySelectorAll('.search-hint').forEach(container => {
         container.style.display = 'none';
     });
+    currentSelectedHintIndex = -1;
+    currentSelectedProductHintIndex = -1;
+    currentSelectedProductNameHintIndex = -1;
+    currentSelectedCategoryHintIndex = -1;
 }
 
 // Update stats
