@@ -1,75 +1,84 @@
 import json
+from datetime import datetime
 
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
+from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
 from .models import Bill, Customer, OrderList, OrderSummary, Product, ProductCategory
 
 
+def get_serialized_data():
+    """Helper function to get serialized data for template - REDUCED DUPLICATION"""
+    products = Product.objects.select_related("category").all()
+    customers = Customer.objects.all()
+    categories = ProductCategory.objects.all()
+    orderlist = OrderList.objects.all()
+
+    invoice_data = []
+    for order in orderlist:
+        if hasattr(OrderSummary, "objects"):
+            summary = OrderSummary.objects.filter(order=order).first()
+            if summary:
+                invoice_data.append(
+                    {
+                        "id": order.id,
+                        "number": f"INV-00{order.id}",
+                        "client": order.customer.name,
+                        "issueDate": order.order_date.date().isoformat(),
+                        "amount": summary.final_amount,
+                        "status": "pending",  # You can add status if needed
+                    }
+                )
+    print(invoice_data)
+
+    products_data = [
+        {
+            "id": p.id,
+            "name": p.name,
+            "price": float(p.price),
+            "category": p.category.name if p.category else "",
+        }
+        for p in products
+    ]
+
+    customers_data = [
+        {
+            "id": c.id,
+            "name": c.name,
+            "email": c.email,
+            "phone": c.phone,
+            "address": c.address,
+        }
+        for c in customers
+    ]
+
+    categories_data = [{"id": cat.id, "name": cat.name} for cat in categories]
+
+    return {
+        "product": json.dumps(products_data),
+        "customer": json.dumps(customers_data),
+        "product_cat": json.dumps(categories_data),
+        "invoices": json.dumps(invoice_data),
+    }
+
+
 @login_required
 def bill(request):
+    """Main billing page view - SIMPLIFIED"""
     try:
-        # Get products and manually convert Decimal to float
-        products = Product.objects.select_related("category")
-        products_list = []
-        for product in products:
-            products_list.append(
-                {
-                    "id": product.id,
-                    "name": product.name,
-                    "price": float(product.price),  # ← Convert here
-                    "category": product.category.name if product.category else "",
-                }
-            )
-
-        # Get customers
-        customers = Customer.objects.all()
-        customers_list = []
-        for customer in customers:
-            customers_list.append(
-                {
-                    "id": customer.id,
-                    "name": customer.name,
-                    "email": customer.email,
-                    "phone": customer.phone,
-                    "address": customer.address,
-                }
-            )
-
-        product_data = json.dumps(products_list)
-        customer_data = json.dumps(customers_list)
-
-        # Get product categories - with proper error handling
-        product_categories = ProductCategory.objects.all()
-        ProductCategoryList = []
-        for pro in product_categories:
-            ProductCategoryList.append({"id": pro.id, "name": pro.name})
-        product_cat = json.dumps(ProductCategoryList)
-
-        return render(
-            request,
-            "website/bill.html",
-            {
-                "product": product_data,
-                "customer": customer_data,
-                "product_cat": product_cat,
-            },
-        )
+        context = get_serialized_data()
+        return render(request, "website/bill.html", context)
 
     except Exception as e:
-        # Handle any exceptions and provide fallback data
         print(f"Error in bill view: {e}")
         return render(
             request,
             "website/bill.html",
-            {
-                "product": "[]",
-                "customer": "[]",
-                "product_cat": "[]",
-            },
+            {"product": "[]", "customer": "[]", "product_cat": "[]", "invoices": []},
         )
 
 
@@ -77,19 +86,14 @@ def bill(request):
 @csrf_exempt
 @require_POST
 def save_product(request):
-    """
-    AJAX view to save new products to the database
-    """
+    """Save new product via AJAX - CLEANER VALIDATION"""
     try:
-        # Parse the JSON data from the request
         data = json.loads(request.body)
-
-        # Extract and validate product data
         name = data.get("name", "").strip()
         price = data.get("price")
         category_name = data.get("category", "").strip()
 
-        # Validation
+        # Consolidated validation
         if not name:
             return JsonResponse(
                 {"success": False, "error": "Product name is required"}, status=400
@@ -98,30 +102,28 @@ def save_product(request):
         try:
             price = float(price)
             if price <= 0:
-                raise ValueError("Price must be positive")
+                return JsonResponse(
+                    {"success": False, "error": "Price must be positive"}, status=400
+                )
         except (TypeError, ValueError):
             return JsonResponse(
                 {"success": False, "error": "Valid price is required"}, status=400
             )
 
-        # Check if product already exists (case-insensitive)
+        # Check for existing product
         if Product.objects.filter(name__iexact=name).exists():
             return JsonResponse(
-                {"success": False, "error": "Product with this name already exists"},
-                status=400,
+                {"success": False, "error": "Product already exists"}, status=400
             )
 
         # Get or create category
         category = None
         if category_name:
-            category, created = ProductCategory.objects.get_or_create(
-                name=category_name
-            )
+            category, _ = ProductCategory.objects.get_or_create(name=category_name)
 
-        # Create the product
+        # Create product
         product = Product.objects.create(name=name, price=price, category=category)
 
-        # Return success response with product data
         return JsonResponse(
             {
                 "success": True,
@@ -145,44 +147,26 @@ def save_product(request):
 @csrf_exempt
 @require_POST
 def save_invoice(request):
-    """
-    AJAX view to save complete invoices to the database
-    """
-    print("🟢 save_invoice view called!")
-
+    """Save complete invoice via AJAX - REMOVED REDUNDANT CODE"""
     try:
-        # Parse the JSON data from the request
-        print("📦 Reading request body...")
-        body = request.body.decode("utf-8")
-        print("Raw request body:", body)
-
-        data = json.loads(body)
-        print("✅ Parsed JSON data")
-
-        # Extract invoice data
+        data = json.loads(request.body)
         client_name = data.get("clientName", "").strip()
         invoice_date_str = data.get("invoiceDate", "")
         invoice_items = data.get("items", [])
         global_discount = float(data.get("globalDiscount", 0))
         global_tax = float(data.get("globalTax", 0))
 
-        print(f"📋 Extracted data - Client: {client_name}, Items: {len(invoice_items)}")
-
-        # Validation
+        # Consolidated validation
         if not client_name:
-            print("❌ No client name provided")
             return JsonResponse(
                 {"success": False, "error": "Client name is required"}, status=400
             )
 
         if not invoice_items:
-            print("❌ No invoice items provided")
             return JsonResponse(
-                {"success": False, "error": "At least one invoice item is required"},
-                status=400,
+                {"success": False, "error": "At least one item is required"}, status=400
             )
 
-        print("👤 Finding or creating customer...")
         # Find or create customer
         customer, created = Customer.objects.get_or_create(
             name=client_name,
@@ -193,112 +177,52 @@ def save_invoice(request):
             },
         )
 
-        if created:
-            print(f"✅ Created new customer: {customer.name}")
-        else:
-            print(f"✅ Found existing customer: {customer.name}")
-
-        print("📋 Creating order...")
-        # Handle date conversion - FIXED
-        from datetime import datetime
-
-        from django.utils import timezone
-
+        # Handle date conversion
         if invoice_date_str:
             try:
-                # Convert string to datetime object
                 invoice_date = datetime.strptime(invoice_date_str, "%Y-%m-%d").date()
-                # Make it timezone-aware
                 invoice_date = timezone.make_aware(
                     datetime.combine(invoice_date, datetime.min.time())
                 )
-                print(f"✅ Converted invoice date: {invoice_date}")
-            except ValueError as e:
-                print(f"⚠️  Invalid date format, using current time: {e}")
+            except ValueError:
                 invoice_date = timezone.now()
         else:
             invoice_date = timezone.now()
-            print("✅ Using current date")
 
-        # Create order with proper datetime object
-        order = OrderList.objects.create(
-            customer=customer,
-            order_date=invoice_date,  # This is now a datetime object, not a string
-        )
-        print(f"✅ Created order: {order.id}")
+        # Create order
+        order = OrderList.objects.create(customer=customer, order_date=invoice_date)
 
-        # Create bill items
+        # Process invoice items
         total_amount = 0
-        print(f"📄 Creating {len(invoice_items)} bill items...")
+        for item in invoice_items:
+            product_name = item.get("productName", "").strip()
+            quantity = int(item.get("quantity", 1))
+            price = float(item.get("price", 0))
 
-        for index, item in enumerate(invoice_items):
-            try:
-                print(f"  Processing item {index + 1}: {item}")
-                product_name = item.get("productName", "").strip()
-                quantity = int(item.get("quantity", 1))
-                price = float(item.get("price", 0))
-                description = item.get("description", "")
-
-                if not product_name:
-                    print(f"  ⚠️  Skipping item {index + 1} - no product name")
-                    continue
-
-                print(f"  🔍 Finding/creating product: {product_name}")
-                # Find or create product - FIXED category handling
-                try:
-                    # Get any existing category or create default
-                    default_category = ProductCategory.objects.first()
-                    if not default_category:
-                        default_category = ProductCategory.objects.create(
-                            name="General"
-                        )
-
-                    product, product_created = Product.objects.get_or_create(
-                        name=product_name,
-                        defaults={
-                            "price": price,
-                            "category": default_category,
-                        },
-                    )
-
-                    if product_created:
-                        print(f"  ✅ Created new product: {product.name}")
-                    else:
-                        print(f"  ✅ Found existing product: {product.name}")
-
-                    print(f"  💰 Creating bill: {product.name} x {quantity}")
-                    # Create bill entry
-                    bill = Bill.objects.create(
-                        order=order,
-                        product=product,
-                        product_price=price,
-                        quantity=quantity,
-                        bill_date=timezone.now(),
-                    )
-
-                    # Calculate item total
-                    item_total = quantity * price
-                    total_amount += item_total
-
-                    print(
-                        f"  ✅ Created bill item: {product.name} x {quantity} = ${
-                            item_total
-                        }"
-                    )
-
-                except Exception as e:
-                    print(f"  ❌ Error with product {product_name}: {e}")
-                    continue
-
-            except Exception as e:
-                print(f"  ❌ Error creating bill item {index + 1}: {e}")
-                import traceback
-
-                traceback.print_exc()
+            if not product_name:
                 continue
 
-        print(f"💰 Total amount: ${total_amount}")
-        print("📊 Creating order summary...")
+            # Find or create product
+            default_category = ProductCategory.objects.first()
+            if not default_category:
+                default_category = ProductCategory.objects.create(name="General")
+
+            product, _ = Product.objects.get_or_create(
+                name=product_name,
+                defaults={"price": price, "category": default_category},
+            )
+
+            # Create bill entry
+            Bill.objects.create(
+                order=order,
+                product=product,
+                product_price=price,
+                quantity=quantity,
+                bill_date=timezone.now(),
+            )
+
+            total_amount += quantity * price
+
         # Create order summary
         order_summary = OrderSummary.objects.create(
             order=order,
@@ -306,44 +230,44 @@ def save_invoice(request):
             discount=global_discount,
             tax=global_tax,
         )
-
-        # Calculate final totals
-        print("🧮 Calculating final totals...")
         order_summary.calculate_totals()
-        print(f"✅ Final amount: ${order_summary.final_amount}")
 
-        # Return success response - FIXED date serialization
-        response_data = {
-            "success": True,
-            "message": "Invoice saved successfully!",
-            "invoice": {
-                "id": order.id,
-                "number": f"INV-{order.id:03d}",
-                "client": customer.name,
-                # This now works because order_date is datetime
-                "date": order.order_date.isoformat(),
-                "total_amount": order_summary.final_amount,
-                "items_count": len(invoice_items),
-            },
-        }
-        print("🎉 Returning success response")
-        return JsonResponse(response_data)
+        return JsonResponse(
+            {
+                "success": True,
+                "message": "Invoice saved successfully!",
+                "invoice": {
+                    "id": order.id,
+                    "number": f"INV-{order.id:03d}",
+                    "client": customer.name,
+                    "date": order.order_date.isoformat(),
+                    "total_amount": order_summary.final_amount,
+                    "items_count": len(invoice_items),
+                },
+            }
+        )
 
     except json.JSONDecodeError as e:
-        print(f"❌ JSON decode error: {e}")
         return JsonResponse(
-            {"success": False, "error": f"Invalid JSON data: {str(e)}"}, status=400
+            {"success": False, "error": f"Invalid JSON: {str(e)}"}, status=400
         )
     except Exception as e:
-        print(f"💥 Unexpected error in save_invoice: {str(e)}")
-        import traceback
-
-        print("Full traceback:")
-        traceback.print_exc()
+        print(f"Error in save_invoice: {str(e)}")
         return JsonResponse(
             {"success": False, "error": f"Server error: {str(e)}"}, status=500
         )
 
 
 def sahilpage(request):
-    return render(request, "billingsystem/index.html")
+    products = Product.objects.select_related("category").all()
+    return render(request, "billingsystem/index.html", {"products": products})
+
+
+def product_details(request, pro_id, second_id):
+    pro = get_object_or_404(Product, pk=pro_id)
+    ans = pro_id+second_id
+    return render(
+        request,
+        "billingsystem/productprice.html",
+        {"pro": pro, "ans": ans},
+    )

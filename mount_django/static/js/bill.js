@@ -2,11 +2,11 @@
 console.log('Bill.js loading...');
 
 // Sample data for invoices (keep this as is for now)
-let invoices = [
-    { id: 1, number: 'INV-001', client: 'Global Tech Inc.', issueDate: '2023-05-15', amount: 2500, status: 'paid' },
-    { id: 2, number: 'INV-002', client: 'Marketing Pro LLC', issueDate: '2023-05-18', amount: 1800, status: 'pending' },
-    { id: 3, number: 'INV-003', client: 'Creative Solutions', issueDate: '2023-05-10', amount: 3200, status: 'overdue' }
-];
+// let invoices = [
+//     { id: 1, number: 'INV-001', client: 'Global Tech Inc.', issueDate: '2023-05-15', amount: 2500, status: 'paid' },
+//     { id: 2, number: 'INV-002', client: 'Marketing Pro LLC', issueDate: '2023-05-18', amount: 1800, status: 'pending' },
+//     { id: 3, number: 'INV-003', client: 'Creative Solutions', issueDate: '2023-05-10', amount: 3200, status: 'overdue' }
+// ];
 
 // SAFETY CHECK: Ensure window.djangoData exists
 if (typeof window.djangoData === 'undefined') {
@@ -15,10 +15,12 @@ if (typeof window.djangoData === 'undefined') {
         products: [],
         product_cat: [],
         clients: [],
+        invoices: [],
         csrfToken: ""
     };
 }
 
+const invoices = Array.isArray(window.djangoData.invoices) ? window.djangoData.invoices : [];
 // Use ACTUAL database products from Django with safety
 const products = Array.isArray(window.djangoData.products) ? window.djangoData.products : [];
 const productCategories = Array.isArray(window.djangoData.product_cat) ? window.djangoData.product_cat : [];
