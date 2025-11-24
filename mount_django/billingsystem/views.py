@@ -39,7 +39,8 @@ def get_serialized_data():
         {
             "id": p.id,
             "name": p.name,
-            "price": float(p.price),
+            "cost_price": float(p.cost_price),
+            "selling_price": float(p.selling_price),
             "category": p.category.name if p.category else "",
         }
         for p in products
@@ -71,8 +72,8 @@ def bill(request):
     """Main billing page view - SIMPLIFIED"""
     try:
         context = get_serialized_data()
+        print(context)
         return render(request, "website/bill.html", context)
-
     except Exception as e:
         print(f"Error in bill view: {e}")
         return render(
@@ -86,28 +87,65 @@ def bill(request):
 @csrf_exempt
 @require_POST
 def save_product(request):
-    """Save new product via AJAX - CLEANER VALIDATION"""
+    """Save new product via AJAX - COMPATIBLE VERSION"""
     try:
+        print("=== DEBUG SAVE PRODUCT ===")
+        print("Raw request body:", request.body.decode("utf-8"))
+
         data = json.loads(request.body)
+        print("Parsed data:", data)
+        print("Data keys:", list(data.keys()))
+
         name = data.get("name", "").strip()
-        price = data.get("price")
         category_name = data.get("category", "").strip()
 
-        # Consolidated validation
+        # Handle both old and new price formats
+        cost_price = data.get("cost_price")
+        selling_price = data.get("selling_price")
+
+        # If using old format with single 'price' field
+        if cost_price is None and selling_price is None and "price" in data:
+            cost_price = data.get("price")
+            selling_price = data.get("price")  # Use same price for both
+            print("Using old price format - single price field")
+
+        print(
+            f"Extracted - name: '{name}', cost_price: {cost_price}, selling_price: {selling_price}"
+        )
+
+        # Rest of your validation code remains the same...
         if not name:
             return JsonResponse(
                 {"success": False, "error": "Product name is required"}, status=400
             )
 
+        if cost_price is None or selling_price is None:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "error": "Both cost price and selling price are required",
+                },
+                status=400,
+            )
+
         try:
-            price = float(price)
-            if price <= 0:
+            cost_price = float(cost_price)
+            selling_price = float(selling_price)
+            if cost_price <= 0 or selling_price <= 0:
                 return JsonResponse(
-                    {"success": False, "error": "Price must be positive"}, status=400
+                    {"success": False, "error": "Prices must be positive"}, status=400
+                )
+            if selling_price < cost_price:
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "error": "Selling price cannot be less than cost price",
+                    },
+                    status=400,
                 )
         except (TypeError, ValueError):
             return JsonResponse(
-                {"success": False, "error": "Valid price is required"}, status=400
+                {"success": False, "error": "Valid prices are required"}, status=400
             )
 
         # Check for existing product
@@ -122,7 +160,12 @@ def save_product(request):
             category, _ = ProductCategory.objects.get_or_create(name=category_name)
 
         # Create product
-        product = Product.objects.create(name=name, price=price, category=category)
+        product = Product.objects.create(
+            name=name,
+            cost_price=cost_price,
+            selling_price=selling_price,
+            category=category,
+        )
 
         return JsonResponse(
             {
@@ -131,13 +174,15 @@ def save_product(request):
                 "product": {
                     "id": product.id,
                     "name": product.name,
-                    "price": float(product.price),
+                    "cost_price": float(product.cost_price),
+                    "selling_price": float(product.selling_price),
                     "category": product.category.name if product.category else "",
                 },
             }
         )
 
     except Exception as e:
+        print(f"Server error in save_product: {str(e)}")
         return JsonResponse(
             {"success": False, "error": f"Server error: {str(e)}"}, status=500
         )
@@ -202,14 +247,19 @@ def save_invoice(request):
             if not product_name:
                 continue
 
-            # Find or create product
+            # Find or create product - use selling price as default
             default_category = ProductCategory.objects.first()
             if not default_category:
                 default_category = ProductCategory.objects.create(name="General")
 
             product, _ = Product.objects.get_or_create(
                 name=product_name,
-                defaults={"price": price, "category": default_category},
+                defaults={
+                    # Default cost price (80% of selling)
+                    "cost_price": price * 0.8,
+                    "selling_price": price,
+                    "category": default_category,
+                },
             )
 
             # Create bill entry
@@ -265,7 +315,7 @@ def sahilpage(request):
 
 def product_details(request, pro_id, second_id):
     pro = get_object_or_404(Product, pk=pro_id)
-    ans = pro_id+second_id
+    ans = pro_id + second_id
     return render(
         request,
         "billingsystem/productprice.html",

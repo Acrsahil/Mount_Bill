@@ -1530,7 +1530,8 @@ async function saveInvoice() {
 // Save product to database via AJAX
 async function saveProduct() {
     const productName = document.getElementById('productName').value.trim();
-    const productPrice = document.getElementById('productPrice').value;
+    const productCostPrice = document.getElementById('productCostPrice').value;
+    const productSellingPrice = document.getElementById('productSellingPrice').value;
     const productCategory = document.getElementById('productCategory').value.trim();
 
     // Client-side validation
@@ -1557,11 +1558,12 @@ async function saveProduct() {
         // Prepare data for sending
         const productData = {
             name: productName,
-            price: parseFloat(productPrice),
+            cost_price: parseFloat(productCostPrice),      // Changed from 'price'
+            selling_price: parseFloat(productSellingPrice), // New field
             category: productCategory
         };
-
         console.log('Saving product:', productData);
+        console.log('Sending this data:', productData);
 
         // Send AJAX request to Django
         const response = await fetch('/bill/save-product/', {
@@ -1580,26 +1582,26 @@ async function saveProduct() {
         if (result.success) {
             // Add the new product to the local products array
             products.push(result.product);
-            
+
             // Update the global nextProductId
             nextProductId = Math.max(nextProductId, result.product.id + 1);
-            
+
             // Update UI
             loadProducts();
-            
+
             // Show success message
             showAlert(result.message, 'success');
-            
+
             // Close modal after short delay
             setTimeout(() => {
                 closeProductModalFunc();
-                
+
                 // Reset form
                 document.getElementById('productName').value = '';
                 document.getElementById('productPrice').value = '';
                 document.getElementById('productCategory').value = '';
             }, 1500);
-            
+
         } else {
             showAlert('Error: ' + (result.error || 'Failed to save product'), 'error');
         }
@@ -1626,29 +1628,29 @@ function showAlert(message, type = 'info') {
     const alert = document.createElement('div');
     alert.className = `custom-alert alert-${type}`;
     alert.innerHTML = `
-        <div class="alert-content">
-            <span class="alert-message">${message}</span>
-            <button class="alert-close" onclick="this.parentElement.parentElement.remove()">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-    `;
+<div class="alert-content">
+    <span class="alert-message">${message}</span>
+    <button class="alert-close" onclick="this.parentElement.parentElement.remove()">
+        <i class="fas fa-times"></i>
+    </button>
+</div>
+`;
 
     // Add styles
     alert.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        z-index: 10000;
-        min-width: 300px;
-        max-width: 500px;
-        background: ${type === 'success' ? '#d4edda' : type === 'error' ? '#f8d7da' : '#d1ecf1'};
-        border: 1px solid ${type === 'success' ? '#c3e6cb' : type === 'error' ? '#f5c6cb' : '#bee5eb'};
-        border-radius: 5px;
-        padding: 15px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        color: ${type === 'success' ? '#155724' : type === 'error' ? '#721c24' : '#0c5460'};
-    `;
+position: fixed;
+top: 20px;
+right: 20px;
+z-index: 10000;
+min-width: 300px;
+max-width: 500px;
+background: ${type === 'success' ? '#d4edda' : type === 'error' ? '#f8d7da' : '#d1ecf1'};
+border: 1px solid ${type === 'success' ? '#c3e6cb' : type === 'error' ? '#f5c6cb' : '#bee5eb'};
+border-radius: 5px;
+padding: 15px;
+box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+color: ${type === 'success' ? '#155724' : type === 'error' ? '#721c24' : '#0c5460'};
+`;
 
     document.body.appendChild(alert);
 
