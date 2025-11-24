@@ -11,7 +11,8 @@ class ProductCategory(models.Model):
 
 class Product(models.Model):
     name = models.CharField(max_length=100)
-    price = models.DecimalField(max_digits=10, decimal_places=2)
+    cost_price = models.DecimalField(max_digits=10, decimal_places=2)
+    selling_price = models.DecimalField(max_digits=10, decimal_places=2,default=0)
     image = models.ImageField(upload_to="Productimage/")
     date_added = models.DateTimeField(default=timezone.now)
     category = models.ForeignKey(
