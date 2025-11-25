@@ -16,4 +16,9 @@ urlpatterns = [
     path(
         "save-invoice/", views.save_invoice, name="save_invoice"
     ),  # Make sure this line e
+    path("invoices/", views.invoices, name="invoices"),
+    path("products/", views.products, name="products"),
+    path("clients/", views.clients, name="clients"),
+    path("reports/", views.reports, name="reports"),
+    path("settings/", views.settings, name="settings"),
 ]

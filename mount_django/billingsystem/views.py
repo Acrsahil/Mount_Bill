@@ -321,3 +321,14 @@ def product_details(request, pro_id, second_id):
         "billingsystem/productprice.html",
         {"pro": pro, "ans": ans},
     )
+
+def invoices(request):
+    pass
+def products(request):
+    pass
+def clients(request):
+    pass
+def reports(request):
+    pass
+def settings(request):
+    pass
