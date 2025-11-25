@@ -653,7 +653,11 @@ function clearClientDetails() {
 
 // Set up event listeners
 function setupEventListeners() {
-    if (createInvoiceBtn) createInvoiceBtn.addEventListener('click', openCreateInvoiceModal);
+    if (createInvoiceBtn) 
+        createInvoiceBtn.addEventListener('click', () =>{
+            window.location.href="{%url 'save_invoice'%}";
+}
+);
     if (addProductBtn) addProductBtn.addEventListener('click', openAddProductModal);
     if (addNewProductBtn) addNewProductBtn.addEventListener('click', openAddProductModal);
     if (addClientBtn) addClientBtn.addEventListener('click', openClientModal);
