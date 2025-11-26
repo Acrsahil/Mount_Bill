@@ -1,6 +1,7 @@
 // Event listeners and UI interaction handlers
 import { updateTotals, updateItemTotal, updateStats, updateClientStats, showAlert } from './utils.js';
 import { 
+    refreshBtn,
     renderInvoiceItems, 
     loadProducts, 
     loadClients, 
@@ -18,8 +19,9 @@ import {
     hideSearchHints,
     fillClientDetails,
     clearClientDetails,
-    fillProductDetails
+    fillProductDetails,
 } from './dom.js';
+
 import { saveInvoice, saveProduct } from './api.js';
 
 // Track currently selected hint for keyboard navigation
@@ -27,6 +29,14 @@ let currentSelectedHintIndex = -1;
 let currentSelectedProductHintIndex = -1;
 let currentSelectedProductNameHintIndex = -1;
 let currentSelectedCategoryHintIndex = -1;
+
+//REFRESHING THE CURRENT PAGE
+  
+if(refreshBtn){
+    refreshBtn.addEventListener("click",function(){
+        location.reload();
+    });
+}
 
 // Export functions to be used by main.js
 export function setupEventListeners(
@@ -61,6 +71,7 @@ export function setupEventListeners(
     addProductModal,
     addClientModal
 ) {
+
     if (createInvoiceBtn) {
         createInvoiceBtn.addEventListener('click', () => {
             openCreateInvoiceModal(invoiceNumber, invoiceDate, createInvoiceModal, globalDiscountInput, globalTaxInput, invoiceItemsBody);
@@ -118,6 +129,7 @@ export function setupEventListeners(
         }
     });
 }
+
 
 // CLIENT MANAGEMENT FUNCTIONS
 export function openClientModal(addClientModal) {
