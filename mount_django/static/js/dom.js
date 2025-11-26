@@ -1,6 +1,9 @@
 // DOM manipulation functions
 import { updateItemTotal, updateTotals, formatDate } from './utils.js';
 
+//REFRESHING THE CURRENT PAGE
+export const refreshBtn=document.getElementById("refreshBtn");
+
 // RENDER INVOICE ITEMS
 export function renderInvoiceItems(invoiceItems, invoiceItemsBody, setupProductSearchHandlers, handleItemUpdate, handleRemoveItem) {
     invoiceItemsBody.innerHTML = '';
