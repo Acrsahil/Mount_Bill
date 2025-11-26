@@ -152,41 +152,102 @@ export function closeClientModalFunc(addClientModal) {
     }
 }
 
-export function saveClient(addClientModal, clientsTableBody) {
+// Save client to database via AJAX
+export async function saveClient(addClientModal, clientsTableBody) {
     // Only get fields that exist in the simplified modal
-    const clientName = document.getElementById('clientNameInput').value;
-    const clientEmail = document.getElementById('clientEmailInput').value;
-    const clientPhone = document.getElementById('clientPhoneInput').value;
-    const clientAddress = document.getElementById('clientAddressInput').value;
+    const clientName = document.getElementById('clientNameInput').value.trim();
+    const clientEmail = document.getElementById('clientEmailInput').value.trim();
+    const clientPhone = document.getElementById('clientPhoneInput').value.trim();
+    const clientAddress = document.getElementById('clientAddressInput').value.trim();
 
+    // Validation
     if (!clientName || !clientEmail || !clientPhone || !clientAddress) {
-        alert('Please fill in all required fields (Name, Email, Phone, Address)');
+        showAlert('Please fill in all required fields (Name, Email, Phone, Address)', 'error');
         return;
     }
 
-    // Create new client with only existing fields
-    const newClient = {
-        id: window.nextClientId,
-        name: clientName,
-        email: clientEmail,
-        phone: clientPhone,
-        address: clientAddress,
-        totalInvoices: 0,
-        totalSpent: 0
-    };
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(clientEmail)) {
+        showAlert('Please enter a valid email address', 'error');
+        document.getElementById('clientEmailInput').focus();
+        return;
+    }
 
-    // Add to clients array
-    window.clients.push(newClient);
-    window.nextClientId++;
+    // Show loading state
+    const saveBtn = document.getElementById('saveClientBtn');
+    const originalText = saveBtn.innerHTML;
+    
+    saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+    saveBtn.disabled = true;
 
-    // Update UI
-    loadClients(window.clients, clientsTableBody);
-    updateClientStats(window.clients);
+    try {
+        // Prepare data for sending to database
+        const clientData = {
+            name: clientName,
+            email: clientEmail,
+            phone: clientPhone,
+            address: clientAddress
+        };
 
-    // Close modal
-    closeClientModalFunc(addClientModal);
+        console.log('Saving client to database:', clientData);
 
-    alert('Client added successfully!');
+        // Send AJAX request to Django backend
+        const response = await fetch('/bill/save-client/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': window.djangoData.csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify(clientData)
+        });
+
+        const result = await response.json();
+        console.log('Server response:', result);
+
+        if (result.success) {
+            // Add the new client to the local clients array with the ID from database
+            const newClient = {
+                id: result.client.id,
+                name: result.client.name,
+                email: result.client.email,
+                phone: result.client.phone,
+                address: result.client.address,
+                totalInvoices: 0,
+                totalSpent: 0
+            };
+
+            // Update the global clients array
+            window.clients.push(newClient);
+            
+            // Update the nextClientId to avoid conflicts
+            window.nextClientId = Math.max(window.nextClientId, result.client.id + 1);
+
+            // Update UI
+            loadClients(window.clients, clientsTableBody);
+            updateClientStats(window.clients);
+
+            // Show success message
+            showAlert(result.message, 'success');
+
+            // Close modal after short delay
+            setTimeout(() => {
+                closeClientModalFunc(addClientModal);
+            }, 1500);
+
+        } else {
+            showAlert('Error: ' + (result.error || 'Failed to save client'), 'error');
+        }
+
+    } catch (error) {
+        console.error('Error saving client:', error);
+        showAlert('Network error. Please check your connection and try again.', 'error');
+    } finally {
+        // Restore button state
+        saveBtn.innerHTML = originalText;
+        saveBtn.disabled = false;
+    }
 }
 
 // INVOICE MODAL FUNCTIONS
@@ -232,7 +293,8 @@ export function closeInvoiceModalFunc(createInvoiceModal) {
 export function openAddProductModal(addProductModal) {
     // Reset form
     document.getElementById('productName').value = '';
-    document.getElementById('productPrice').value = '';
+    document.getElementById('productCostPrice').value = '';
+    document.getElementById('productSellingPrice').value = '';
     document.getElementById('productCategory').value = '';
 
     // Show modal
@@ -393,7 +455,7 @@ function handleProductSearchKeydown(e) {
                         item.productId = matchedProduct.id;
                         item.productName = matchedProduct.name;
                         item.description = matchedProduct.category || 'Product';
-                        item.price = Number(matchedProduct.price);
+                        item.price = Number(matchedProduct.selling_price); // Use selling price
 
                         const row = searchInput.closest('tr');
                         if (row) {
@@ -401,7 +463,7 @@ function handleProductSearchKeydown(e) {
                             const priceInput = row.querySelector('.item-price');
 
                             if (descriptionInput) descriptionInput.value = matchedProduct.category || 'Product';
-                            if (priceInput) priceInput.value = matchedProduct.price;
+                            if (priceInput) priceInput.value = matchedProduct.selling_price; // Use selling price
                         }
 
                         updateItemTotal(itemId, window.invoiceItems);
@@ -473,7 +535,8 @@ function handleProductSearchBlur(e) {
 function selectProductFromHint(itemId, hintElement) {
     const productId = hintElement.getAttribute('data-product-id');
     const productName = hintElement.getAttribute('data-product-name');
-    const price = hintElement.getAttribute('data-product-price');
+    const sellingPrice = hintElement.getAttribute('data-product-selling-price');
+    const costPrice = hintElement.getAttribute('data-product-cost-price');
     const category = hintElement.getAttribute('data-product-category');
 
     const product = window.products.find(p => p.id === parseInt(productId));
@@ -482,11 +545,11 @@ function selectProductFromHint(itemId, hintElement) {
     const item = window.invoiceItems.find(i => i.id === itemId);
     if (!item) return;
 
-    // Update the item with product details
+    // Update the item with product details - USE SELLING PRICE for invoices
     item.productId = product.id;
     item.productName = product.name;
     item.description = product.category || 'Product';
-    item.price = Number(product.price);
+    item.price = Number(product.selling_price); // Use selling price
 
     // Update the row inputs
     const row = document.querySelector(`.product-search-input[data-id="${itemId}"]`).closest('tr');
@@ -498,7 +561,7 @@ function selectProductFromHint(itemId, hintElement) {
 
     if (searchInput) searchInput.value = product.name;
     if (descriptionInput) descriptionInput.value = product.category || 'Product';
-    if (priceInput) priceInput.value = product.price;
+    if (priceInput) priceInput.value = product.selling_price; // Use selling price
 
     // Hide hints
     const hintContainer = document.getElementById(`search-hint-${itemId}`);
@@ -510,6 +573,15 @@ function selectProductFromHint(itemId, hintElement) {
     // Update calculations
     updateItemTotal(itemId, window.invoiceItems);
     updateTotals(window.invoiceItems, window.globalDiscount, window.globalTax);
+
+    // Move focus to quantity field for quick editing
+    const quantityInput = row.querySelector('.item-quantity');
+    if (quantityInput) {
+        setTimeout(() => {
+            quantityInput.focus();
+            quantityInput.select();
+        }, 50);
+    }
 }
 
 // Handle item updates
@@ -596,7 +668,7 @@ function handleClientSearchKeydown(e) {
         
         if (currentSelectedHintIndex >= 0 && currentSelectedHintIndex < visibleHintItems.length) {
             // Select the currently highlighted hint
-            selectClientFromHint(visibleHintItems[currentSelectedHintIndex], clients);
+            selectClientFromHint(visibleHintItems[currentSelectedHintIndex]);
         } else {
             // Select the first matching client
             const searchTerm = e.target.value.toLowerCase();
@@ -701,10 +773,12 @@ function handleProductNameSearchFocus() {
             item.addEventListener('mousedown', function(e) {
                 e.preventDefault();
                 const productName = item.getAttribute('data-product-name');
-                const productPrice = item.getAttribute('data-product-price');
+                const productCostPrice = item.getAttribute('data-product-cost-price');
+                const productSellingPrice = item.getAttribute('data-product-selling-price');
                 const productCategory = item.getAttribute('data-product-category');
                 document.getElementById('productName').value = productName;
-                document.getElementById('productPrice').value = productPrice;
+                document.getElementById('productCostPrice').value = productCostPrice;
+                document.getElementById('productSellingPrice').value = productSellingPrice;
                 document.getElementById('productCategory').value = productCategory;
                 hideProductNameSearchHint();
             });
@@ -733,10 +807,12 @@ function handleProductNameSearchKeydown(e) {
             // Select the currently highlighted hint
             const item = visibleHintItems[currentSelectedProductNameHintIndex];
             const productName = item.getAttribute('data-product-name');
-            const productPrice = item.getAttribute('data-product-price');
+            const productCostPrice = item.getAttribute('data-product-cost-price');
+            const productSellingPrice = item.getAttribute('data-product-selling-price');
             const productCategory = item.getAttribute('data-product-category');
             document.getElementById('productName').value = productName;
-            document.getElementById('productPrice').value = productPrice;
+            document.getElementById('productCostPrice').value = productCostPrice;
+            document.getElementById('productSellingPrice').value = productSellingPrice;
             document.getElementById('productCategory').value = productCategory;
             hideProductNameSearchHint();
         } else {
@@ -924,7 +1000,8 @@ export function editProduct(productId) {
     if (product) {
         // Populate form with product data
         document.getElementById('productName').value = product.name;
-        document.getElementById('productPrice').value = product.price;
+        document.getElementById('productCostPrice').value = product.cost_price;
+        document.getElementById('productSellingPrice').value = product.selling_price;
         document.getElementById('productCategory').value = product.category || '';
 
         // Change modal title and button
@@ -949,4 +1026,3 @@ export function deleteProduct(productId) {
         alert('Product deleted successfully!');
     }
 }
-

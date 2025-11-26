@@ -30,7 +30,7 @@ export function renderInvoiceItems(invoiceItems, invoiceItemsBody, setupProductS
 
     // Add event listeners to the new inputs
     setupProductSearchHandlers();
-    
+
     document.querySelectorAll('.item-quantity, .item-price').forEach(input => {
         input.addEventListener('input', handleItemUpdate);
     });
@@ -44,25 +44,26 @@ export function renderInvoiceItems(invoiceItems, invoiceItemsBody, setupProductS
 export function showProductSuggestions(itemId, products, searchTerm = '', selectProductFromHint) {
     const hintContainer = document.getElementById(`search-hint-${itemId}`);
     if (!hintContainer) return;
-    
+
     const filteredProducts = searchTerm 
         ? products.filter(product => 
             product.name.toLowerCase().includes(searchTerm) ||
-            (product.category && product.category.toLowerCase().includes(searchTerm))
-          )
+                (product.category && product.category.toLowerCase().includes(searchTerm))
+        )
         : products;
-    
+
     if (filteredProducts.length > 0) {
         hintContainer.innerHTML = filteredProducts.map(product => `
-            <div class="hint-item" data-product-id="${product.id}" 
-                 data-product-name="${product.name}" 
-                 data-product-price="${product.price}" 
-                 data-product-category="${product.category || ''}">
-                ${product.name} - $${product.price} ${product.category ? `(${product.category})` : ''}
-            </div>
-        `).join('');
+<div class="hint-item" data-product-id="${product.id}" 
+data-product-name="${product.name}" 
+data-product-selling-price="${product.selling_price}" 
+data-product-cost-price="${product.cost_price}" 
+data-product-category="${product.category || ''}">
+${product.name} - Selling: $${product.selling_price} | Cost: $${product.cost_price} ${product.category ? `(${product.category})` : ''}
+</div>
+`).join('');
         hintContainer.style.display = 'block';
-        
+
         // Reattach click events
         hintContainer.querySelectorAll('.hint-item').forEach(item => {
             item.addEventListener('mousedown', function(e) {
@@ -79,25 +80,25 @@ export function showProductSuggestions(itemId, products, searchTerm = '', select
 export function showClientSuggestions(clients, searchTerm = '', selectClientFromHint) {
     const hintContainer = document.getElementById('client-search-hint');
     if (!hintContainer) return;
-    
+
     const filteredClients = searchTerm 
         ? clients.filter(client => 
             client.name.toLowerCase().includes(searchTerm) ||
-            (client.email && client.email.toLowerCase().includes(searchTerm))
-          )
+                (client.email && client.email.toLowerCase().includes(searchTerm))
+        )
         : clients;
-    
+
     if (filteredClients.length > 0) {
         hintContainer.innerHTML = filteredClients.map(client => `
-            <div class="hint-item" data-client-id="${client.id}" 
-                 data-client-name="${client.name}" 
-                 data-client-email="${client.email || ''}" 
-                 data-client-address="${client.address || ''}">
-                ${client.name} - ${client.email || 'No email'}
-            </div>
-        `).join('');
+<div class="hint-item" data-client-id="${client.id}" 
+data-client-name="${client.name}" 
+data-client-email="${client.email || ''}" 
+data-client-address="${client.address || ''}">
+${client.name} - ${client.email || 'No email'}
+</div>
+`).join('');
         hintContainer.style.display = 'block';
-        
+
         // Reattach click events
         hintContainer.querySelectorAll('.hint-item').forEach(item => {
             item.addEventListener('mousedown', function(e) {
@@ -114,33 +115,36 @@ export function showClientSuggestions(clients, searchTerm = '', selectClientFrom
 export function showProductNameSuggestions(products, searchTerm = '', fillProductDetails) {
     const hintContainer = document.getElementById('product-name-search-hint');
     if (!hintContainer) return;
-    
+
     const filteredProducts = searchTerm 
         ? products.filter(product => 
             product.name.toLowerCase().includes(searchTerm) ||
-            (product.category && product.category.toLowerCase().includes(searchTerm))
-          )
+                (product.category && product.category.toLowerCase().includes(searchTerm))
+        )
         : products;
-    
+
     if (filteredProducts.length > 0) {
         hintContainer.innerHTML = filteredProducts.map(product => `
-            <div class="hint-item" data-product-name="${product.name}" 
-                 data-product-price="${product.price}" 
-                 data-product-category="${product.category || ''}">
-                ${product.name} - $${product.price} ${product.category ? `(${product.category})` : ''}
-            </div>
-        `).join('');
+<div class="hint-item" data-product-name="${product.name}" 
+data-product-cost-price="${product.cost_price}" 
+data-product-selling-price="${product.selling_price}" 
+data-product-category="${product.category || ''}">
+${product.name} - Cost: $${product.cost_price} | Selling: $${product.selling_price} ${product.category ? `(${product.category})` : ''}
+</div>
+`).join('');
         hintContainer.style.display = 'block';
-        
+
         // Reattach click events
         hintContainer.querySelectorAll('.hint-item').forEach(item => {
             item.addEventListener('mousedown', function(e) {
                 e.preventDefault();
                 const productName = item.getAttribute('data-product-name');
-                const productPrice = item.getAttribute('data-product-price');
+                const productCostPrice = item.getAttribute('data-product-cost-price');
+                const productSellingPrice = item.getAttribute('data-product-selling-price');
                 const productCategory = item.getAttribute('data-product-category');
                 document.getElementById('productName').value = productName;
-                document.getElementById('productPrice').value = productPrice;
+                document.getElementById('productCostPrice').value = productCostPrice;
+                document.getElementById('productSellingPrice').value = productSellingPrice;
                 document.getElementById('productCategory').value = productCategory;
                 hideProductNameSearchHint();
             });
@@ -154,21 +158,21 @@ export function showProductNameSuggestions(products, searchTerm = '', fillProduc
 export function showCategorySuggestions(productCategories, searchTerm = '') {
     const hintContainer = document.getElementById('product-category-search-hint');
     if (!hintContainer) return;
-    
+
     const filteredCategories = searchTerm 
         ? productCategories.filter(category => 
             category.name.toLowerCase().includes(searchTerm)
-          )
+        )
         : productCategories;
-    
+
     if (filteredCategories.length > 0) {
         hintContainer.innerHTML = filteredCategories.map(category => `
-            <div class="hint-item" data-category-name="${category.name}">
-                ${category.name}
-            </div>
-        `).join('');
+<div class="hint-item" data-category-name="${category.name}">
+${category.name}
+</div>
+`).join('');
         hintContainer.style.display = 'block';
-        
+
         // Reattach click events
         hintContainer.querySelectorAll('.hint-item').forEach(item => {
             item.addEventListener('mousedown', function(e) {
@@ -231,7 +235,8 @@ export function clearClientDetails() {
 // Fill product details
 export function fillProductDetails(product) {
     document.getElementById('productName').value = product.name;
-    document.getElementById('productPrice').value = product.price;
+    document.getElementById('productCostPrice').value = product.cost_price;
+    document.getElementById('productSellingPrice').value = product.selling_price;
     document.getElementById('productCategory').value = product.category || '';
 }
 
@@ -253,7 +258,10 @@ export function loadProducts(products, productList, editProduct, deleteProduct) 
         productCard.innerHTML = `
 <h4>${product.name}</h4>
 <p>Category: ${product.category || 'N/A'}</p>
-<div class="product-price">$${product.price}</div>
+<div class="product-price">
+    <div>Cost: $${product.cost_price}</div>
+    <div>Selling: $${product.selling_price}</div>
+</div>
 <div class="product-actions">
     <button class="btn btn-primary edit-product-btn" data-id="${product.id}">
         <i class="fas fa-edit"></i> Edit
@@ -291,25 +299,25 @@ export function loadClients(clients, clientsTableBody) {
     clients.forEach(client => {
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td>CLI-${client.id.toString().padStart(3, '0')}</td>
-            <td>${client.name}</td>
-            <td>${client.email}</td>
-            <td>${client.address}</td>
-            <td>${client.phone || 'N/A'}</td>
-            <td>${client.totalInvoices || 0}</td>
-            <td>$${(client.totalSpent || 0).toFixed(2)}</td>
-            <td class="action-cell">
-                <div class="action-btn action-view">
-                    <i class="fas fa-eye"></i>
-                </div>
-                <div class="action-btn action-edit">
-                    <i class="fas fa-edit"></i>
-                </div>
-                <div class="action-btn action-delete">
-                    <i class="fas fa-trash"></i>
-                </div>
-            </td>
-        `;
+<td>CLI-${client.id.toString().padStart(3, '0')}</td>
+<td>${client.name}</td>
+<td>${client.email}</td>
+<td>${client.address}</td>
+<td>${client.phone || 'N/A'}</td>
+<td>${client.totalInvoices || 0}</td>
+<td>$${(client.totalSpent || 0).toFixed(2)}</td>
+<td class="action-cell">
+    <div class="action-btn action-view">
+        <i class="fas fa-eye"></i>
+    </div>
+    <div class="action-btn action-edit">
+        <i class="fas fa-edit"></i>
+    </div>
+    <div class="action-btn action-delete">
+        <i class="fas fa-trash"></i>
+    </div>
+</td>
+`;
         clientsTableBody.appendChild(row);
     });
 }
@@ -394,7 +402,10 @@ export function filterProducts(products, productSearchInput, productList, editPr
         productCard.innerHTML = `
 <h4>${product.name}</h4>
 <p>Category: ${product.category || 'N/A'}</p>
-<div class="product-price">$${product.price}</div>
+<div class="product-price">
+    <div>Cost: $${product.cost_price}</div>
+    <div>Selling: $${product.selling_price}</div>
+</div>
 <div class="product-actions">
     <button class="btn btn-primary edit-product-btn" data-id="${product.id}">
         <i class="fas fa-edit"></i> Edit
@@ -428,8 +439,8 @@ export function filterClients(clients, clientSearchInput, clientsTableBody) {
     const searchTerm = clientSearchInput.value.toLowerCase();
     const filteredClients = clients.filter(client => 
         client.name.toLowerCase().includes(searchTerm) ||
-        client.email.toLowerCase().includes(searchTerm) ||
-        (client.phone && client.phone.toLowerCase().includes(searchTerm))
+            client.email.toLowerCase().includes(searchTerm) ||
+            (client.phone && client.phone.toLowerCase().includes(searchTerm))
     );
 
     if (!clientsTableBody) return;
@@ -439,26 +450,25 @@ export function filterClients(clients, clientSearchInput, clientsTableBody) {
     filteredClients.forEach(client => {
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td>CLI-${client.id.toString().padStart(3, '0')}</td>
-            <td>${client.name}</td>
-            <td>${client.email}</td>
-            <td>${client.address}</td>
-            <td>${client.phone || 'N/A'}</td>
-            <td>${client.totalInvoices || 0}</td>
-            <td>$${(client.totalSpent || 0).toFixed(2)}</td>
-            <td class="action-cell">
-                <div class="action-btn action-view">
-                    <i class="fas fa-eye"></i>
-                </div>
-                <div class="action-btn action-edit">
-                    <i class="fas fa-edit"></i>
-                </div>
-                <div class="action-btn action-delete">
-                    <i class="fas fa-trash"></i>
-                </div>
-            </td>
-        `;
+<td>CLI-${client.id.toString().padStart(3, '0')}</td>
+<td>${client.name}</td>
+<td>${client.email}</td>
+<td>${client.address}</td>
+<td>${client.phone || 'N/A'}</td>
+<td>${client.totalInvoices || 0}</td>
+<td>$${(client.totalSpent || 0).toFixed(2)}</td>
+<td class="action-cell">
+    <div class="action-btn action-view">
+        <i class="fas fa-eye"></i>
+    </div>
+    <div class="action-btn action-edit">
+        <i class="fas fa-edit"></i>
+    </div>
+    <div class="action-btn action-delete">
+        <i class="fas fa-trash"></i>
+    </div>
+</td>
+`;
         clientsTableBody.appendChild(row);
     });
 }
-

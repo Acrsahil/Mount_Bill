@@ -21,4 +21,5 @@ urlpatterns = [
     path("clients/", views.clients, name="clients"),
     path("reports/", views.reports, name="reports"),
     path("settings/", views.settings, name="settings"),
+    path("save-client/", views.save_client, name="save_client"),
 ]

@@ -110,7 +110,9 @@ def save_product(request):
             print("Using old price format - single price field")
 
         print(
-            f"Extracted - name: '{name}', cost_price: {cost_price}, selling_price: {selling_price}"
+            f"Extracted - name: '{name}', cost_price: {cost_price}, selling_price: {
+                selling_price
+            }"
         )
 
         # Rest of your validation code remains the same...
@@ -322,13 +324,69 @@ def product_details(request, pro_id, second_id):
         {"pro": pro, "ans": ans},
     )
 
+
+@require_POST
+@csrf_exempt
+def save_client(request):
+    try:
+        # Parse JSON data from request
+        data = json.loads(request.body)
+
+        # Extract client data
+        name = data.get("name", "").strip()
+        email = data.get("email", "").strip()
+        phone = data.get("phone", "").strip()
+        address = data.get("address", "").strip()
+
+        # Validation
+        if not name or not email or not phone or not address:
+            return JsonResponse({"success": False, "error": "All fields are required"})
+
+        # Check if client with same email already exists
+        if Customer.objects.filter(email=email).exists():
+            return JsonResponse(
+                {"success": False, "error": "A client with this email already exists"}
+            )
+
+        # Create new client
+        client = Customer.objects.create(
+            name=name, email=email, phone=phone, address=address
+        )
+
+        # Return success response with client data
+        return JsonResponse(
+            {
+                "success": True,
+                "message": "Client saved successfully!",
+                "client": {
+                    "id": client.id,
+                    "name": client.name,
+                    "email": client.email,
+                    "phone": client.phone,
+                    "address": client.address,
+                },
+            }
+        )
+
+    except Exception as e:
+        return JsonResponse({"success": False, "error": f"Server error: {str(e)}"})
+
+
 def invoices(request):
     pass
+
+
 def products(request):
     pass
+
+
 def clients(request):
     pass
+
+
 def reports(request):
     pass
+
+
 def settings(request):
     pass
