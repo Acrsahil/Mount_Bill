@@ -343,11 +343,12 @@ export function loadInvoices(invoices, invoicesTableBody) {
     <div class="action-btn action-edit">
         <i class="fas fa-edit"></i>
     </div>
-    <div class="action-btn action-delete">
+    <div class="action-btn action-delete" data-token="${csrfToken}" data-id="${invoice.id}">
         <i class="fas fa-trash"></i>
     </div>
 </td>
 `;
+console.log(`${invoice.id}`)
         invoicesTableBody.appendChild(row);
     });
 }
