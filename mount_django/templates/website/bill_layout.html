@@ -6,12 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Invoices</title>
     <link rel="stylesheet" href="{% static 'css/bill_layout.css' %}">
-
 </head>
 <body>
 
 <h1>Invoices</h1>
-<table border="1">
+<table border="1" style="width: 100%; border-collapse: collapse;">
     <thead>
         <tr>
             <th>Invoice #</th>
@@ -31,6 +30,12 @@
             <td>INV002</td>
             <td>Sabina Sharma</td>
             <td>5000</td>
+            <td><button class="action-view">View</button></td>
+        </tr>
+        <tr>
+            <td>INV003</td>
+            <td>John Doe</td>
+            <td>7500</td>
             <td><button class="action-view">View</button></td>
         </tr>
     </tbody>
@@ -57,7 +62,7 @@
                         <span class="value">123456789</span>
                     </div>
                     <div class="info-row">
-                        <span class="label">Buyer’s Name:</span>
+                        <span class="label">Buyer's Name:</span>
                         <span class="value_underline">Akash Das</span>
                     </div>
                     <div class="info-row">
@@ -114,7 +119,7 @@
                             </tr>
                             <tr>
                                 <td>Amount in words</td>
-                                <td colspan="3"></td>
+                                <td colspan="3">Eleven Thousand Three Hundred Ninety Only</td>
                             </tr>
                         </tbody>
                     </table>
@@ -122,15 +127,13 @@
             </div>
             <div class="bill-footer">
                 <div class="signature-container">
-                    <div class ="signature-line">...................</div>
+                    <div class="signature-line">...................</div>
                     <div class="signature">Signature</div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-<script src="{% static 'js/dom.js' %}"></script>
 
 </body>
 </html>

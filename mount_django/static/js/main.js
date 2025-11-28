@@ -100,6 +100,13 @@ const tabContents = document.querySelectorAll('.tab-content');
 const addClientBtn = document.getElementById('addClientBtn');
 
 // Wrapper functions for edit/delete product
+
+// Add this modal functionality to your main.js
+
+// Modal functionality
+
+// Call this function when your main.js loads
+
 function editProductWrapper(productId) {
     editProduct(productId);
 }
@@ -176,5 +183,3 @@ document.addEventListener('DOMContentLoaded', function() {
     updateStats(invoices);
     updateClientStats(clients);
 });
-
-

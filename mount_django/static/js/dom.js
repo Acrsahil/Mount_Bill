@@ -351,38 +351,6 @@ export function loadInvoices(invoices, invoicesTableBody) {
         invoicesTableBody.appendChild(row);
     });
 }
-document.addEventListener("DOMContentLoaded", () => {
-    const invoicesTableBody = document.getElementById("invoicesTableBody");
-    const modal = document.getElementById("invoiceModal");
-    const closebtn = document.querySelector(".close");
-    
-    // Only attach event listeners if all elements exist
-    if (invoicesTableBody) {
-        
-        
-        // Open modal when clicking on view button
-        invoicesTableBody.addEventListener("click", (e) => {
-            if (e.target.closest(".action-view")) {
-                console.log("dsfsdfs");
-                modal.style.display = "flex";
-            }
-        });
-
-        // Close modal on close button click
-        closebtn.onclick = function () {
-            modal.style.display = "none";
-        };
-
-        // Close modal if clicked outside modal content
-        window.onclick = function (event) {
-            if (event.target === modal) {
-                modal.style.display = "none";
-            }
-        };
-    } else {
-        console.warn("Invoice modal or table body or close button not found!");
-    }
-});
 
 
 // Filter invoices
