@@ -1,0 +1,160 @@
+.bill-container{
+    border:2px solid black;
+    width: 100%;
+    height:100%;
+}
+.bill-header{
+    padding:5px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+.bill-header h1{
+    margin-bottom: 4px;
+}
+.bill-header p{
+    margin: 2px 0;
+}
+.bill-body{
+    border:1px solid black;
+    margin:10px;
+    padding-top:10px;
+}
+.invoice-date {
+    display: flex;
+    justify-content: flex-end; /* pushes label & value to edges   */
+    font-weight: 600;
+    padding:12px;
+} 
+
+.customer-info{
+    display:grid;
+    grid-template-columns: max-content 1fr;
+    gap:6px 20px;
+    padding:5px;
+}
+.top-row{
+    display:flex;
+    justify-content: flex-end;
+}
+.info-row{
+    display:contents;
+}
+.label{
+    font-weight: 600;
+   
+}
+.value_underline{
+    display: block;       
+    width: 100%;          
+    padding-bottom: 2px; 
+    border-bottom: 2px solid;
+}
+/* Table Container */
+.info-table {
+    padding: 20px;
+    margin-top: 20px;
+}
+
+/* Table styling */
+.items-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: Arial, sans-serif;
+    
+}
+
+/* Header row */
+.items-table thead tr {
+    background-color: #f2f2f2; /* light gray header */
+}
+
+/* Table cells */
+.items-table th,
+.items-table td {
+    border: 1px solid #999; /* lines for rows and columns */
+    padding: 8px 12px;
+}
+
+/* Bold header */
+.items-table thead td {
+    font-weight: 600;
+}
+
+.items-table tbody td:first-child{
+    text-align: left;
+}
+
+.items-table tbody td{
+    text-align: right;
+}
+
+/* Highlight the total row */
+.items-table tbody tr:last-child,
+.items-table tbody tr:nth-last-child(2) {
+    font-weight: 600;
+    background-color: #f9f9f9;
+}
+.bill-footer{
+    display:flex;
+    justify-content: flex-end;
+    padding: 20px;
+    
+}
+
+/* Modal overlay */
+.modal {
+  display: none;
+  position: fixed; 
+  z-index: 1000; 
+  left: 0;
+  top: 0;
+  width: 100%; 
+  height: 100%; 
+  background-color: rgba(0,0,0,0.5); 
+  overflow-y: auto; /* scroll if content is too tall */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px; /* add padding to avoid content touching edges */
+}
+
+/* Modal content */
+.modal-content {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  width: 70%;
+  max-width: 800px;
+  max-height: 90vh; /* ensures it never exceeds viewport */
+  overflow-y: auto; /* scroll inside modal if needed */
+  position: relative;
+  box-sizing: border-box;
+}
+
+/* Close button */
+   .close {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border:1px solid black;
+      background: #f0f0f0;
+      color: #666;
+      font-size: 20px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 10; /* make sure it stays above modal content */
+}
+    
+
+    .close:hover {
+      background: #e94560;
+      color: black;
+    }
