@@ -1,107 +1,139 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
-    <link rel="stylesheet" href="../../static/css/bill_layout.css" />
-  </head>
-  <body>
-    <!-- <button id="openModal">Show invoice</button> -->
-    <!-- this modal -->
-    <div id="invoiceModal" class="modal">
-      <div class="modal-content">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoices</title>
+    <link rel="stylesheet" href="{% static 'css/bill_layout.css' %}">
+</head>
+<body>
+
+<h1>Invoices</h1>
+<table border="1" style="width: 100%; border-collapse: collapse;">
+    <thead>
+        <tr>
+            <th>Invoice #</th>
+            <th>Customer</th>
+            <th>Amount</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody id="invoicesTableBody">
+        <tr>
+            <td>INV001</td>
+            <td>Akash Das</td>
+            <td>11390</td>
+            <td><button class="action-view">View</button></td>
+        </tr>
+        <tr>
+            <td>INV002</td>
+            <td>Sabina Sharma</td>
+            <td>5000</td>
+            <td><button class="action-view">View</button></td>
+        </tr>
+        <tr>
+            <td>INV003</td>
+            <td>John Doe</td>
+            <td>7500</td>
+            <td><button class="action-view">View</button></td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- Invoice Modal -->
+<div id="invoiceModal" class="modal">
+    <div class="modal-content">
         <span class="close">&times;</span>
         <div class="bill-container">
-          <div class="bill-header">
-            <h1>Mount Care International Pvt.Ltd.</h1>
-            <p>Gokarneshwor-4,Kathmandu</p>
-            <p>Ph. No: 9800000000,981200000</p>
-          </div>
-          <div class="bill-body">
-            <div class="invoice-date">
-              <span class="label">Invoice Date :</span>
-              <span class="value">2025/09/25</span>
+            <div class="bill-header">
+                <h1>Mount Care International Pvt.Ltd.</h1>
+                <p>Gokarneshwor-4, Kathmandu</p>
+                <p>Ph. No: 9800000000, 981200000</p>
             </div>
-            <div class="customer-info">
-              <div class="info-row">
-                <span class="label">VAT No.:</span>
-                <span class="value">123456789</span>
-              </div>
-              <div class="info-row">
-                <span class="label">Buyer’s Name:</span>
-                <span class="value_underline">Akash Das</span>
-              </div>
-              <div class="info-row">
-                <span class="label">Address:</span>
-                <span class="value_underline">India, India</span>
-              </div>
+            <div class="bill-body">
+                <div class="invoice-date">
+                    <span class="label">Invoice Date :</span>
+                    <span class="value">2025/09/25</span>
+                </div>
+                <div class="customer-info">
+                    <div class="info-row">
+                        <span class="label">VAT No.:</span>
+                        <span class="value">123456789</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">Buyer's Name:</span>
+                        <span class="value_underline">Akash Das</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">Address:</span>
+                        <span class="value_underline">India, India</span>
+                    </div>
+                </div>
+                <div class="info-table">
+                    <table class="items-table" border="1">
+                        <thead>
+                            <tr>
+                                <td>Products</td>
+                                <td>Qty</td>
+                                <td>Price</td>
+                                <td>Total</td>
+                            </tr>
+                        </thead>
+                        <tbody class="bill-item-body">
+                            <tr>
+                                <td>Black Shampoo</td>
+                                <td>1</td>
+                                <td>320</td>
+                                <td>320</td>
+                            </tr>
+                            <tr>
+                                <td>Black oil</td>
+                                <td>3</td>
+                                <td>300</td>
+                                <td>900</td>
+                            </tr>
+                            <tr>
+                                <td>Soap</td>
+                                <td>50</td>
+                                <td>80</td>
+                                <td>4000</td>
+                            </tr>
+                            <tr>
+                                <td>Paste</td>
+                                <td>60</td>
+                                <td>100</td>
+                                <td>6000</td>
+                            </tr>
+                            <tr>
+                                <td>Gastric Chuna</td>
+                                <td>2</td>
+                                <td>85</td>
+                                <td>170</td>
+                            </tr>
+                            <tr>
+                                <td>Total</td>
+                                <td></td>
+                                <td></td>
+                                <td>11390</td>
+                            </tr>
+                            <tr>
+                                <td>Amount in words</td>
+                                <td colspan="3">Eleven Thousand Three Hundred Ninety Only</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-            <div class="info-table">
-              <table class="items-table">
-                <thead>
-                  <tr>
-                    <td>Products</td>
-                    <td>Qty</td>
-                    <td>Price</td>
-                    <td>Total</td>
-                  </tr>
-                </thead>
-                <tbody class="bill-item-body">
-                  <tr>
-                    <td>Black Shampoo</td>
-                    <td>1</td>
-                    <td>320</td>
-                    <td>320</td>
-                  </tr>
-                  <tr>
-                    <td>Black oil</td>
-                    <td>3</td>
-                    <td>300</td>
-                    <td>900</td>
-                  </tr>
-                  <tr>
-                    <td>Soap</td>
-                    <td>50</td>
-                    <td>80</td>
-                    <td>4000</td>
-                  </tr>
-                  <tr>
-                    <td>Paste</td>
-                    <td>60</td>
-                    <td>100</td>
-                    <td>6000</td>
-                  </tr>
-                  <tr>
-                    <td>Gastric Chuna</td>
-                    <td>2</td>
-                    <td>85</td>
-                    <td>170</td>
-                  </tr>
-                  <tr>
-                    <td>Total</td>
-                    <td></td>
-                    <td></td>
-                    <td>11390</td>
-                  </tr>
-                  <tr>
-                    <td>Amount in words</td>
-                    <td colspan="3"></td>
-                  </tr>
-                </tbody>
-              </table>
+            <div class="bill-footer">
+                <div class="signature-container">
+                    <div class="signature-line">...................</div>
+                    <div class="signature">Signature</div>
+                </div>
             </div>
-          </div>
-          <div class="bill-footer">
-            <div class="signature-container">
-              <div class="signature-line">...................</div>
-              <div class="signature">Signature</div>
-            </div>
-          </div>
         </div>
-      </div>
     </div>
-    <script src="{% static 'js/dom.js' %}"></script>
-  </body>
+</div>
+
+</body>
 </html>

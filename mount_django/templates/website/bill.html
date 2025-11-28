@@ -291,6 +291,8 @@
     </div>
 </div>
 
+<!-- INVOICE VIEW MODAL (Added this section) -->
+{% include "website/bill_layout.html" %}
 <!-- Create Invoice Modal -->
 <div class="modal" id="createInvoiceModal">
     <div class="modal-content">
@@ -511,7 +513,6 @@ window.djangoData = {
     invoices: {{ invoices|safe }},
     csrfToken: "{{ csrf_token }}",
 };
-
 </script>
 
 <script>
@@ -535,5 +536,7 @@ console.log('Clients:', window.djangoData.clients);
 
 <script>const csrfToken = "{{ csrf_token }}";</script>
 <script src="{% static 'js/delete.js' %}"></script>
+
+<script src="{% static 'js/bill_layout.js' %}"></script>
 <script type="module" src="{% static 'js/main.js' %}"></script>
 {% endblock %}
