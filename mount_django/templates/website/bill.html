@@ -534,6 +534,8 @@ console.log('Product Categories:', window.djangoData.product_cat);
 console.log('Clients:', window.djangoData.clients);
 </script>
 
+<script>const csrfToken = "{{ csrf_token }}";</script>
+<script src="{% static 'js/delete.js' %}"></script>
 
 <script src="{% static 'js/bill_layout.js' %}"></script>
 <script type="module" src="{% static 'js/main.js' %}"></script>
