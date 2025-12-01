@@ -1,0 +1,95 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="ER Diagram">
+    <mxGraphModel dx="1000" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+```
+    <!-- Company -->
+    <mxCell id="company" value="Company" style="shape=rectangle;whiteSpace=wrap;rounded=1;" vertex="1" parent="1">
+      <mxGeometry x="300" y="50" width="160" height="60" as="geometry" />
+    </mxCell>
+
+    <!-- User -->
+    <mxCell id="user" value="User" style="shape=rectangle;whiteSpace=wrap;rounded=1;" vertex="1" parent="1">
+      <mxGeometry x="100" y="200" width="160" height="60" as="geometry" />
+    </mxCell>
+
+    <!-- Customer -->
+    <mxCell id="customer" value="Customer" style="shape=rectangle;whiteSpace=wrap;rounded=1;" vertex="1" parent="1">
+      <mxGeometry x="300" y="200" width="160" height="60" as="geometry" />
+    </mxCell>
+
+    <!-- ProductCategory -->
+    <mxCell id="product_category" value="ProductCategory" style="shape=rectangle;whiteSpace=wrap;rounded=1;" vertex="1" parent="1">
+      <mxGeometry x="500" y="200" width="160" height="60" as="geometry" />
+    </mxCell>
+
+    <!-- Product -->
+    <mxCell id="product" value="Product" style="shape=rectangle;whiteSpace=wrap;rounded=1;" vertex="1" parent="1">
+      <mxGeometry x="700" y="200" width="160" height="60" as="geometry" />
+    </mxCell>
+
+    <!-- OrderList -->
+    <mxCell id="orderlist" value="OrderList" style="shape=rectangle;whiteSpace=wrap;rounded=1;" vertex="1" parent="1">
+      <mxGeometry x="300" y="350" width="160" height="60" as="geometry" />
+    </mxCell>
+
+    <!-- Bill -->
+    <mxCell id="bill" value="Bill" style="shape=rectangle;whiteSpace=wrap;rounded=1;" vertex="1" parent="1">
+      <mxGeometry x="500" y="350" width="160" height="60" as="geometry" />
+    </mxCell>
+
+    <!-- OrderSummary -->
+    <mxCell id="summary" value="OrderSummary" style="shape=rectangle;whiteSpace=wrap;rounded=1;" vertex="1" parent="1">
+      <mxGeometry x="300" y="500" width="160" height="60" as="geometry" />
+    </mxCell>
+
+    <!-- Edges -->
+    <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1" source="company" target="user">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1" source="company" target="customer">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1" source="company" target="product_category">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <mxCell id="e4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1" source="product_category" target="product">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <mxCell id="e5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1" source="company" target="orderlist">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <mxCell id="e6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1" source="user" target="orderlist">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <mxCell id="e7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1" source="customer" target="orderlist">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <mxCell id="e8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1" source="orderlist" target="bill">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <mxCell id="e9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1" source="product" target="bill">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <mxCell id="e10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1" source="orderlist" target="summary">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+  </root>
+</mxGraphModel>
+```
+
+  </diagram>
+</mxfile>
+
