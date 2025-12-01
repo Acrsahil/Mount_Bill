@@ -1,6 +1,34 @@
+import uuid
+
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils import timezone
+
+
+class Company(models.Model):
+    """
+    The business entity that uses your billing system
+    """
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=100)
+    email = models.EmailField(unique=True)
+    phone = models.CharField(max_length=15)
+    address = models.TextField()
+    tax_id = models.CharField(max_length=50, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    # SaaS additions
+    subdomain = models.CharField(max_length=50, unique=True, blank=True, null=True)
+    plan = models.CharField(
+        max_length=20,
+        default="free",
+        choices=[("free", "Free"), ("basic", "Basic"), ("pro", "Professional")],
+    )
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.name
 
 
 class User(AbstractUser):
@@ -9,16 +37,22 @@ class User(AbstractUser):
     """
 
     phone = models.CharField(max_length=15, blank=True)
+
+    # Changed: removed unique=True to allow same email across companies
     gmail = models.EmailField(
-        max_length=255, blank=True, null=True, unique=True, verbose_name="Gmail Address"
+        max_length=255, blank=True, null=True, verbose_name="Gmail Address"
     )
+
+    # Regular email field (not used for login by default)
+    email = models.EmailField(blank=True)
+
     address = models.TextField(blank=True)
     date_of_birth = models.DateField(null=True, blank=True)
     profile_picture = models.ImageField(upload_to="profile_pics/", blank=True)
 
     # Company association
     company = models.ForeignKey(
-        "Company",
+        Company,
         on_delete=models.CASCADE,
         related_name="employees",
         null=True,
@@ -29,28 +63,16 @@ class User(AbstractUser):
     class Role(models.TextChoices):
         OWNER = "OWNER", "Company Owner"  # -> full access
         MANAGER = "MANAGER", "Manager"  # -> write
-        STAFF = "STAFF", "Staff"  # -> read # parital -> write
+        STAFF = "STAFF", "Staff"  # -> read # partial -> write
 
     role = models.CharField(max_length=20, choices=Role.choices, default=Role.STAFF)
 
+    class Meta:
+        # Username must be unique within a company
+        unique_together = [["company", "username"]]
+
     def __str__(self):
         return f"{self.username} ({self.company})"
-
-
-class Company(models.Model):
-    """
-    The business entity that uses your billing system
-    """
-
-    name = models.CharField(max_length=100)
-    email = models.EmailField(unique=True)
-    phone = models.CharField(max_length=15)
-    address = models.TextField()
-    tax_id = models.CharField(max_length=50, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.name
 
 
 class Customer(models.Model):
