@@ -1,15 +1,39 @@
 import json
 from datetime import datetime
-
+from django.shortcuts import redirect
+from django.contrib import messages
+from django.contrib.auth import authenticate,login
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
-
+from .forms import UserRegistrationForm
 from .models import Bill, Customer, OrderList, OrderSummary, Product, ProductCategory
 
+def signup_page(request):
+    if request.method=="POST":
+        form=UserRegistrationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('login')
+    else:
+        form=UserRegistrationForm()
+    return render(request,'registration/signup.html',{'form':form})
+
+def login_page(request):
+    if request.method=="POST":
+        username=request.POST['username']
+        password=request.POST['password']
+        user=authenticate(request,username=username,password=password)
+        if user is not None:
+            login(request,user)
+            print(request.method, request.POST)
+            return redirect('home')
+        else:
+            messages.error(request,"Invalid user or password")
+    return render(request,'registration/login.html')
 
 def get_serialized_data():
     """Helper function to get serialized data for template - REDUCED DUPLICATION"""

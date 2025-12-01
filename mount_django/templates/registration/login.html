@@ -36,7 +36,7 @@
             {% endif %}
             {% endif %}
 
-            <form method="post" id="loginForm">
+            <form method="post" id="loginForm" action="{%url 'login_page'%}">
                 {% csrf_token %}
 
                 <div class="form-group">
@@ -72,12 +72,17 @@
                         </button>
                     </div>
                 </div>
-
+                <div class = button-container>
                 <button type="submit" class="btn-login" id="loginButton">
                     <i class="fas fa-sign-in-alt"></i>
                     <span>Sign In</span>
                 </button>
-
+                {# Use a regular button (not submit) so it doesn't submit the login form #}
+                <button type="button" class="btn-signup" id="SignupButton" onclick="window.location.href='{% url 'signup_page' %}'">
+                    <i class="fas fa-user-plus"></i>
+                    <span>Sign Up</span>
+                </button>
+            </div>
                 <input type="hidden" name="next" value="{{ next }}">
             </form>
 

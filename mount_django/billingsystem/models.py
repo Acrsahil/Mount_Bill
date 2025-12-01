@@ -1,7 +1,26 @@
 from django.db import models
 from django.utils import timezone
+from django.contrib.auth.models import AbstractUser
 
+class CountryCode(models.Model):
+    name=models.CharField(max_length=50)
+    iso_code=models.CharField(max_length=2)
+    dial_code=models.CharField(max_length=5)
+    def __str__(self):
+        return f"{self.iso_code}{self.dial_code}"
 
+class UserRegistration(AbstractUser):
+    username=models.CharField(max_length=100,unique=True)
+    company_name=models.CharField(max_length=1500)
+    email=models.EmailField(max_length=254,unique=True) 
+    phone_country=models.ForeignKey(CountryCode,on_delete=models.PROTECT,null=True,blank=True,related_name="users")
+    phone_number=models.CharField(max_length=10)
+    USERNAME_FIELD = 'username'  # Field used to log in
+    REQUIRED_FIELDS = ['email']
+    @property
+    def full_phone(self):
+        return f"{self.phone_country.dial_code}{self.phone_number}"
+    
 class ProductCategory(models.Model):
     name = models.CharField(max_length=100)
 
