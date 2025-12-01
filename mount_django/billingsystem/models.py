@@ -1,55 +1,143 @@
+from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils import timezone
 
 
-class ProductCategory(models.Model):
-    name = models.CharField(max_length=100)
+class User(AbstractUser):
+    """
+    Company employees who can login to the system
+    """
+
+    phone = models.CharField(max_length=15, blank=True)
+    gmail = models.EmailField(
+        max_length=255, blank=True, null=True, unique=True, verbose_name="Gmail Address"
+    )
+    address = models.TextField(blank=True)
+    date_of_birth = models.DateField(null=True, blank=True)
+    profile_picture = models.ImageField(upload_to="profile_pics/", blank=True)
+
+    # Company association
+    company = models.ForeignKey(
+        "Company",
+        on_delete=models.CASCADE,
+        related_name="employees",
+        null=True,
+        blank=True,
+    )
+
+    # Role within the company
+    class Role(models.TextChoices):
+        OWNER = "OWNER", "Company Owner"  # -> full access
+        MANAGER = "MANAGER", "Manager"  # -> write
+        STAFF = "STAFF", "Staff"  # -> read # parital -> write
+
+    role = models.CharField(max_length=20, choices=Role.choices, default=Role.STAFF)
 
     def __str__(self):
-        return self.name
+        return f"{self.username} ({self.company})"
 
 
-class Product(models.Model):
+class Company(models.Model):
+    """
+    The business entity that uses your billing system
+    """
+
     name = models.CharField(max_length=100)
-    cost_price = models.DecimalField(max_digits=10, decimal_places=2)
-    selling_price = models.DecimalField(max_digits=10, decimal_places=2,default=0)
-    image = models.ImageField(upload_to="Productimage/")
-    date_added = models.DateTimeField(default=timezone.now)
-    category = models.ForeignKey(
-        ProductCategory, on_delete=models.CASCADE, related_name="products"
-    )
+    email = models.EmailField(unique=True)
+    phone = models.CharField(max_length=15)
+    address = models.TextField()
+    tax_id = models.CharField(max_length=50, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.name
 
 
 class Customer(models.Model):
+    """
+    The company's clients - NO login, just data records
+    """
+
+    company = models.ForeignKey(
+        Company, on_delete=models.CASCADE, related_name="customers"
+    )
     name = models.CharField(max_length=100)
     parent = models.ForeignKey(
         "self",
-        on_delete=models.SET_NULL,  # Changed from CASCADE
+        on_delete=models.SET_NULL,
         null=True,
         blank=True,
         related_name="children",
     )
-    email = models.EmailField(max_length=100, unique=True)
-    phone = models.CharField(max_length=15, unique=True)  # Increased length
+    # Not unique across companies
+    email = models.EmailField(max_length=100, blank=True)
+    # Not unique across companies
+    phone = models.CharField(max_length=15, blank=True)
     address = models.CharField(max_length=100)
 
+    class Meta:
+        # A customer is unique within a company
+        unique_together = ["company", "email"]
+
     def __str__(self):
-        return self.name
+        return f"{self.name} ({self.company})"
+
+
+class ProductCategory(models.Model):
+    """Product categories specific to each company"""
+
+    company = models.ForeignKey(
+        Company, on_delete=models.CASCADE, related_name="product_categories"
+    )
+    name = models.CharField(max_length=100)
+
+    class Meta:
+        unique_together = ["company", "name"]
+
+    def __str__(self):
+        return f"{self.name} ({self.company})"
+
+
+class Product(models.Model):
+    """Products specific to each company"""
+
+    company = models.ForeignKey(
+        Company, on_delete=models.CASCADE, related_name="products"
+    )
+    name = models.CharField(max_length=100)
+    cost_price = models.DecimalField(max_digits=10, decimal_places=2)
+    selling_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    image = models.ImageField(upload_to="Productimage/")
+    date_added = models.DateTimeField(default=timezone.now)
+    category = models.ForeignKey(
+        ProductCategory, on_delete=models.CASCADE, related_name="products"
+    )
+
+    class Meta:
+        unique_together = ["company", "name"]
+
+    def __str__(self):
+        return f"{self.name} ({self.company})"
 
 
 class OrderList(models.Model):
+    """Orders for company's customers"""
+
+    company = models.ForeignKey(
+        Company, on_delete=models.CASCADE, related_name="orders"
+    )
     order_date = models.DateTimeField(default=timezone.now)
     customer = models.ForeignKey(
         Customer,
         on_delete=models.CASCADE,
         related_name="orders",
     )
+    created_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, related_name="created_orders"
+    )
 
     def __str__(self):
-        return f"Order {self.id} - {self.customer.name}"
+        return f"Order {self.id} - {self.customer.name} ({self.company})"
 
 
 class Bill(models.Model):
@@ -59,7 +147,7 @@ class Bill(models.Model):
         on_delete=models.CASCADE,
         related_name="bills",
     )
-    product_price = models.BigIntegerField()  # price at billing time
+    product_price = models.BigIntegerField()
     quantity = models.PositiveIntegerField(default=1)
     bill_date = models.DateTimeField(default=timezone.now)
 

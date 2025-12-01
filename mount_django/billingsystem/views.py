@@ -370,21 +370,22 @@ def save_client(request):
 
     except Exception as e:
         return JsonResponse({"success": False, "error": f"Server error: {str(e)}"})
+
+
 @login_required
 @csrf_exempt
 @require_POST
 def delete_invoice(request, id):
-    
+    print(f"Request method is: {request.method}")
     if request.method == "POST":
         try:
-            order_list= OrderList.objects.get(id=id)
-            
+            order_list = OrderList.objects.get(id=id)
+
             order_list.delete()
             return JsonResponse({"success": True})
         except OrderList.DoesNotExist:
-            print("sdfsdfs")
             return JsonResponse({"success": False, "error": "Not found"})
-           
+
 
 def invoices(request):
     pass

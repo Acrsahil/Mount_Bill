@@ -337,44 +337,43 @@ export function addInvoiceItem(invoiceItemsBody) {
     );
     updateTotals(window.invoiceItems, window.globalDiscount, window.globalTax);
 
-    // AGGRESSIVE SCROLL TO BOTTOM
+    // GENTLE SCROLLING - FIXED VERSION
     setTimeout(() => {
-        // Try multiple scrolling methods
-        const scrollTargets = [
-            document.querySelector('.modal-content'),
-            document.querySelector('.modal-body'),
-            document.querySelector('.invoice-items-table'),
-            document.querySelector('.fixed-add-item-container')
-        ];
-
-        scrollTargets.forEach(target => {
-            if (target) {
-                try {
-                    target.scrollIntoView({ behavior: 'smooth', block: 'end' });
-                } catch (e) {
-                    console.log('Scroll failed for:', target);
-                }
-            }
-        });
-
-        // Force scroll to very bottom of page
-        setTimeout(() => {
-            window.scrollTo({
-                top: document.documentElement.scrollHeight,
+        // Only scroll the modal content, not the entire page
+        const modalBody = document.querySelector('.modal-body');
+        const invoiceTable = document.querySelector('.invoice-items-table');
+        
+        if (modalBody) {
+            // Smoothly scroll modal body to bottom
+            modalBody.scrollTo({
+                top: modalBody.scrollHeight,
                 behavior: 'smooth'
             });
-        }, 100);
-
-        // Focus on the new input
+        } else if (invoiceTable) {
+            // Alternative: scroll the table container
+            invoiceTable.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'end',
+                inline: 'nearest'
+            });
+        }
+        
+        // Focus on the new input WITHOUT aggressive scrolling
         const newSearchInput = document.querySelector(`.product-search-input[data-id="${itemId}"]`);
         if (newSearchInput) {
             setTimeout(() => {
                 newSearchInput.focus();
-                newSearchInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }, 5);
+                // Use a more gentle scroll into view
+                newSearchInput.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'center',
+                    inline: 'nearest'
+                });
+            }, 50);
         }
-    }, 5);
+    }, 100); // Increased delay for smoother experience
 }
+
 
 // PRODUCT SEARCH HANDLERS
 export function setupProductSearchHandlers() {
