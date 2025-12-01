@@ -1,0 +1,92 @@
+.form-card{
+    width: 900px;
+    height:600px;
+    margin: 30px auto;
+    padding: 25px;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+.form-card h2 {
+    display:flex;
+    justify-content: center;
+    font-size: 30px;
+}
+.form-field,
+.phone-wrapper {
+    display: flex;
+    justify-content: flex-start;
+    padding:10px;
+}
+
+.form-field label,
+.phone-label{
+    width:180px;
+    font-size: 25px;
+    margin-right: 10px;
+}
+.form-group input {
+    width: 300px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 10x;
+}
+.form-group select{
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 10x;
+}
+
+.phone-field {
+    display: flex;
+    gap: 5px;        /* space between the two fields */
+    align-items: center;
+}
+
+.phone-field select {
+    width: 100px;     
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+}
+
+.phone-field input {
+    width:199px;          
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+}
+.field-error p {
+    font-size: 14px;
+    color: red;
+    margin: 4px 0 0;
+}
+
+.alert-error {
+    background: #ffebeb;
+    border-left: 5px solid red;
+    padding: 10px;
+    margin-bottom: 15px;
+}
+
+.btn-signup {
+    display:flex;
+    justify-content: center;
+    width: 100px;
+    padding: 12px;
+    background: #5a67d8;
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-size: 17px;
+    cursor: pointer;
+}
+
+.btn-signup:hover {
+    background: #434ea8;
+}
+.btn-register{
+    display:flex;
+    justify-content: center;
+}
