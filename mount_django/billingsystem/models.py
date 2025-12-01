@@ -11,7 +11,6 @@ class CountryCode(models.Model):
 
 class UserRegistration(AbstractUser):
     username=models.CharField(max_length=100,unique=True)
-    company_name=models.CharField(max_length=1500)
     email=models.EmailField(max_length=254,unique=True) 
     phone_country=models.ForeignKey(CountryCode,on_delete=models.PROTECT,null=True,blank=True,related_name="users")
     phone_number=models.CharField(max_length=10)
