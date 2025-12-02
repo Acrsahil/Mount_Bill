@@ -65,7 +65,8 @@ def get_serialized_data():
             "name": p.name,
             "cost_price": float(p.cost_price),
             "selling_price": float(p.selling_price),
-            "product_quantity":p.product_quantity,
+            # expose DB field product_quantity to frontend as "quantity"
+            "quantity": p.product_quantity,
             "category": p.category.name if p.category else "",
         }
         for p in products
@@ -127,7 +128,8 @@ def save_product(request):
         # Handle both old and new price formats
         cost_price = data.get("cost_price")
         selling_price = data.get("selling_price")
-        quantity = data.get("product_quantity")
+        
+        quantity = data.get("quantity")
         # If using old format with single 'price' field
         if cost_price is None and selling_price is None and "price" in data:
             cost_price = data.get("price")
@@ -159,10 +161,11 @@ def save_product(request):
             cost_price = float(cost_price)
             selling_price = float(selling_price)
             quantity = int(quantity)
-            if quantity <=0:
+            if quantity <= 0:
                 return JsonResponse(
                     {
-                       "success":False,"error":"Product quantity below 0 cannot be saved",
+                        "success": False,
+                        "error": "Product quantity below 0 cannot be saved",
                     },
                     status=400,
                 )
@@ -194,7 +197,7 @@ def save_product(request):
         if category_name:
             category, _ = ProductCategory.objects.get_or_create(name=category_name)
 
-        # Create product
+        # Create product (DB field is product_quantity)
         product = Product.objects.create(
             name=name,
             cost_price=cost_price,
@@ -213,7 +216,8 @@ def save_product(request):
                     "cost_price": float(product.cost_price),
                     "selling_price": float(product.selling_price),
                     "category": product.category.name if product.category else "",
-                    "quantity":product.quantity,
+                    # send quantity back to frontend as plain "quantity"
+                    "quantity": product.product_quantity,
                 },
             }
         )

@@ -263,8 +263,8 @@ export function loadProducts(products, productList, editProduct, deleteProduct) 
         productCard.innerHTML = `
 <h4>${product.name}</h4>
 <p>Category: ${product.category || 'N/A'}</p>
-<p>Quantity: ${product.quantity}</p>
 <div class="product-price">
+    <div>Quantity: ${product.quantity}</div>
     <div>Cost: $${product.cost_price}</div>
     <div>Selling: $${product.selling_price}</div>
 </div>
@@ -410,8 +410,9 @@ export function filterProducts(products, productSearchInput, productList, editPr
         productCard.innerHTML = `
 <h4>${product.name}</h4>
 <p>Category: ${product.category || 'N/A'}</p>
-<p>Quantity: ${product.quantity}</p>
+
 <div class="product-price">
+    <div>Quantity: ${product.quantity}</div>
     <div>Cost: $${product.cost_price}</div>
     <div>Selling: $${product.selling_price}</div>
 </div>
