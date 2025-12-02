@@ -130,9 +130,7 @@ export function openClientModal(addClientModal) {
     
     // Reset only the fields that exist in the simplified modal
     document.getElementById('clientNameInput').value = '';
-    document.getElementById('clientEmailInput').value = '';
     document.getElementById('clientPhoneInput').value = '';
-    document.getElementById('clientAddressInput').value = '';
     
     // Show the modal
     addClientModal.style.display = 'flex';
@@ -156,9 +154,7 @@ export function closeClientModalFunc(addClientModal) {
 export async function saveClient(addClientModal, clientsTableBody) {
     // Only get fields that exist in the simplified modal
     const clientName = document.getElementById('clientNameInput').value.trim();
-    const clientEmail = document.getElementById('clientEmailInput').value.trim();
     const clientPhone = document.getElementById('clientPhoneInput').value.trim();
-    const clientAddress = document.getElementById('clientAddressInput').value.trim();
 
     // Validation
     if (!clientName || !clientEmail || !clientPhone || !clientAddress) {
@@ -166,13 +162,6 @@ export async function saveClient(addClientModal, clientsTableBody) {
         return;
     }
 
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(clientEmail)) {
-        showAlert('Please enter a valid email address', 'error');
-        document.getElementById('clientEmailInput').focus();
-        return;
-    }
 
     // Show loading state
     const saveBtn = document.getElementById('saveClientBtn');

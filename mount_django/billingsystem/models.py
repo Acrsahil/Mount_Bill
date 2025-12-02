@@ -1,3 +1,4 @@
+# billingsystem/models.py - OPTION A
 import uuid
 
 from django.contrib.auth.models import AbstractUser
@@ -7,8 +8,6 @@ from django.utils import timezone
 
 
 class User(AbstractUser):
-    """Essential fields only"""
-
     phone = models.CharField(max_length=15, blank=True)
     email = models.EmailField(blank=True)
     has_paid_for_company = models.BooleanField(default=False)
@@ -35,15 +34,11 @@ class User(AbstractUser):
 
 
 class Company(models.Model):
-    """Essential fields only"""
-
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=100)
     email = models.EmailField()
     phone = models.CharField(max_length=15, blank=True)
-    tax_id = models.CharField(
-        max_length=15,
-    )
+    tax_id = models.CharField(max_length=15, blank=True)
 
     managers = models.ManyToManyField(
         User, related_name="managed_companies", blank=True
@@ -55,28 +50,21 @@ class Company(models.Model):
         return self.name
 
 
-# ========== BUSINESS MODELS ==========
-
-
 class Customer(models.Model):
-    """Essential fields only"""
-
     company = models.ForeignKey(
         Company, on_delete=models.CASCADE, related_name="customers"
     )
     name = models.CharField(max_length=100)
-    email = models.EmailField(max_length=100, blank=True)
+    phone = models.CharField(max_length=15, blank=True)
 
-    class Meta:
-        unique_together = ["company", "email"]
+    # class Meta:
+    #     unique_together = ["company", "email"]
 
     def __str__(self):
         return f"{self.name} ({self.company})"
 
 
 class ProductCategory(models.Model):
-    """Product categories specific to each company"""
-
     company = models.ForeignKey(
         Company, on_delete=models.CASCADE, related_name="product_categories"
     )
@@ -90,8 +78,6 @@ class ProductCategory(models.Model):
 
 
 class Product(models.Model):
-    """Products specific to each company"""
-
     company = models.ForeignKey(
         Company, on_delete=models.CASCADE, related_name="products"
     )
@@ -115,8 +101,6 @@ class Product(models.Model):
 
 
 class OrderList(models.Model):
-    """Orders for company's customers"""
-
     company = models.ForeignKey(
         Company, on_delete=models.CASCADE, related_name="orders"
     )
@@ -130,10 +114,12 @@ class OrderList(models.Model):
         User, on_delete=models.SET_NULL, null=True, related_name="created_orders"
     )
 
+    # NEW: Simple invoice flag
+    is_simple_invoice = models.BooleanField(default=False)
+    invoice_description = models.TextField(blank=True, null=True)
+
     def save(self, *args, **kwargs):
-        """ESSENTIAL - Database integrity check"""
         if self.created_by:
-            # Check if user has access to company
             is_owner = self.created_by.owned_company == self.company
             is_manager = self.company.managers.filter(id=self.created_by.id).exists()
 
@@ -143,34 +129,48 @@ class OrderList(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"Order {self.id} - {self.customer.name}"
+        type_str = "Simple" if self.is_simple_invoice else "Detailed"
+        return f"{type_str} Order {self.id} - {self.customer.name}"
 
 
 class Bill(models.Model):
-    """With essential clean() validation"""
-
     order = models.ForeignKey(OrderList, on_delete=models.CASCADE, related_name="bills")
+
+    # CHANGED: Product can be null for simple invoices
     product = models.ForeignKey(
         Product,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,  # Changed from CASCADE
+        null=True,  # Allow null
+        blank=True,  # Allow blank
         related_name="bills",
     )
+
     product_price = models.DecimalField(max_digits=10, decimal_places=2)
     quantity = models.PositiveIntegerField(default=1)
+
+    # NEW: Description for simple invoice items
+    description = models.TextField(blank=True, null=True)
+
     bill_date = models.DateTimeField(default=timezone.now)
 
     def clean(self):
-        """ESSENTIAL - Data validation"""
-        if self.product.company != self.order.company:
+        """Validate data integrity"""
+        # For detailed invoices (has product), check company match
+        if self.product and self.product.company != self.order.company:
             raise ValidationError("Product doesn't belong to order's company")
 
+        # For simple invoices (no product), require description
+        if not self.product and not self.description:
+            raise ValidationError("Description required for simple invoice items")
+
     def __str__(self):
-        return f"Bill {self.id} - Order {self.order.id}"
+        if self.product:
+            return f"Bill {self.id} - {self.product.name} (Order {self.order.id})"
+        else:
+            return f"Bill {self.id} - Simple Item (Order {self.order.id})"
 
 
 class OrderSummary(models.Model):
-    """Summary for each order with totals"""
-
     order = models.OneToOneField(
         OrderList, on_delete=models.CASCADE, related_name="summary"
     )
@@ -181,7 +181,6 @@ class OrderSummary(models.Model):
     calculated_on = models.DateTimeField(auto_now=True)
 
     def calculate_totals(self, save=True):
-        """Calculate order totals from bills"""
         total = 0
         for bill in self.order.bills.all():
             total += bill.product_price * bill.quantity

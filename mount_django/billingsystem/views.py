@@ -50,9 +50,7 @@ def get_serialized_data():
         {
             "id": c.id,
             "name": c.name,
-            "email": c.email,
             "phone": c.phone,
-            "address": c.address,
         }
         for c in customers
     ]
@@ -218,9 +216,7 @@ def save_invoice(request):
         customer, created = Customer.objects.get_or_create(
             name=client_name,
             defaults={
-                "email": f"{client_name.replace(' ', '.').lower()}@example.com",
                 "phone": "000-000-0000",
-                "address": "Address not provided",
             },
         )
 
@@ -334,24 +330,12 @@ def save_client(request):
 
         # Extract client data
         name = data.get("name", "").strip()
-        email = data.get("email", "").strip()
         phone = data.get("phone", "").strip()
-        address = data.get("address", "").strip()
 
         # Validation
-        if not name or not email or not phone or not address:
-            return JsonResponse({"success": False, "error": "All fields are required"})
-
-        # Check if client with same email already exists
-        if Customer.objects.filter(email=email).exists():
-            return JsonResponse(
-                {"success": False, "error": "A client with this email already exists"}
-            )
 
         # Create new client
-        client = Customer.objects.create(
-            name=name, email=email, phone=phone, address=address
-        )
+        client = Customer.objects.create(name=name, phone=phone)
 
         # Return success response with client data
         return JsonResponse(
@@ -361,9 +345,7 @@ def save_client(request):
                 "client": {
                     "id": client.id,
                     "name": client.name,
-                    "email": client.email,
                     "phone": client.phone,
-                    "address": client.address,
                 },
             }
         )

@@ -291,37 +291,33 @@ export function loadProducts(products, productList, editProduct, deleteProduct) 
 }
 
 // Load clients
+// In dom.js or wherever loadClients is defined
 export function loadClients(clients, clientsTableBody) {
     if (!clientsTableBody) return;
-
+    
     clientsTableBody.innerHTML = '';
-
+    
     clients.forEach(client => {
         const row = document.createElement('tr');
         row.innerHTML = `
-<td>CLI-${client.id.toString().padStart(3, '0')}</td>
-<td>${client.name}</td>
-<td>${client.email}</td>
-<td>${client.address}</td>
-<td>${client.phone || 'N/A'}</td>
-<td>${client.totalInvoices || 0}</td>
-<td>$${(client.totalSpent || 0).toFixed(2)}</td>
-<td class="action-cell">
-    <div class="action-btn action-view">
-        <i class="fas fa-eye"></i>
-    </div>
-    <div class="action-btn action-edit">
-        <i class="fas fa-edit"></i>
-    </div>
-    <div class="action-btn action-delete">
-        <i class="fas fa-trash"></i>
-    </div>
-</td>
-`;
+            <td>${client.name}</td>
+            <td>${client.email || '-'}</td>
+            <td>${client.phone || '-'}</td>  <!-- ADD PHONE COLUMN -->
+            <td class="action-cell">
+                <div class="action-btn action-view">
+                    <i class="fas fa-eye"></i>
+                </div>
+                <div class="action-btn action-edit" data-id="${client.id}">
+                    <i class="fas fa-edit"></i>
+                </div>
+                <div class="action-btn action-delete" data-id="${client.id}">
+                    <i class="fas fa-trash"></i>
+                </div>
+            </td>
+        `;
         clientsTableBody.appendChild(row);
     });
 }
-
 // Load invoices
 export function loadInvoices(invoices, invoicesTableBody) {
     if (!invoicesTableBody) return;
