@@ -14,3 +14,20 @@ class UserRegistrationForm(UserCreationForm):
     class Meta:
         model=UserRegistration
         fields=['username','email','phone_number','phone_country','password1','password2']
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # base style for all
+        for field in self.fields.values():
+            field.widget.attrs.update({'class':'form-control'})
+        self.fields['username'].widget.attrs.update({'placeholder':'Enter your username'})
+        self.fields['email'].widget.attrs.update({'placeholder':'Enter your email'})
+        # special for password-field
+        self.fields['password1'].widget.attrs.update({'placeholder':'Enter password',''
+        'class':'form-control password-field',
+        'id':'id_password1',
+            })
+        self.fields['password2'].widget.attrs.update({'placeholder':'Confirm password',
+        'class':'form-control password-field',
+        'id':'id_password2',
+              })

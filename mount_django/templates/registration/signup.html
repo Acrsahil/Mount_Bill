@@ -3,11 +3,15 @@
 {% block title %}SignUp Page{% endblock %}
 {% block extra_css %}
 <link rel="stylesheet" href="{%static 'css/signup.css'%}">
+<link rel="stylesheet" href="{% static 'css/login.css'%}">
 {% endblock %}
 {% block content %}
 <div class="form-card">
-    <h2>Create an Account</h2>
-<form method="POST"> 
+    <div class="signup-header">
+    <h2><i class="fa-solid fa-user-pen"></i>&nbsp;Create Your Account</h2>
+    </div>
+    <div class="signup-body">
+    <form method="POST"> 
     {% csrf_token %} 
     {# Show non-field errors (e.g. password mismatch, duplicate username/email) #} 
     {% if form.non_field_errors %} 
@@ -21,19 +25,39 @@
        
      {% for field in form %}
      {%if field.name != "phone_country" and field.name != "phone_number" %}
-      <div class="form-group">
-        <div class="form-field">
-         <label>{{ field.label_tag }} </label>
-         {{ field }}
+      <div class="sign-up-form">
+        <div class="signup-field">
+         <label for="{{field.id_for_label}}" >{{ field.label}} </label>
+         <div class="input-with-icon">
+            {%if field.name == "username" %}
+            <i class='fas fa-user'></i>
+             {{ field }}
+            {%elif field.name == "email" %}
+            <i class='fas fa-envelope'></i>
+             {{ field }}
+            {%elif field.name == "password1" %}
+            <i class='fas fa-lock'></i>
+             {{ field }}
+            <button id="toggle_id1" type="button" class="password-toggle">
+            </button>
+            {%elif field.name == "password2" %}
+            <i class='fas fa-lock'></i>
+             {{ field }}
+            <button id="toggle_id2" type="button" class="password-toggle">
+            </button>
+            {%endif%}
+        
          </div>
           {# Show field-specific errors #} 
           {% if field.errors %} 
-          <div class="field-error"> 
+          <div class="alert alert-field"> 
             {% for error in field.errors %}
-             <p>{{ error }}</p> {% endfor %} 
+             <p>{{ error }}</p> 
+             {% endfor %} 
             </div> 
             {% endif %} 
-        </div> 
+        </div>
+      </div> 
         {%endif%}
         {% endfor %}
         <div class="phone-wrapper"> 
@@ -43,9 +67,13 @@
             {{ form.phone_number }}
         </div>
     </div>
-        <div class="btn-register">
+        <div class="signup-footer">
         <button class="btn-signup" type="submit">Register</button> 
         </div>
-    </form> 
+    </form>
+</div> 
 </div>
     {% endblock %}
+{% block extra_js %}
+<script src="{% static 'js/signup.js' %}"></script>
+{% endblock %}

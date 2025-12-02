@@ -25,13 +25,12 @@ body {
     padding: 20px;
 }
 
-.login-container {
+.login-container,
+.form-card {
     background: white;
     border-radius: 20px;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
     overflow: hidden;
-    width: 100%;
-    max-width: 420px;
     animation: slideUp 0.6s ease-out;
 }
 
@@ -45,8 +44,13 @@ body {
         transform: translateY(0);
     }
 }
+.login-container{
+    max-width: 420px;
+    width: 100%;
+}
 
-.login-header {
+.login-header,
+.signup-header {
     background: linear-gradient(135deg, var(--primary), var(--primary-dark));
     color: white;
     padding: 40px 30px;
@@ -85,7 +89,7 @@ body {
     position: relative;
 }
 
-.input-with-icon i {
+.input-with-icon i:not(.toggle-password) {
     position: absolute;
     left: 15px;
     top: 50%;
@@ -115,31 +119,7 @@ body {
     color: #adb5bd;
 }
 
-.btn-login {
-    width: 100%;
-    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-    color: white;
-    border: none;
-    padding: 15px;
-    border-radius: 10px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-}
-
-.btn-login:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 20px rgba(67, 97, 238, 0.3);
-}
-
-.btn-login:active {
-    transform: translateY(0);
-}
+.btn-login,
 .btn-signup {
     width: 100%;
     background: linear-gradient(135deg, var(--primary), var(--primary-dark));
@@ -157,11 +137,13 @@ body {
     gap: 10px;
 }
 
+.btn-login:hover,
 .btn-signup:hover {
     transform: translateY(-2px);
     box-shadow: 0 10px 20px rgba(67, 97, 238, 0.3);
 }
 
+.btn-login:active,
 .btn-signup:active {
     transform: translateY(0);
 }
@@ -183,7 +165,7 @@ body {
     text-align: center;
 }
 
-.login-footer {
+.login-footer{
     text-align: center;
     margin-top: 30px;
     padding-top: 20px;

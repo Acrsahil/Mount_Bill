@@ -1,41 +1,47 @@
+.signup-header{
+    margin-bottom: 25px;
+}
 .form-card{
-    width: 900px;
-    height:600px;
-    margin: 30px auto;
-    padding: 25px;
-    background: #ffffff;
-    border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    height: 600px;
+    width:500px;
 }
 .form-card h2 {
     display:flex;
     justify-content: center;
     font-size: 30px;
 }
-.form-field,
+.signup-field,
 .phone-wrapper {
     display: flex;
     justify-content: flex-start;
+    align-items: center;
     padding:10px;
+    gap:5px;
 }
 
-.form-field label,
-.phone-label{
-    width:180px;
-    font-size: 25px;
-    margin-right: 10px;
+.signup-field label{
+    width:120px;
+    font-size: 22px;
+    margin-right: 20px;
 }
-.form-group input {
+.phone-label{
+    font-size: 22px;
+}
+.signup-field input {
     width: 300px;
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 6px;
     font-size: 10x;
 }
-.form-group select{
+.sign-up-form select{
     border: 1px solid #ccc;
     border-radius: 6px;
     font-size: 10x;
+}
+
+.input-with-icon input{
+    padding-left: 35px;
 }
 
 .phone-field {
@@ -52,7 +58,7 @@
 }
 
 .phone-field input {
-    width:199px;          
+    width:189px;          
     padding: 10px;
     border-radius: 6px;
     border: 1px solid #ccc;
@@ -70,23 +76,11 @@
     margin-bottom: 15px;
 }
 
-.btn-signup {
+.signup-footer{
+    padding:30px;
     display:flex;
     justify-content: center;
-    width: 100px;
-    padding: 12px;
-    background: #5a67d8;
-    border: none;
-    border-radius: 8px;
-    color: white;
-    font-size: 17px;
-    cursor: pointer;
 }
-
-.btn-signup:hover {
-    background: #434ea8;
-}
-.btn-register{
-    display:flex;
-    justify-content: center;
+.sign-up-form {
+    transition: transform 0.2s ease;
 }
