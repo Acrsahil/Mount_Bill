@@ -65,6 +65,7 @@ def get_serialized_data():
             "name": p.name,
             "cost_price": float(p.cost_price),
             "selling_price": float(p.selling_price),
+            "product_quantity":p.product_quantity,
             "category": p.category.name if p.category else "",
         }
         for p in products
@@ -126,7 +127,7 @@ def save_product(request):
         # Handle both old and new price formats
         cost_price = data.get("cost_price")
         selling_price = data.get("selling_price")
-
+        quantity = data.get("product_quantity")
         # If using old format with single 'price' field
         if cost_price is None and selling_price is None and "price" in data:
             cost_price = data.get("price")
@@ -157,6 +158,14 @@ def save_product(request):
         try:
             cost_price = float(cost_price)
             selling_price = float(selling_price)
+            quantity = int(quantity)
+            if quantity <=0:
+                return JsonResponse(
+                    {
+                       "success":False,"error":"Product quantity below 0 cannot be saved",
+                    },
+                    status=400,
+                )
             if cost_price <= 0 or selling_price <= 0:
                 return JsonResponse(
                     {"success": False, "error": "Prices must be positive"}, status=400
@@ -191,6 +200,7 @@ def save_product(request):
             cost_price=cost_price,
             selling_price=selling_price,
             category=category,
+            product_quantity=quantity,
         )
 
         return JsonResponse(
@@ -203,6 +213,7 @@ def save_product(request):
                     "cost_price": float(product.cost_price),
                     "selling_price": float(product.selling_price),
                     "category": product.category.name if product.category else "",
+                    "quantity":product.quantity,
                 },
             }
         )

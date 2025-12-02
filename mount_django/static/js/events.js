@@ -1003,6 +1003,11 @@ export function editProduct(productId) {
         document.getElementById('productCostPrice').value = product.cost_price;
         document.getElementById('productSellingPrice').value = product.selling_price;
         document.getElementById('productCategory').value = product.category || '';
+        // If quantity is available, populate it as well
+        const quantityInput = document.getElementById('productQuantity');
+        if (quantityInput && typeof product.quantity !== 'undefined') {
+            quantityInput.value = product.quantity;
+        }
 
         // Change modal title and button
         document.querySelector('#addProductModal .modal-header h3').textContent = 'Edit Product';

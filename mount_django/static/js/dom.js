@@ -238,6 +238,11 @@ export function fillProductDetails(product) {
     document.getElementById('productCostPrice').value = product.cost_price;
     document.getElementById('productSellingPrice').value = product.selling_price;
     document.getElementById('productCategory').value = product.category || '';
+    // If quantity field exists in the modal, prefill it when selecting an existing product
+    const quantityInput = document.getElementById('productQuantity');
+    if (quantityInput && typeof product.quantity !== 'undefined') {
+        quantityInput.value = product.quantity;
+    }
 }
 
 // LOAD PRODUCTS
@@ -258,6 +263,7 @@ export function loadProducts(products, productList, editProduct, deleteProduct) 
         productCard.innerHTML = `
 <h4>${product.name}</h4>
 <p>Category: ${product.category || 'N/A'}</p>
+<p>Quantity: ${product.quantity}</p>
 <div class="product-price">
     <div>Cost: $${product.cost_price}</div>
     <div>Selling: $${product.selling_price}</div>
@@ -404,6 +410,7 @@ export function filterProducts(products, productSearchInput, productList, editPr
         productCard.innerHTML = `
 <h4>${product.name}</h4>
 <p>Category: ${product.category || 'N/A'}</p>
+<p>Quantity: ${product.quantity}</p>
 <div class="product-price">
     <div>Cost: $${product.cost_price}</div>
     <div>Selling: $${product.selling_price}</div>
