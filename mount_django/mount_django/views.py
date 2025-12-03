@@ -1,7 +1,10 @@
-from django.shortcuts import redirect,render
+from django.shortcuts import render
+
 
 def landing_page(request):
-    return render(request,'website/landing_page.html')
+    return render(request, "website/landing_page.html")
+
+
 # def home(request):
 #     if request.user.is_authenticated:
 #         return redirect("bill")

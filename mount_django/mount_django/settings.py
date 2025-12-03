@@ -131,7 +131,7 @@ MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 # Authentication settings
-LOGIN_REDIRECT_URL = "/bill/"  # Redirect here after successful login
+LOGIN_REDIRECT_URL = "/dashboard/"  # Redirect here after successful login
 LOGOUT_REDIRECT_URL = "/"  # Redirect here after logout
 LOGIN_URL = "/"  # Login page location
 

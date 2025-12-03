@@ -28,7 +28,7 @@ from . import views
 
 urlpatterns = [
     # path("", views.home, name="home"),  # Root URL uses custom home view
-    path("",views.landing_page,name='landing_page'),
+    path("", views.landing_page, name="landing_page"),
     path(
         "login/",
         auth_views.LoginView.as_view(template_name="registration/login.html"),
