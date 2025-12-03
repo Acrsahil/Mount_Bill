@@ -9,7 +9,14 @@ from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
-from .models import Bill, Customer, OrderList, OrderSummary, Product, ProductCategory
+from .models import (
+    Bill,
+    Customer,
+    OrderList,
+    OrderSummary,
+    Product,
+    ProductCategory,
+)
 
 
 def get_serialized_data():
@@ -343,24 +350,28 @@ def save_client(request):
         # Extract client data
         name = data.get("name", "").strip()
         phone = data.get("phone", "").strip()
+        user = request.user
 
-        # Validation
+        company = None
+        if user.owned_company:
+            company = user.owned_company
 
-        # Create new client
-        client = Customer.objects.create(name=name, phone=phone)
+        elif user.active_company:
+            company = user.active_company
 
-        # Return success response with client data
-        return JsonResponse(
-            {
-                "success": True,
-                "message": "Client saved successfully!",
-                "client": {
-                    "id": client.id,
-                    "name": client.name,
-                    "phone": client.phone,
-                },
-            }
-        )
+        if company:
+            client = Customer.objects.create(company=company, name=name, phone=phone)
+            return JsonResponse(
+                {
+                    "success": True,
+                    "message": "Client saved successfully!",
+                    "client": {
+                        "id": client.id,
+                        "name": client.name,
+                        "phone": client.phone,
+                    },
+                }
+            )
 
     except Exception as e:
         return JsonResponse({"success": False, "error": f"Server error: {str(e)}"})

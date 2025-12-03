@@ -183,7 +183,7 @@ export async function saveClient(addClientModal, clientsTableBody) {
         console.log('Saving client to database:', clientData);
 
         // Send AJAX request to Django backend
-        const response = await fetch('/bill/save-client/', {
+        const response = await fetch('/dashboard/save-client/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
