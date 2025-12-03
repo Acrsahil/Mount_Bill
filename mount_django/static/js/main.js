@@ -27,6 +27,12 @@ import {
     deleteProduct
 } from './events.js';
 
+import { setupTabs } from './tabs.js';
+
+document.addEventListener('DOMContentLoaded', function() {
+    setupTabs();
+});
+
 // ULTRA SAFE INITIALIZATION
 console.log('Bill.js loading...');
 

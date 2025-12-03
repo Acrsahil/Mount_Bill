@@ -2,6 +2,7 @@ import json
 from datetime import datetime
 
 from django.contrib.auth.decorators import login_required
+from django.core.serializers import serialize
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
@@ -66,18 +67,29 @@ def get_serialized_data():
 
 
 @login_required
-def bill(request):
+def dashboard(request):
     """Main billing page view - SIMPLIFIED"""
     try:
-        context = get_serialized_data()
+        # Get both common context and serialized data
+        context = get_common_context("dashboard")  # Set active_tab="dashboard"
+        serialized_data = get_serialized_data()
+
+        # Merge both dictionaries
+        context.update(serialized_data)
         print(context)
         return render(request, "website/bill.html", context)
     except Exception as e:
-        print(f"Error in bill view: {e}")
+        print(f"Error in dashboard view: {e}")
         return render(
             request,
             "website/bill.html",
-            {"product": "[]", "customer": "[]", "product_cat": "[]", "invoices": []},
+            {
+                "product": "[]",
+                "customer": "[]",
+                "product_cat": "[]",
+                "invoices": "[]",
+                "active_tab": "dashboard",
+            },
         )
 
 
@@ -362,28 +374,48 @@ def delete_invoice(request, id):
     if request.method == "POST":
         try:
             order_list = OrderList.objects.get(id=id)
-
             order_list.delete()
             return JsonResponse({"success": True})
         except OrderList.DoesNotExist:
             return JsonResponse({"success": False, "error": "Not found"})
 
 
+def get_common_context(active_tab="dashboard"):
+    """Common context for all dashboard views"""
+    products_json = serialize("json", Product.objects.all())
+    customers_json = serialize("json", Customer.objects.all())
+    invoices_json = serialize("json", OrderList.objects.all())
+    categories = Product.objects.values_list("category", flat=True).distinct()
+
+    return {
+        "product": products_json,
+        "product_cat": json.dumps(list(categories)),
+        "customer": customers_json,
+        "invoices": invoices_json,
+        "active_tab": active_tab,  # This is the key!
+    }
+
+
 def invoices(request):
-    pass
-
-
-def products(request):
-    pass
+    context = get_common_context("invoices")
+    return render(request, "website/bill.html", context)
 
 
 def clients(request):
-    pass
+    context = get_common_context("clients")
+    return render(request, "website/bill.html", context)
 
 
 def reports(request):
-    pass
+    context = get_common_context("reports")
+    return render(request, "website/bill.html", context)
+
+
+def products(request):
+    context = get_common_context("products")
+    return render(request, "website/bill.html", context)
 
 
 def settings(request):
-    pass
+    context = get_common_context("settings")
+    return render(request, "website/bill.html", context)

@@ -61,7 +61,7 @@ export async function saveInvoice(createInvoiceModal, invoiceItemsBody) {
         console.log('🔑 CSRF Token available:', !!window.djangoData.csrfToken);
 
         // Test URL - try different variations
-        const url = '/bill/save-invoice/';
+        const url = '/dashboard/save-invoice/';
         console.log('🌐 Attempting to fetch from:', url);
 
         // Make the request with detailed error handling
@@ -197,7 +197,7 @@ export async function saveProduct(addProductModal) {
         console.log('Sending this data:', productData);
 
         // Send AJAX request to Django
-        const response = await fetch('/bill/save-product/', {
+        const response = await fetch('/dashboard/save-product/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

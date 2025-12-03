@@ -114,7 +114,6 @@ class OrderList(models.Model):
         User, on_delete=models.SET_NULL, null=True, related_name="created_orders"
     )
 
-    # NEW: Simple invoice flag
     is_simple_invoice = models.BooleanField(default=False)
     invoice_description = models.TextField(blank=True, null=True)
 

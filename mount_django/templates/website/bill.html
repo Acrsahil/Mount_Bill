@@ -17,19 +17,19 @@
             <h1 class="bg-orange-500 text-3xl">InvoicePro</h1>
         </div>
         <ul class="menu">
-            <li class="menu-item active" data-tab="dashboard">
+            <li class="menu-item {% if active_tab == 'dashboard' %}active{% endif %}" data-tab="dashboard">
                 <i class="fas fa-home"></i>
                 <span>Dashboard</span>
             </li>
-            <li class="menu-item" data-tab="invoices">
+            <li class="menu-item {% if active_tab == 'invoices' %}active{% endif %}" data-tab="invoices">
                 <i class="fas fa-file-invoice"></i>
                 <span>Invoices</span>
             </li>
-            <li class="menu-item" data-tab="products">
+            <li class="menu-item {% if active_tab == 'products' %}active{% endif %}" data-tab="products">
                 <i class="fas fa-box"></i>
                 <span>Products</span>
             </li>
-            <li class="menu-item" data-tab="clients">
+            <li class="menu-item {% if active_tab == 'clients' %}active{% endif %}" data-tab="clients">
                 <i class="fas fa-users"></i>
                 <span>Clients</span>
             </li>
@@ -47,7 +47,7 @@
     <!-- Main Content -->
     <div class="main-content">
         <!-- Dashboard Tab -->
-        <div class="tab-content active" id="dashboard">
+        <div class="tab-content {% if active_tab == 'dashboard' %}active{% endif %}" id="dashboard">
             <div class="header">
                 <h2>Dashboard</h2>
                 <div class="user-info">
@@ -148,8 +148,61 @@
             </div>
         </div>
 
+        <!-- Invoices Tab -->
+        <div class="tab-content {% if active_tab == 'invoices' %}active{% endif %}" id="invoices-tab">
+            <div class="header">
+                <h2>Invoices</h2>
+                <div class="user-info">
+                    <div class="user-avatar">SA</div>
+                    <div>
+                        <div>Sahil Acharya</div>
+                        <div style="font-size: 12px; color: var(--gray);">Administrator</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Invoice Action Buttons -->
+            <div class="action-buttons">
+                <button class="btn btn-primary" id="createInvoiceBtnTab">
+                    <i class="fas fa-plus"></i> Create Invoice
+                </button>
+                <button class="btn btn-light">
+                    <i class="fas fa-filter"></i> Filter
+                </button>
+                <button class="btn btn-light">
+                    <i class="fas fa-print"></i> Print
+                </button>
+            </div>
+
+            <!-- Invoice Table -->
+            <div class="invoice-section">
+                <div class="section-header">
+                    <h3>All Invoices</h3>
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Search invoices...">
+                    </div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Bill No #</th>
+                            <th>Client</th>
+                            <th>Date</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Invoices will be dynamically added here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
         <!-- Products Tab -->
-        <div class="tab-content" id="products">
+        <div class="tab-content {% if active_tab == 'products' %}active{% endif %}" id="products">
             <div class="header">
                 <h2>Product Management</h2>
                 <div class="user-info">
@@ -188,7 +241,7 @@
         </div>
 
         <!-- Clients Tab -->
-        <div class="tab-content" id="clients">
+        <div class="tab-content {% if active_tab == 'clients' %}active{% endif %}" id="clients">
             <div class="header">
                 <h2>Client Management</h2>
                 <div class="user-info">
@@ -502,6 +555,7 @@ window.djangoData = {
     clients: {{ customer|safe }},
     invoices: {{ invoices|safe }},
     csrfToken: "{{ csrf_token }}",
+    active_tab: "{{ active_tab|default:'dashboard' }}"
 };
 </script>
 
@@ -513,20 +567,34 @@ if (typeof window.djangoData === 'undefined') {
         product_cat: [],
         clients: [],
         invoices: {{ invoices|safe }},
-        csrfToken: "{{ csrf_token }}"
+        csrfToken: "{{ csrf_token }}",
+        active_tab: "{{ active_tab|default:'dashboard' }}"
     };
 }
 
-// Debug to see what's happening
-console.log('DjangoData exists:', typeof window.djangoData !== 'undefined');
-console.log('Products:', window.djangoData.products);
-console.log('Product Categories:', window.djangoData.product_cat);
-console.log('Clients:', window.djangoData.clients);
+console.log('Active tab from Django:', window.djangoData.active_tab);
 </script>
 
 <script>const csrfToken = "{{ csrf_token }}";</script>
-<script src="{% static 'js/delete.js' %}"></script>
 
+<!-- REMOVE THE AUTO-CLICK JAVASCRIPT - This is what's causing the flashing! -->
+<!-- 
+<script>
+// REMOVE THIS ENTIRE BLOCK - IT'S CAUSING THE PROBLEM
+{% if active_tab %}
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+        const tabToActivate = document.querySelector('[data-tab="{{ active_tab }}"]');
+        if (tabToActivate) {
+            tabToActivate.click(); // THIS IS WHAT'S CAUSING THE FLASHING!
+        }
+    }, 100);
+});
+{% endif %}
+</script>
+-->
+
+<script src="{% static 'js/delete.js' %}"></script>
 <script src="{% static 'js/bill_layout.js' %}"></script>
 <script type="module" src="{% static 'js/main.js' %}"></script>
 {% endblock %}

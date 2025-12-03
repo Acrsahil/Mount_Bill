@@ -2,6 +2,7 @@
 import { updateTotals, updateItemTotal, updateStats, updateClientStats, showAlert } from './utils.js';
 import { 
     renderInvoiceItems, 
+
     loadProducts, 
     loadClients, 
     loadInvoices, 
