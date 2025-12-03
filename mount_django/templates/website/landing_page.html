@@ -1,0 +1,21 @@
+{%extends 'layout.html'%}
+{% load static %}
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'css/landing_page.css' %}">
+{% endblock %}
+{%block content%}
+<div class="landing-container">
+     <div class="landing-header">
+        <h1>Manage Your Personal/Business Finances in One Place</h1>
+        <h2>“Create professional invoices, track expenses, and keep your finances organized—all in one simple digital platform.”</h2>
+    </div>
+    <div class="btn-container">
+        {%if user.is_authenticated%}
+            <button class="login-button" type="button" onclick="window.location.href={% url 'bill' %}">Login</button>
+        {%else%}
+            <button class="login-button" type="button" onclick="window.location.href={% url 'login' %}">Login</button>
+        {%endif%}
+        <button class="signup-button" type="button">Signup</button>
+    </div>
+</div>
+ {%endblock%}
