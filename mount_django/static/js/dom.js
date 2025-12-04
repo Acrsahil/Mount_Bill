@@ -261,6 +261,7 @@ export function loadProducts(products, productList, editProduct, deleteProduct) 
 <div class="product-price">
     <div>Cost: $${product.cost_price}</div>
     <div>Selling: $${product.selling_price}</div>
+    <div>Product Qty: ${product.product_quantity}</div>
 </div>
 <div class="product-actions">
     <button class="btn btn-primary edit-product-btn" data-id="${product.id}">
@@ -403,6 +404,7 @@ export function filterProducts(products, productSearchInput, productList, editPr
 <div class="product-price">
     <div>Cost: $${product.cost_price}</div>
     <div>Selling: $${product.selling_price}</div>
+    <div>Product Qty: ${product.product_quantity}</div>
 </div>
 <div class="product-actions">
     <button class="btn btn-primary edit-product-btn" data-id="${product.id}">
