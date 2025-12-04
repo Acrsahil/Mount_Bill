@@ -238,6 +238,7 @@ export function fillProductDetails(product) {
     document.getElementById('productCostPrice').value = product.cost_price;
     document.getElementById('productSellingPrice').value = product.selling_price;
     document.getElementById('productCategory').value = product.category || '';
+    document.getElementById('productQuantity').value = product.quantity;
 }
 
 // LOAD PRODUCTS
@@ -261,7 +262,7 @@ export function loadProducts(products, productList, editProduct, deleteProduct) 
 <div class="product-price">
     <div>Cost: $${product.cost_price}</div>
     <div>Selling: $${product.selling_price}</div>
-    <div>Product Qty: ${product.product_quantity}</div>
+    <div>Product Qty: ${product.quantity}</div>
 </div>
 <div class="product-actions">
     <button class="btn btn-primary edit-product-btn" data-id="${product.id}">
@@ -404,7 +405,7 @@ export function filterProducts(products, productSearchInput, productList, editPr
 <div class="product-price">
     <div>Cost: $${product.cost_price}</div>
     <div>Selling: $${product.selling_price}</div>
-    <div>Product Qty: ${product.product_quantity}</div>
+    <div>Product Qty: ${product.quantity}</div>
 </div>
 <div class="product-actions">
     <button class="btn btn-primary edit-product-btn" data-id="${product.id}">
