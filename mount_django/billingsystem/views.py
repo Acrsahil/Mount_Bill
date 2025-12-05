@@ -37,8 +37,9 @@ def get_serialized_data():
                         "number": f"INV-00{order.id}",
                         "client": order.customer.name,
                         "issueDate": order.order_date.date().isoformat(),
-                        "amount": summary.final_amount,
-                        "status": "pending",  # You can add status if needed
+                        # Convert Decimal to float
+                        "amount": float(summary.final_amount),
+                        "status": "pending",
                     }
                 )
     print(invoice_data)
