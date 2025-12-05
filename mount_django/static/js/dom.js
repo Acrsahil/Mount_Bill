@@ -22,7 +22,7 @@ export function renderInvoiceItems(invoiceItems, invoiceItemsBody, setupProductS
 <td><input type="text" class="item-description" data-id="${item.id}" value="${item.description}" style="width: 100%;"></td>
 <td><input type="number" class="item-quantity" data-id="${item.id}" value="${item.quantity}" min="1" style="width: 100%;"></td>
 <td><input type="number" class="item-price" data-id="${item.id}" value="${item.price}" min="0" step="0.01" style="width: 100%;"></td>
-<td class="item-total">$${(item.quantity * item.price).toFixed(2)}</td>
+<td class="item-total">$${((item.quantity || 0) * (item.price || 0)).toFixed(2)}</td>
 <td><button class="remove-item-btn" data-id="${item.id}"><i class="fas fa-trash"></i></button></td>
 `;
         invoiceItemsBody.appendChild(row);
@@ -291,7 +291,6 @@ export function loadProducts(products, productList, editProduct, deleteProduct) 
 }
 
 // Load clients
-// In dom.js or wherever loadClients is defined
 export function loadClients(clients, clientsTableBody) {
     if (!clientsTableBody) return;
     
@@ -302,7 +301,7 @@ export function loadClients(clients, clientsTableBody) {
         row.innerHTML = `
             <td>${client.name}</td>
             <td>${client.email || '-'}</td>
-            <td>${client.phone || '-'}</td>  <!-- ADD PHONE COLUMN -->
+            <td>${client.phone || '-'}</td>
             <td class="action-cell">
                 <div class="action-btn action-view">
                     <i class="fas fa-eye"></i>
@@ -318,20 +317,24 @@ export function loadClients(clients, clientsTableBody) {
         clientsTableBody.appendChild(row);
     });
 }
-// Load invoices
-export function loadInvoices(invoices, invoicesTableBody) {
+
+// Load invoices - FIXED VERSION
+export function loadInvoices(invoices, invoicesTableBody, csrfToken = '') {
     if (!invoicesTableBody) return;
 
     invoicesTableBody.innerHTML = '';
 
     invoices.forEach(invoice => {
+        // Ensure amount is a valid number, use 0 as default
+        const amount = invoice.amount || 0;
+        
         const row = document.createElement('tr');
         row.innerHTML = `
-<td>${invoice.number}</td>
-<td>${invoice.client}</td>
-<td>${formatDate(invoice.issueDate)}</td>
-<td>$${invoice.amount.toFixed(2)}</td>
-<td><span class="status status-${invoice.status}">${invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}</span></td>
+<td>${invoice.number || `INV-${invoice.id}`}</td>
+<td>${invoice.client || 'Unknown Client'}</td>
+<td>${formatDate(invoice.issueDate || invoice.date || new Date().toISOString())}</td>
+<td>$${parseFloat(amount).toFixed(2)}</td>
+<td><span class="status status-${invoice.status || 'pending'}">${(invoice.status || 'pending').charAt(0).toUpperCase() + (invoice.status || 'pending').slice(1)}</span></td>
 <td class="action-cell">
     <div class="action-btn action-view">
         <i class="fas fa-eye"></i>
@@ -344,30 +347,32 @@ export function loadInvoices(invoices, invoicesTableBody) {
     </div>
 </td>
 `;
-console.log(`${invoice.id}`)
+        console.log(`Invoice ${invoice.id} - Amount: ${amount}`);
         invoicesTableBody.appendChild(row);
     });
 }
 
-
-// Filter invoices
+// Filter invoices - FIXED VERSION
 export function filterInvoices(invoices, searchInput, invoicesTableBody) {
     const searchTerm = searchInput.value.toLowerCase();
     const filteredInvoices = invoices.filter(invoice => 
-        invoice.number.toLowerCase().includes(searchTerm) ||
-            invoice.client.toLowerCase().includes(searchTerm)
+        (invoice.number && invoice.number.toLowerCase().includes(searchTerm)) ||
+        (invoice.client && invoice.client.toLowerCase().includes(searchTerm))
     );
 
     invoicesTableBody.innerHTML = '';
 
     filteredInvoices.forEach(invoice => {
+        // Ensure amount is a valid number, use 0 as default
+        const amount = invoice.amount || 0;
+        
         const row = document.createElement('tr');
         row.innerHTML = `
-<td>${invoice.number}</td>
-<td>${invoice.client}</td>
-<td>${formatDate(invoice.issueDate)}</td>
-<td>$${invoice.amount.toFixed(2)}</td>
-<td><span class="status status-${invoice.status}">${invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}</span></td>
+<td>${invoice.number || `INV-${invoice.id}`}</td>
+<td>${invoice.client || 'Unknown Client'}</td>
+<td>${formatDate(invoice.issueDate || invoice.date || new Date().toISOString())}</td>
+<td>$${parseFloat(amount).toFixed(2)}</td>
+<td><span class="status status-${invoice.status || 'pending'}">${(invoice.status || 'pending').charAt(0).toUpperCase() + (invoice.status || 'pending').slice(1)}</span></td>
 <td class="action-cell">
     <div class="action-btn action-view">
         <i class="fas fa-eye"></i>
@@ -437,8 +442,8 @@ export function filterClients(clients, clientSearchInput, clientsTableBody) {
     const searchTerm = clientSearchInput.value.toLowerCase();
     const filteredClients = clients.filter(client => 
         client.name.toLowerCase().includes(searchTerm) ||
-            client.email.toLowerCase().includes(searchTerm) ||
-            (client.phone && client.phone.toLowerCase().includes(searchTerm))
+        (client.email && client.email.toLowerCase().includes(searchTerm)) ||
+        (client.phone && client.phone.toLowerCase().includes(searchTerm))
     );
 
     if (!clientsTableBody) return;
@@ -450,11 +455,11 @@ export function filterClients(clients, clientSearchInput, clientsTableBody) {
         row.innerHTML = `
 <td>CLI-${client.id.toString().padStart(3, '0')}</td>
 <td>${client.name}</td>
-<td>${client.email}</td>
-<td>${client.address}</td>
+<td>${client.email || '-'}</td>
+<td>${client.address || '-'}</td>
 <td>${client.phone || 'N/A'}</td>
 <td>${client.totalInvoices || 0}</td>
-<td>$${(client.totalSpent || 0).toFixed(2)}</td>
+<td>$${((client.totalSpent || 0)).toFixed(2)}</td>
 <td class="action-cell">
     <div class="action-btn action-view">
         <i class="fas fa-eye"></i>

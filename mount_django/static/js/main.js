@@ -29,10 +29,6 @@ import {
 
 import { setupTabs } from './tabs.js';
 
-document.addEventListener('DOMContentLoaded', function() {
-    setupTabs();
-});
-
 // ULTRA SAFE INITIALIZATION
 console.log('Bill.js loading...');
 
@@ -53,10 +49,12 @@ const invoices = Array.isArray(window.djangoData.invoices) ? window.djangoData.i
 const products = Array.isArray(window.djangoData.products) ? window.djangoData.products : [];
 const productCategories = Array.isArray(window.djangoData.product_cat) ? window.djangoData.product_cat : [];
 let clients = Array.isArray(window.djangoData.clients) ? window.djangoData.clients : [];
+const csrfToken = window.djangoData.csrfToken || "";
 
 // Make these available globally for API functions
 window.invoices = invoices;
 window.products = products;
+window.csrfToken = csrfToken; // Make csrfToken available globally
 
 // State management - using window object for shared mutable state
 window.invoiceItems = [];
@@ -72,6 +70,7 @@ console.log('✅ Data loaded successfully:');
 console.log('Products count:', products.length);
 console.log('Product Categories count:', productCategories.length);
 console.log('Clients count:', clients.length);
+console.log('CSRF Token present:', !!csrfToken);
 
 // DOM Elements
 const createInvoiceBtn = document.getElementById('createInvoiceBtn');
@@ -106,13 +105,6 @@ const tabContents = document.querySelectorAll('.tab-content');
 const addClientBtn = document.getElementById('addClientBtn');
 
 // Wrapper functions for edit/delete product
-
-// Add this modal functionality to your main.js
-
-// Modal functionality
-
-// Call this function when your main.js loads
-
 function editProductWrapper(productId) {
     editProduct(productId);
 }
@@ -128,16 +120,37 @@ window.loadProducts = function() {
 
 // Initialize the app
 document.addEventListener('DOMContentLoaded', function() {
-    // Set today's date as default
-    const today = new Date().toISOString().split('T')[0];
-    if (invoiceDate) invoiceDate.value = today;
+    console.log('DOM fully loaded, initializing app...');
+    
+    // Setup tabs first
+    setupTabs();
+    
+    // Set today's date as default if invoiceDate exists
+    if (invoiceDate) {
+        const today = new Date().toISOString().split('T')[0];
+        invoiceDate.value = today;
+    }
 
-    // Load initial data
-    loadInvoices(invoices, invoicesTableBody);
-    loadProducts(products, productList, editProductWrapper, deleteProductWrapper);
-    loadClients(clients, clientsTableBody);
+    // Load initial data only if the elements exist
+    if (invoicesTableBody) {
+        loadInvoices(invoices, invoicesTableBody, csrfToken);
+    } else {
+        console.warn('invoicesTableBody not found, skipping invoice loading');
+    }
+    
+    if (productList) {
+        loadProducts(products, productList, editProductWrapper, deleteProductWrapper);
+    } else {
+        console.warn('productList not found, skipping product loading');
+    }
+    
+    if (clientsTableBody) {
+        loadClients(clients, clientsTableBody);
+    } else {
+        console.warn('clientsTableBody not found, skipping client loading');
+    }
 
-    // Set up event listeners
+    // Set up event listeners if all required elements exist
     setupEventListeners(
         createInvoiceBtn,
         addProductBtn,
@@ -171,21 +184,31 @@ document.addEventListener('DOMContentLoaded', function() {
         addClientModal
     );
 
-    // Setup client search functionality
-    setupClientSearch();
-
-    // Setup product name search functionality
-    setupProductNameSearch();
-
-    // Setup category search functionality
-    setupCategorySearch();
+    // Setup search functionality
+    if (document.getElementById('clientName')) {
+        setupClientSearch();
+    }
+    
+    if (document.getElementById('productName')) {
+        setupProductNameSearch();
+    }
+    
+    if (document.getElementById('productCategory')) {
+        setupCategorySearch();
+    }
 
     // Debug: Check if products loaded correctly
     console.log('Database products loaded:', products);
     console.log('Product categories loaded:', productCategories);
     console.log('Clients loaded:', clients);
     
-    // Initialize stats
-    updateStats(invoices);
-    updateClientStats(clients);
+    // Initialize stats if needed
+    try {
+        updateStats(invoices);
+        updateClientStats(clients);
+    } catch (error) {
+        console.warn('Could not update stats:', error);
+    }
+    
+    console.log('✅ App initialized successfully');
 });
