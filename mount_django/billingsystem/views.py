@@ -50,6 +50,7 @@ def get_serialized_data():
             "name": p.name,
             "cost_price": float(p.cost_price),
             "selling_price": float(p.selling_price),
+            "quantity": p.product_quantity,
             "category": p.category.name if p.category else "",
         }
         for p in products
@@ -120,7 +121,21 @@ def save_product(request):
         # Handle both old and new price formats
         cost_price = data.get("cost_price")
         selling_price = data.get("selling_price")
+        quantity = data.get("quantity")
+        user=request.user
+        company = None
+        if user.owned_company:
+            company=user.owned_company
+        elif user.active_company:
+            company=user.active_company
+        if not company:
+            return JsonResponse(
+                {
+                "success": False,
+                "message": "No company for the user"
 
+            }
+            )
         # If using old format with single 'price' field
         if cost_price is None and selling_price is None and "price" in data:
             cost_price = data.get("price")
@@ -151,6 +166,14 @@ def save_product(request):
         try:
             cost_price = float(cost_price)
             selling_price = float(selling_price)
+            quantity = int(quantity)
+            
+            if quantity<=0:
+                return JsonResponse(
+                    {"success": False,"error":"Product quantity cannot be 0 or less."}, 
+                    status=400
+                )
+                
             if cost_price <= 0 or selling_price <= 0:
                 return JsonResponse(
                     {"success": False, "error": "Prices must be positive"}, status=400
@@ -169,23 +192,27 @@ def save_product(request):
             )
 
         # Check for existing product
-        if Product.objects.filter(name__iexact=name).exists():
+        if Product.objects.filter(name__iexact=name,company=company).exists():
             return JsonResponse(
                 {"success": False, "error": "Product already exists"}, status=400
             )
 
-        # Get or create category
+        # Get or create category  
+     
+        
         category = None
         if category_name:
-            category, _ = ProductCategory.objects.get_or_create(name=category_name)
+            category, _ = ProductCategory.objects.get_or_create(name=category_name,company=company)
 
-        # Create product
+            # Create product
         product = Product.objects.create(
             name=name,
             cost_price=cost_price,
             selling_price=selling_price,
             category=category,
-        )
+            product_quantity=quantity,
+            company=company
+            )
 
         return JsonResponse(
             {
@@ -197,9 +224,11 @@ def save_product(request):
                     "cost_price": float(product.cost_price),
                     "selling_price": float(product.selling_price),
                     "category": product.category.name if product.category else "",
-                },
-            }
-        )
+                    "quantity":product.product_quantity,
+                    },
+                }
+            )
+ 
 
     except Exception as e:
         print(f"Server error in save_product: {str(e)}")
