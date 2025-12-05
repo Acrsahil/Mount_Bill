@@ -9,7 +9,7 @@ from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from .forms import UserForm
-
+from django.contrib.auth import authenticate,login
 from .models import (
     Bill,
     Customer,
@@ -110,7 +110,17 @@ def signup_page(request):
         form = UserForm()
     return render(request,'registration/signup.html',{'form':form})
 
-
+def login_page(request):
+    if request.method=="POST":
+        username=request.POST['username']
+        password=request.POST['password']
+        user=authenticate(request,username=username,password=password)
+        if user is not None:
+            login(request,user)
+            return redirect('dashboard')
+        else:
+            return redirect('signup_page')
+        
 @login_required
 @csrf_exempt
 @require_POST
