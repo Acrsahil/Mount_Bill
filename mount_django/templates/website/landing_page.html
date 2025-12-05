@@ -11,11 +11,11 @@
     </div>
     <div class="btn-container">
         {%if user.is_authenticated%}
-            <button class="login-button" type="button" onclick="window.location.href={% url 'dashboard' %}">Login</button>
+            <button class="login-button" type="button" onclick="window.location.href='{% url 'dashboard' %}'">Login</button>
         {%else%}
-            <button class="login-button" type="button" onclick="window.location.href={% url 'login' %}">Login</button>
+            <button class="login-button" type="button" onclick="window.location.href='{% url 'login' %}'">Login</button>
         {%endif%}
-        <button class="signup-button" type="button">Signup</button>
+        <button class="signup-button" type="button" onclick="window.location.href='{% url 'signup_page' %}'">Signup</button>
     </div>
 </div>
  {%endblock%}

@@ -1,6 +1,6 @@
 import json
 from datetime import datetime
-
+from django.shortcuts import redirect
 from django.contrib.auth.decorators import login_required
 from django.core.serializers import serialize
 from django.http import JsonResponse
@@ -8,6 +8,7 @@ from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
+from .forms import UserForm
 
 from .models import (
     Bill,
@@ -98,6 +99,16 @@ def dashboard(request):
                 "active_tab": "dashboard",
             },
         )
+
+def signup_page(request):
+    if request.method=="POST":
+        form=UserForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('login')
+    else:
+        form = UserForm()
+    return render(request,'registration/signup.html',{'form':form})
 
 
 @login_required

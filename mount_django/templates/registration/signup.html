@@ -1,0 +1,27 @@
+{%extends 'layout.html'%}
+{%load static %}
+{%block title%}SignUp Page{%endblock%}
+  {% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+    <link rel="stylesheet" href="{% static 'css/signup.css' %}">
+    {% endblock %}
+{%block content%}
+<div class="SignUp-container">
+    <div class="signup-header">
+        <h2> <i class='fas fa-user-pen'></i>&nbsp;Create an account</h2>
+    </div>
+<form method="POST">
+    {%csrf_token%}
+    {{form.non_field_errors}}
+    {%for field in form%}
+    
+    <div class="form-container">
+        {{field.label_tag}}
+        {{field}}
+        {{form.errors}}
+    <div>
+    {%endfor%}
+    <button type="submit">Register</button>
+</form>
+</div>
+{%endblock%}

@@ -25,7 +25,8 @@ body {
     padding: 20px;
 }
 
-.login-container {
+.login-container,
+.SignUp-container{
     background: white;
     border-radius: 20px;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
@@ -46,7 +47,8 @@ body {
     }
 }
 
-.login-header {
+.login-header,
+.signup-header {
     background: linear-gradient(135deg, var(--primary), var(--primary-dark));
     color: white;
     padding: 40px 30px;
