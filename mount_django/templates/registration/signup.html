@@ -12,15 +12,13 @@
     </div>
     {%if form.errors or form.non_field_errors%}
     <div class="error-popup" id="error-popup">
-        <strong>There were some problem</strong>
-        <ul>
             {%for field in form%}
                 {%for error in field.errors%}
-                <li>{{error}}</li>
+                {{error}}
                 {%endfor%}
             {%endfor%}
             {%for error in form.non_field_errors%}
-                <li>{{error}}</li>
+                {{error}}
             {%endfor%}
     </div>
     {%endif%}

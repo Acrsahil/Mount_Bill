@@ -24,11 +24,12 @@ from django.urls import (
     path,
 )
 
-from . import views
-
+from . import views as project_views
+from billingsystem import views as app_views
 urlpatterns = [
     # path("", views.home, name="home"),  # Root URL uses custom home view
-    path("", views.landing_page, name="landing_page"),
+    path("", project_views.landing_page, name="landing_page"),
+    path("signup/",app_views.signup_page,name="signup_page"),
     path(
         "login/",
         auth_views.LoginView.as_view(template_name="registration/login.html"),
