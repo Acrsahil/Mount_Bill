@@ -10,18 +10,34 @@
     <div class="signup-header">
         <h2> <i class='fas fa-user-pen'></i>&nbsp;Create an account</h2>
     </div>
+    {%if form.errors or form.non_field_errors%}
+    <div class="error-popup" id="error-popup">
+        <strong>There were some problem</strong>
+        <ul>
+            {%for field in form%}
+                {%for error in field.errors%}
+                <li>{{error}}</li>
+                {%endfor%}
+            {%endfor%}
+            {%for error in form.non_field_errors%}
+                <li>{{error}}</li>
+            {%endfor%}
+    </div>
+    {%endif%}
 <form method="POST">
     {%csrf_token%}
-    {{form.non_field_errors}}
     {%for field in form%}
-    
-    <div class="form-container">
-        {{field.label_tag}}
-        {{field}}
-        {{form.errors}}
-    <div>
+        <div class="form-container">
+            <div class="form-field">
+                {{field.label_tag}}
+                {{field}}
+            </div>
+        <div>
     {%endfor%}
+    <div class="btn-container2">
     <button type="submit">Register</button>
+    </div>
 </form>
 </div>
+<script src="{% static 'js/signup.js' %}"></script>
 {%endblock%}

@@ -10,11 +10,11 @@
         <h2>“Create professional invoices, track expenses, and keep your finances organized—all in one simple digital platform.”</h2>
     </div>
     <div class="btn-container">
-        {%if user.is_authenticated%}
-            <button class="login-button" type="button" onclick="window.location.href='{% url 'dashboard' %}'">Login</button>
-        {%else%}
-            <button class="login-button" type="button" onclick="window.location.href='{% url 'login' %}'">Login</button>
-        {%endif%}
+        {% comment %} {%if user.is_authenticated%} {% endcomment %}
+            {% comment %} <button class="login-button" type="button" onclick="window.location.href='{% url 'dashboard' %}'">Login</button>
+        {%else%} {% endcomment %}
+        <button class="login-button" type="button" onclick="window.location.href='{% url 'login' %}'">Login</button>
+        {% comment %} {%endif%} {% endcomment %}
         <button class="signup-button" type="button" onclick="window.location.href='{% url 'signup_page' %}'">Signup</button>
     </div>
 </div>

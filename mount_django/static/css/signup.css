@@ -1,0 +1,93 @@
+.form-container{
+    display:flex;
+    flex-direction: column;
+    gap:15px;
+}
+.form-field {
+    display: flex;
+    flex-direction: column; 
+}
+.form-field input {
+    margin-left: 10px;
+    width:400px;
+    padding: 10px 10px;    
+    font-size: 15px;       
+    border: 1px solid #ccc;
+    border-radius: 5px;    
+    outline: none;
+    transition: 0.3s;      
+}
+
+.form-field input:focus {
+    border-color: #007bff; 
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+}
+.form-container label{
+    font-size: 20px;
+    padding:10px;
+}
+.btn-container2{
+    display:flex;
+    justify-content: center;
+    padding:20px;
+}
+.btn-container2 button{
+    padding:0.6em;
+    color:white;
+    background-color: blue;
+    border-radius: 5px;
+}
+.error-popup {
+    background: #f8d7da;
+    color: #721c24;
+    padding: 12px 16px;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.15);
+    font-size: 14px;
+    margin-bottom: 10px;       /* stays just above the form */
+    opacity: 1;
+    transition: opacity 0.5s ease;
+  }
+
+  .error-popup ul {
+    margin: 8px 0 0;
+    padding-left: 18px;
+  }
+
+  .error-popup.hide {
+    opacity: 0;                /* fade out in place */
+  }
+
+  /* ---------- Mobile styles ---------- */
+@media (max-width: 600px) {
+  .form-container {
+    padding: 0 12px;          /* add some side padding on small screens */
+  }
+
+  .form-field input {
+    width: 100%;              /* full width on mobile */
+    margin-left: 0;           /* remove left offset so it aligns with label */
+    box-sizing: border-box;   /* include padding in width */
+  }
+
+  .form-container label {
+    font-size: 16px;          /* slightly smaller labels */
+    padding: 6px 0;
+  }
+
+  .btn-container2 {
+    padding: 12px 0;
+  }
+
+  .btn-container2 button {
+    width: 100%;              /* full-width button on mobile */
+    max-width: 100%;
+  }
+
+  .error-popup {
+    top: 10px;
+    right: 50%;
+    transform: translateX(50%);  /* center the popup */
+    max-width: 90vw;             /* prevent overflow on small screens */
+  }
+}
