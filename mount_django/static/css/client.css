@@ -1,0 +1,25 @@
+.tab-contents {
+  display: none;  
+}
+
+.tab-contents.active {
+  display: block; 
+}
+.tab-links {
+  font-size: 18px;
+  border: none;
+  background: none;
+  padding: 8px 16px;
+  cursor: pointer;
+}
+.tab-links.active {
+  border-bottom: 2px solid #007bff;
+  color:#0000ff;
+}
+
+.tab-links:hover{
+  background: rgb(243, 240, 240);
+}
+
+
+

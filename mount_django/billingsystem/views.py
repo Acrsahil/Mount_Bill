@@ -61,6 +61,8 @@ def get_serialized_data():
             "id": c.id,
             "name": c.name,
             "phone": c.phone,
+            "email": c.email,
+            "address": c.address,
         }
         for c in customers
     ]
@@ -380,6 +382,9 @@ def save_client(request):
         # Extract client data
         name = data.get("name", "").strip()
         phone = data.get("phone", "").strip()
+        email = data.get("email", "").strip()
+        pan_id = data.get("pan_id", "").strip()
+        address = data.get("address", "").strip()
         user = request.user
 
         company = None
@@ -390,7 +395,7 @@ def save_client(request):
             company = user.active_company
 
         if company:
-            client = Customer.objects.create(company=company, name=name, phone=phone)
+            client = Customer.objects.create(company=company, name=name, phone=phone,email=email,pan_id=pan_id,address=address)
             return JsonResponse(
                 {
                     "success": True,
@@ -399,7 +404,10 @@ def save_client(request):
                         "id": client.id,
                         "name": client.name,
                         "phone": client.phone,
-                    },
+                        "email": client.email,
+                        "pan_id": client.pan_id,
+                        "address": client.address,
+                        },
                 }
             )
 
