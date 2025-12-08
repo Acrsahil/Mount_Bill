@@ -132,7 +132,7 @@ def save_product(request):
             return JsonResponse(
                 {
                 "success": False,
-                "message": "No company for the user"
+                "error": "No company for the user"
 
             }
             )
@@ -249,7 +249,6 @@ def save_invoice(request):
         invoice_items = data.get("items", [])
         global_discount = float(data.get("globalDiscount", 0))
         global_tax = float(data.get("globalTax", 0))
-
         # Consolidated validation
         if not client_name:
             return JsonResponse(
