@@ -1,0 +1,30 @@
+.invoice-container {
+    width: 100%;
+    min-height: 100vh;
+    padding: 25px 30px;
+    background: #f6f7fb;
+}
+
+.invoice-content {
+    width: 100%;
+    background: #fff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+}
+
+.invoice-header{
+    font-size: 20px;
+    margin-bottom: 20px;;
+}
+.invoice-body{
+    background-color: white;
+}
+.invoice-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+    margin-top: 30px;
+    width: 100%;
+}
+

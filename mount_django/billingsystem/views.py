@@ -116,12 +116,11 @@ def save_product(request):
         print("Data keys:", list(data.keys()))
 
         name = data.get("name", "").strip()
-        category_name = data.get("category", "").strip()
-
         # Handle both old and new price formats
         cost_price = data.get("cost_price")
         selling_price = data.get("selling_price")
         quantity = data.get("quantity")
+        category_name = data.get("category", "").strip()
         user=request.user
         company = None
         if user.owned_company:
@@ -209,8 +208,8 @@ def save_product(request):
             name=name,
             cost_price=cost_price,
             selling_price=selling_price,
-            category=category,
             product_quantity=quantity,
+            category=category,
             company=company
             )
 
@@ -223,8 +222,8 @@ def save_product(request):
                     "name": product.name,
                     "cost_price": float(product.cost_price),
                     "selling_price": float(product.selling_price),
-                    "category": product.category.name if product.category else "",
                     "quantity":product.product_quantity,
+                    "category": product.category.name if product.category else "",
                     },
                 }
             )
@@ -436,6 +435,8 @@ def get_common_context(active_tab="dashboard"):
         "active_tab": active_tab,  # This is the key!
     }
 
+def create_invoice(request):
+    return render(request,"website/create_invoice.html")
 
 def invoices(request):
     context = get_common_context("invoices")

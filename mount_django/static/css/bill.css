@@ -494,8 +494,7 @@ th {
 }
 
 .invoice-items-table th {
-    background: linear-gradient(135deg, var(--primary), var(--secondary));
-    color: white;
+    color:grey;
     padding: 12px 10px;
     text-align: left;
     font-size: 13px;

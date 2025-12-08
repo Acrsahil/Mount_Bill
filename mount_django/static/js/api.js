@@ -161,7 +161,7 @@ export async function saveProduct(addProductModal) {
     const productCostPrice = document.getElementById('productCostPrice')?.value;
     const productSellingPrice = document.getElementById('productSellingPrice')?.value;
     const productPrice = document.getElementById('productPrice')?.value; // Fallback for old field name
-    const productCategory = document.getElementById('productCategory').value.trim();
+    const productCategory = document.getElementById('productCategory').value;
     const quantity = document.getElementById('productQuantity').value;
 
     // Client-side validation
@@ -192,8 +192,8 @@ export async function saveProduct(addProductModal) {
             name: productName,
             cost_price: productCostPrice ? parseFloat(productCostPrice) : 0,
             selling_price: parseFloat(productSellingPrice || productPrice),
-            category: productCategory,
             quantity: quantity,
+            category: productCategory,     
         };
         console.log('Saving product:', productData);
         console.log('Sending this data:', productData);

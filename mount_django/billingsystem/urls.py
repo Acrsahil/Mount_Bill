@@ -14,6 +14,7 @@ urlpatterns = [
     path("save-invoice/", views.save_invoice, name="save_invoice"),
     path("delete_invoice/<int:id>/", views.delete_invoice, name="delete_invoice"),
     path("invoices/", views.invoices, name="invoices"),
+    path("create/",views.create_invoice,name="create_invoice"),
     path(
         "products/", views.products, name="products"
     ),  # FIXED: views.products not views.Product
