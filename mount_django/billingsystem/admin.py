@@ -168,7 +168,7 @@ class ProductAdmin(admin.ModelAdmin):
 # Order List Admin
 @admin.register(OrderList)
 class OrderListAdmin(admin.ModelAdmin):
-    list_display = ("id", "customer", "company", "order_date", "created_by")
+    list_display = ("id", "customer", "company", "order_date", "created_by","payment_status")
     list_filter = ("company", "order_date")
     search_fields = ("customer__name", "company__name", "created_by__username")
     raw_id_fields = ("customer", "created_by")
