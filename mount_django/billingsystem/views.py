@@ -1,5 +1,6 @@
 import json
 from datetime import datetime
+from decimal import Decimal
 
 from django.contrib.auth.decorators import login_required
 from django.core.serializers import serialize
@@ -61,6 +62,8 @@ def get_serialized_data():
             "id": c.id,
             "name": c.name,
             "phone": c.phone,
+            "email": c.email,
+            "address": c.address,
         }
         for c in customers
     ]
@@ -122,20 +125,17 @@ def save_product(request):
         cost_price = data.get("cost_price")
         selling_price = data.get("selling_price")
         quantity = data.get("quantity")
-        user=request.user
+        user = request.user
+
         company = None
         if user.owned_company:
-            company=user.owned_company
+            company = user.owned_company
         elif user.active_company:
-            company=user.active_company
-        if not company:
-            return JsonResponse(
-                {
-                "success": False,
-                "error": "No company for the user"
+            company = user.active_company
 
-            }
-            )
+        if not company:
+            print("ma cheai product ko not company vitra xuu!")
+            return JsonResponse({"success": False, "error": "No company for the user"})
         # If using old format with single 'price' field
         if cost_price is None and selling_price is None and "price" in data:
             cost_price = data.get("price")
@@ -167,13 +167,16 @@ def save_product(request):
             cost_price = float(cost_price)
             selling_price = float(selling_price)
             quantity = int(quantity)
-            
-            if quantity<=0:
+
+            if quantity <= 0:
                 return JsonResponse(
-                    {"success": False,"error":"Product quantity cannot be 0 or less."}, 
-                    status=400
+                    {
+                        "success": False,
+                        "error": "Product quantity cannot be 0 or less.",
+                    },
+                    status=400,
                 )
-                
+
             if cost_price <= 0 or selling_price <= 0:
                 return JsonResponse(
                     {"success": False, "error": "Prices must be positive"}, status=400
@@ -192,17 +195,18 @@ def save_product(request):
             )
 
         # Check for existing product
-        if Product.objects.filter(name__iexact=name,company=company).exists():
+        if Product.objects.filter(name__iexact=name, company=company).exists():
             return JsonResponse(
                 {"success": False, "error": "Product already exists"}, status=400
             )
 
-        # Get or create category  
-     
-        
+        # Get or create category
+
         category = None
         if category_name:
-            category, _ = ProductCategory.objects.get_or_create(name=category_name,company=company)
+            category, _ = ProductCategory.objects.get_or_create(
+                name=category_name, company=company
+            )
 
             # Create product
         product = Product.objects.create(
@@ -211,8 +215,8 @@ def save_product(request):
             selling_price=selling_price,
             category=category,
             product_quantity=quantity,
-            company=company
-            )
+            company=company,
+        )
 
         return JsonResponse(
             {
@@ -224,11 +228,10 @@ def save_product(request):
                     "cost_price": float(product.cost_price),
                     "selling_price": float(product.selling_price),
                     "category": product.category.name if product.category else "",
-                    "quantity":product.product_quantity,
-                    },
-                }
-            )
- 
+                    "quantity": product.product_quantity,
+                },
+            }
+        )
 
     except Exception as e:
         print(f"Server error in save_product: {str(e)}")
@@ -249,6 +252,24 @@ def save_invoice(request):
         invoice_items = data.get("items", [])
         global_discount = float(data.get("globalDiscount", 0))
         global_tax = float(data.get("globalTax", 0))
+        user = request.user
+
+        company = None
+        if user.owned_company:
+            company = user.owned_company
+
+        if user.active_company:
+            company = user.active_company
+
+        if not company:
+            print("hello")
+            return JsonResponse(
+                {
+                    "success": False,
+                    "error": "You are not associated with any company. Please contact your administrator.",
+                },
+            )
+
         # Consolidated validation
         if not client_name:
             return JsonResponse(
@@ -281,7 +302,9 @@ def save_invoice(request):
             invoice_date = timezone.now()
 
         # Create order
-        order = OrderList.objects.create(customer=customer, order_date=invoice_date)
+        order = OrderList.objects.create(
+            company=company, customer=customer, order_date=invoice_date
+        )
 
         # Process invoice items
         total_amount = 0
@@ -289,7 +312,6 @@ def save_invoice(request):
             product_name = item.get("productName", "").strip()
             quantity = int(item.get("quantity", 1))
             price = float(item.get("price", 0))
-
             if not product_name:
                 continue
 
@@ -302,7 +324,7 @@ def save_invoice(request):
                 name=product_name,
                 defaults={
                     # Default cost price (80% of selling)
-                    "cost_price": price * 0.8,
+                    # "cost_price": price * 0.8,
                     "selling_price": price,
                     "category": default_category,
                 },
@@ -312,13 +334,13 @@ def save_invoice(request):
             Bill.objects.create(
                 order=order,
                 product=product,
-                product_price=price,
-                quantity=quantity,
+                product_price=Decimal(
+                    str(price)
+                ),  # Convert to Decimal    quantity=quantity,
                 bill_date=timezone.now(),
             )
 
             total_amount += quantity * price
-
         # Create order summary
         order_summary = OrderSummary.objects.create(
             order=order,
@@ -327,7 +349,9 @@ def save_invoice(request):
             tax=global_tax,
         )
         order_summary.calculate_totals()
+        print(order_summary)
 
+        print("it passed order creation section!")
         return JsonResponse(
             {
                 "success": True,
@@ -379,17 +403,28 @@ def save_client(request):
         # Extract client data
         name = data.get("name", "").strip()
         phone = data.get("phone", "").strip()
+        email = data.get("email", "").strip()
+        pan_id = data.get("pan_id", "").strip()
+        address = data.get("address", "").strip()
         user = request.user
 
         company = None
         if user.owned_company:
+            print("hello")
             company = user.owned_company
 
         elif user.active_company:
             company = user.active_company
 
         if company:
-            client = Customer.objects.create(company=company, name=name, phone=phone)
+            client = Customer.objects.create(
+                company=company,
+                name=name,
+                phone=phone,
+                email=email,
+                pan_id=pan_id,
+                address=address,
+            )
             return JsonResponse(
                 {
                     "success": True,
@@ -398,6 +433,9 @@ def save_client(request):
                         "id": client.id,
                         "name": client.name,
                         "phone": client.phone,
+                        "email": client.email,
+                        "pan_id": client.pan_id,
+                        "address": client.address,
                     },
                 }
             )

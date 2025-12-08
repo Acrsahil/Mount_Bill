@@ -1,5 +1,6 @@
 # billingsystem/models.py - OPTION A
 import uuid
+from decimal import Decimal
 
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
@@ -50,7 +51,7 @@ class Company(models.Model):
         return self.name
 
 
-class Customer(models.Model):
+class Customer(models.Model):  # sabina
     company = models.ForeignKey(
         Company, on_delete=models.CASCADE, related_name="customers"
     )
@@ -181,18 +182,34 @@ class OrderSummary(models.Model):
     calculated_on = models.DateTimeField(auto_now=True)
 
     def calculate_totals(self, save=True):
-        total = 0
-        for bill in self.order.bills.all():
-            total += bill.product_price * bill.quantity
+        total = Decimal("0.0")
+        total = total + 2
+        total /= Decimal("2.0")
 
-        total_after_discount = total * (1 - self.discount / 100)
-        total_after_tax = total_after_discount * (1 + self.tax / 100)
+        print(type(total))
+        print(total)
+
+        for bill in self.order.bills.all():
+            product_price_decimal = Decimal(str(bill.product_price))
+            total += product_price_decimal * bill.quantity
+            print(type(total))
+
+        discount_decimal = Decimal(str(self.discount))
+        tax_decimal = Decimal(str(self.tax))
+
+        # If discount is meant to be added (unusual but based on your original code)
+        total_after_discount = total * (
+            Decimal("1.0") + Decimal(str(discount_decimal / Decimal("100.0")))
+        )
+
+        # Calculate tax
+        total_after_tax = total_after_discount * (
+            Decimal("1.0") + tax_decimal / Decimal("100.0")
+        )
 
         self.total_amount = total
         self.final_amount = total_after_tax
 
         if save:
+            print("hello i am correct!")
             self.save()
-
-    def __str__(self):
-        return f"Summary for Order {self.order.id}"

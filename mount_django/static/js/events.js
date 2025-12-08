@@ -156,10 +156,12 @@ export async function saveClient(addClientModal, clientsTableBody) {
     // Only get fields that exist in the simplified modal
     const clientName = document.getElementById('clientNameInput').value.trim();
     const clientPhone = document.getElementById('clientPhoneInput').value.trim();
-
+    const clientAddress = document.getElementById("clientAddressInput").value.trim();
+    const clientEmail = document.getElementById('clientEmailInput').value.trim();
+    const clientPanNo = document.getElementById('clientPanNoInput').value.trim();
     // Validation
-    if (!clientName || !clientEmail || !clientPhone || !clientAddress) {
-        showAlert('Please fill in all required fields (Name, Email, Phone, Address)', 'error');
+    if (!clientName || !clientPhone) {
+        showAlert('Please fill in all required fields (Name, Phone)', 'error');
         return;
     }
 
@@ -177,7 +179,8 @@ export async function saveClient(addClientModal, clientsTableBody) {
             name: clientName,
             email: clientEmail,
             phone: clientPhone,
-            address: clientAddress
+            address: clientAddress,
+            pan_id: clientPanNo,
         };
 
         console.log('Saving client to database:', clientData);
