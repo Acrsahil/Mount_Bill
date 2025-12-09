@@ -459,22 +459,6 @@ def delete_invoice(request, id):
             return JsonResponse({"success": False, "error": "Not found"})
 
 
-# def get_common_context(active_tab="dashboard"):
-#     """Common context for all dashboard views"""
-#     products_json = serialize("json", Product.objects.all())
-#     customers_json = serialize("json", Customer.objects.all())
-#     invoices_json = serialize("json", OrderList.objects.all())
-#     categories = Product.objects.values_list("category", flat=True).distinct()
-
-#     return {
-#         "product": products_json,
-#         "product_cat": json.dumps(list(categories)),
-#         "customer": customers_json,
-#         "invoices": invoices_json,
-#         "active_tab": active_tab,  # This is the key!
-#     }
-
-
 def invoices(request):
     context = get_serialized_data(request.user,"invoices")
     return render(request, "website/bill.html", context)
