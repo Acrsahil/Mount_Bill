@@ -19,13 +19,13 @@ from .models import (
     ProductCategory,
 )
 
-
-def get_serialized_data():
+def get_serialized_data(user,active_tab="dashboard"):
     """Helper function to get serialized data for template - REDUCED DUPLICATION"""
-    products = Product.objects.select_related("category").all()
-    customers = Customer.objects.all()
-    categories = ProductCategory.objects.all()
-    orderlist = OrderList.objects.all()
+    company=user.owned_company or user.active_company
+    products = Product.objects.select_related("category").filter(company=company)
+    customers = Customer.objects.filter(company=company)
+    categories = ProductCategory.objects.filter(company=company)
+    orderlist = OrderList.objects.filter(company=company)
 
     invoice_data = []
     for order in orderlist:
@@ -75,6 +75,7 @@ def get_serialized_data():
         "customer": json.dumps(customers_data),
         "product_cat": json.dumps(categories_data),
         "invoices": json.dumps(invoice_data),
+        "active_tab": active_tab,
     }
 
 
@@ -83,11 +84,11 @@ def dashboard(request):
     """Main billing page view - SIMPLIFIED"""
     try:
         # Get both common context and serialized data
-        context = get_common_context("dashboard")  # Set active_tab="dashboard"
-        serialized_data = get_serialized_data()
+        context = get_serialized_data(request.user,"dashboard")  # Set active_tab="dashboard"
+        # serialized_data = get_serialized_data()
 
-        # Merge both dictionaries
-        context.update(serialized_data)
+        # # Merge both dictionaries
+        # context.update(serialized_data)
         print(context)
         return render(request, "website/bill.html", context)
     except Exception as e:
@@ -458,42 +459,42 @@ def delete_invoice(request, id):
             return JsonResponse({"success": False, "error": "Not found"})
 
 
-def get_common_context(active_tab="dashboard"):
-    """Common context for all dashboard views"""
-    products_json = serialize("json", Product.objects.all())
-    customers_json = serialize("json", Customer.objects.all())
-    invoices_json = serialize("json", OrderList.objects.all())
-    categories = Product.objects.values_list("category", flat=True).distinct()
+# def get_common_context(active_tab="dashboard"):
+#     """Common context for all dashboard views"""
+#     products_json = serialize("json", Product.objects.all())
+#     customers_json = serialize("json", Customer.objects.all())
+#     invoices_json = serialize("json", OrderList.objects.all())
+#     categories = Product.objects.values_list("category", flat=True).distinct()
 
-    return {
-        "product": products_json,
-        "product_cat": json.dumps(list(categories)),
-        "customer": customers_json,
-        "invoices": invoices_json,
-        "active_tab": active_tab,  # This is the key!
-    }
+#     return {
+#         "product": products_json,
+#         "product_cat": json.dumps(list(categories)),
+#         "customer": customers_json,
+#         "invoices": invoices_json,
+#         "active_tab": active_tab,  # This is the key!
+#     }
 
 
 def invoices(request):
-    context = get_common_context("invoices")
+    context = get_serialized_data(request.user,"invoices")
     return render(request, "website/bill.html", context)
 
 
 def clients(request):
-    context = get_common_context("clients")
+    context = get_serialized_data(request.user,"clients")
     return render(request, "website/bill.html", context)
 
 
 def reports(request):
-    context = get_common_context("reports")
+    context = get_serialized_data(request.user,"reports")
     return render(request, "website/bill.html", context)
 
 
 def products(request):
-    context = get_common_context("products")
+    context = get_serialized_data(request.user,"products")
     return render(request, "website/bill.html", context)
 
 
 def settings(request):
-    context = get_common_context("settings")
+    context = get_serialized_data(request.user,"settings")
     return render(request, "website/bill.html", context)
