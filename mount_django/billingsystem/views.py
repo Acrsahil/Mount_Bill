@@ -20,8 +20,12 @@ from .models import (
 )
 
 def get_serialized_data(user,active_tab="dashboard"):
-    """Helper function to get serialized data for template - REDUCED DUPLICATION"""
-    company=user.owned_company or user.active_company
+    """Helper function to get serialized data for template """
+    company=None
+    if user.owned_company:
+        company=user.owned_company
+    if user.active_company:
+        company= user.active_company
     products = Product.objects.select_related("category").filter(company=company)
     customers = Customer.objects.filter(company=company)
     categories = ProductCategory.objects.filter(company=company)
