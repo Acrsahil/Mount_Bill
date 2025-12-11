@@ -52,9 +52,9 @@
             <div class="header">
                 <h2>Dashboard</h2>
                 <div class="user-info">
-                    <div class="user-avatar">SA</div>
+                    <div class="user-avatar">{{ request.user.username.0 | upper  }}</div>
                     <div>
-                        <div>Sahil Acharya</div>
+                        <div>{{ request.user.username }}</div>
                         <div style="font-size: 12px; color: var(--gray);">Administrator</div>
                     </div>
                 </div>
@@ -154,9 +154,9 @@
             <div class="header">
                 <h2>Invoices</h2>
                 <div class="user-info">
-                    <div class="user-avatar">SA</div>
+                    <div class="user-avatar">{{ request.user.username.0 | upper  }}</div>
                     <div>
-                        <div>Sahil Acharya</div>
+                        <div>{{ request.user.username }}</div>
                         <div style="font-size: 12px; color: var(--gray);">Administrator</div>
                     </div>
                 </div>
@@ -207,9 +207,9 @@
             <div class="header">
                 <h2>Product Management</h2>
                 <div class="user-info">
-                    <div class="user-avatar">SA</div>
+                    <div class="user-avatar">{{ request.user.username.0 | upper  }}</div>
                     <div>
-                        <div>Sahil Acharya</div>
+                        <div>{{ request.user.username }}</div>
                         <div style="font-size: 12px; color: var(--gray);">Administrator</div>
                     </div>
                 </div>
@@ -246,9 +246,9 @@
             <div class="header">
                 <h2>Client Management</h2>
                 <div class="user-info">
-                    <div class="user-avatar">SA</div>
+                    <div class="user-avatar">{{ request.user.username.0 | upper  }}</div>
                     <div>
-                        <div>Sahil Acharya</div>
+                        <div>{{ request.user.username }}</div>
                         <div style="font-size: 12px; color: var(--gray);">Administrator</div>
                     </div>
                 </div>

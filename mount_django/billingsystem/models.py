@@ -116,12 +116,14 @@ class OrderList(models.Model):
         User, on_delete=models.SET_NULL, null=True, related_name="created_orders"
     )
     # payment status
-    PAYMENT_STATUS_CHOICES=[
-        ("UNPAID","Unpaid"),
-        ("PARTIAL","Partial"),
-        ("PAID","Paid")
+    PAYMENT_STATUS_CHOICES = [
+        ("UNPAID", "Unpaid"),
+        ("PARTIAL", "Partial"),
+        ("PAID", "Paid"),
     ]
-    payment_status=models.CharField(max_length=50,choices=PAYMENT_STATUS_CHOICES,default="UNPAID")
+    payment_status = models.CharField(
+        max_length=50, choices=PAYMENT_STATUS_CHOICES, default="UNPAID"
+    )
     is_simple_invoice = models.BooleanField(default=False)
     invoice_description = models.TextField(blank=True, null=True)
 

@@ -3,7 +3,6 @@ from datetime import datetime
 from decimal import Decimal
 
 from django.contrib.auth.decorators import login_required
-from django.core.serializers import serialize
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
@@ -19,13 +18,14 @@ from .models import (
     ProductCategory,
 )
 
-def get_serialized_data(user,active_tab="dashboard"):
-    """Helper function to get serialized data for template """
-    company=None
+
+def get_serialized_data(user, active_tab="dashboard"):
+    """Helper function to get serialized data for template"""
+    company = None
     if user.owned_company:
-        company=user.owned_company
+        company = user.owned_company
     if user.active_company:
-        company= user.active_company
+        company = user.active_company
     products = Product.objects.select_related("category").filter(company=company)
     customers = Customer.objects.filter(company=company)
     categories = ProductCategory.objects.filter(company=company)
@@ -88,7 +88,13 @@ def dashboard(request):
     """Main billing page view - SIMPLIFIED"""
     try:
         # Get both common context and serialized data
-        context = get_serialized_data(request.user,"dashboard")  # Set active_tab="dashboard"
+        context = get_serialized_data(
+            request.user, "dashboard"
+        )  # Set active_tab="dashboard"
+        print(
+            "yo user name hooooooooooooooooooooooooooooooooooooooooo",
+            request.user.username,
+        )
         # serialized_data = get_serialized_data()
 
         # # Merge both dictionaries
@@ -464,25 +470,25 @@ def delete_invoice(request, id):
 
 
 def invoices(request):
-    context = get_serialized_data(request.user,"invoices")
+    context = get_serialized_data(request.user, "invoices")
     return render(request, "website/bill.html", context)
 
 
 def clients(request):
-    context = get_serialized_data(request.user,"clients")
+    context = get_serialized_data(request.user, "clients")
     return render(request, "website/bill.html", context)
 
 
 def reports(request):
-    context = get_serialized_data(request.user,"reports")
+    context = get_serialized_data(request.user, "reports")
     return render(request, "website/bill.html", context)
 
 
 def products(request):
-    context = get_serialized_data(request.user,"products")
+    context = get_serialized_data(request.user, "products")
     return render(request, "website/bill.html", context)
 
 
 def settings(request):
-    context = get_serialized_data(request.user,"settings")
+    context = get_serialized_data(request.user, "settings")
     return render(request, "website/bill.html", context)
