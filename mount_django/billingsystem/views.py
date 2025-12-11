@@ -497,3 +497,29 @@ def products(request):
 def settings(request):
     context = get_common_context("settings")
     return render(request, "website/bill.html", context)
+
+
+@login_required
+def create_invoice_page(request):
+    """Full page view for creating invoice"""
+    try:
+        # Get serialized data for the invoice creation page
+        serialized_data = get_serialized_data()
+        context = {
+            "active_tab": "invoices",
+        }
+        context.update(serialized_data)
+        return render(request, "website/create_invoice.html", context)
+    except Exception as e:
+        print(f"Error in create_invoice_page view: {e}")
+        return render(
+            request,
+            "website/create_invoice.html",
+            {
+                "product": "[]",
+                "customer": "[]",
+                "product_cat": "[]",
+                "invoices": "[]",
+                "active_tab": "invoices",
+            },
+        )

@@ -1,0 +1,170 @@
+{% extends "layout.html" %}
+{% load static %}
+
+{% block title %}Create Invoice - InvoicePro{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/create_invoice.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="create-invoice-page">
+    <div class="page-header">
+        <div class="header-content">
+            <h1><i class="fas fa-file-invoice-dollar"></i> Create New Invoice</h1>
+            <button class="btn btn-light" id="cancelInvoiceBtn">
+                <i class="fas fa-times"></i> Cancel
+            </button>
+        </div>
+    </div>
+
+    <div class="page-content">
+        <!-- Three column row for invoice details -->
+        <div class="form-row-3">
+            <div class="form-group">
+                <label for="invoiceNumber">Invoice Number</label>
+                <input type="text" id="invoiceNumber" class="form-control" value="INV-001" readonly>
+            </div>
+            <div class="form-group">
+                <label for="invoiceDate">Invoice Date</label>
+                <input type="date" id="invoiceDate" class="form-control" value="">
+            </div>
+            <div class="form-group" style="position: relative;">
+                <label for="clientName">Client Name</label>
+                <input type="text" id="clientName" class="form-control client-search-input" 
+                       placeholder="Type client name (Tab to complete)...">
+                <div class="search-hint" id="client-search-hint" style="display: none; position: absolute; background: white; border: 1px solid #ddd; max-height: 150px; overflow-y: auto; z-index: 1000; width: 100%;">
+                    <!-- Client suggestions will appear here -->
+                </div>
+            </div>
+        </div>
+        
+        
+        <div class="invoice-items">
+            <div class="invoice-items-header">
+                <h4>Invoice Items</h4>
+            </div>
+            
+            <table class="invoice-items-table">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Description</th>
+                        <th>Quantity</th>
+                        <th>Price</th>
+                        <th>Discount</th>
+                        <th>Total</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="invoiceItemsBody">
+                    <!-- Invoice items will be added here -->
+                </tbody>
+                 <tfoot>
+        <tr id="subtotalRow">
+             <!-- Add Item Button -->
+            <td colspan="3"><button class="add-item-btn" id="addItemBtn">
+                <i class="fas fa-plus"></i> Add Item
+            </button></td>
+            <td class="subtotal-label">Subtotal:</td>
+            <td id="subtotalDiscount" class="subtotal-value">$0.00</td>
+            <td id="subtotalAmounts" class="subtotal-value">$0.00</td>
+            <td></td>
+        </tr>
+    </tfoot>
+            </table>
+        </div>
+        
+        <!-- Discount, Tax and Totals Section -->
+        <div class="totals-section" id="totalSection">
+            <div class="invoice-items">
+                <!--discount,tax amount button-->
+                <div class="form-group" id="additionalChargesWrapper">
+                    <button type="button" id="addDiscountBtn">+Add discount</button>
+                    <div id="discountContainer"></div>
+                    <button type="button" id="addTaxBtn">+Add Tax</button>
+                    <div id="taxContainer"></div>
+
+                    <!--for additional charges-->
+               
+                    <div id="additionalInputsContainer">
+                    <!-- Inputs will be appended here -->
+                    </div>
+                    <button type="button" id="addChargeBtn">+Add Additional Charge</button>
+                    </div>
+
+                <!-- Single row for discount and tax -->
+                {% comment %} <div class="form-row-2-compact">
+                    <div class="form-group">
+                        <label for="globalDiscount">Global Discount (%)</label>
+                        <input type="number" id="globalDiscount" class="form-control" value="0" min="0" max="100" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label for="globalTax">Tax (%)</label>
+                        <input type="number" id="globalTax" class="form-control" value="0" min="0" max="100" step="0.01">
+                    </div>
+                </div> {% endcomment %}
+              
+                
+                <!-- Totals Section -->
+                <div class="invoice-totals-compact">
+                    <table>
+                        <tr class="total-row">
+                            <td>Total:</td>
+                            <td id="totalAmount">$0.00</td>
+                        </tr>
+                        {% comment %} <tr>
+                            <td>Discount:</td>
+                            <td id="discountAmount">$0.00</td>
+                        </tr>
+                        <tr>
+                            <td>Tax:</td>
+                            <td id="taxAmount">$0.00</td>
+                        </tr> {% endcomment %}
+                        <tr>
+                            <td>Received Amount:</td>
+                            <td id="receivedAmount">$0.00</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <div class="page-footer">
+            <button class="btn btn-light" id="cancelInvoiceBtnBottom">Cancel</button>
+            <button class="btn btn-primary" id="saveInvoiceBtn">Save Invoice</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Simple and safe data structure
+window.djangoData = {
+    products: {{ product|safe }},
+    product_cat: {{ product_cat|safe }},
+    clients: {{ customer|safe }},
+    invoices: {{ invoices|safe }},
+    csrfToken: "{{ csrf_token }}",
+    active_tab: "{{ active_tab|default:'invoices' }}"
+};
+</script>
+
+<script>
+// SAFETY CHECK - Add this right before loading create_invoice.js
+if (typeof window.djangoData === 'undefined') {
+    window.djangoData = {
+        products: [],
+        product_cat: [],
+        clients: [],
+        invoices: {{ invoices|safe }},
+        csrfToken: "{{ csrf_token }}",
+        active_tab: "{{ active_tab|default:'invoices' }}"
+    };
+}
+</script>
+
+<script>const csrfToken = "{{ csrf_token }}";</script>
+<script type="module" src="{% static 'js/create_invoice.js' %}"></script>
+{% endblock %}

@@ -74,6 +74,7 @@ console.log('CSRF Token present:', !!csrfToken);
 
 // DOM Elements
 const createInvoiceBtn = document.getElementById('createInvoiceBtn');
+const createInvoiceBtnTab = document.getElementById('createInvoiceBtnTab');
 const addProductBtn = document.getElementById('addProductBtn');
 const addNewProductBtn = document.getElementById('addNewProductBtn');
 const createInvoiceModal = document.getElementById('createInvoiceModal');
@@ -183,6 +184,13 @@ document.addEventListener('DOMContentLoaded', function() {
         addProductModal,
         addClientModal
     );
+    
+    // Add event listener for createInvoiceBtnTab to navigate to full page
+    if (createInvoiceBtnTab) {
+        createInvoiceBtnTab.addEventListener('click', () => {
+            window.location.href = '/dashboard/create-invoice/';
+        });
+    }
 
     // Setup search functionality
     if (document.getElementById('clientName')) {

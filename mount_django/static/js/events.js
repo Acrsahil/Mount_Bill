@@ -579,7 +579,7 @@ function selectProductFromHint(itemId, hintElement) {
 // Handle item updates
 export function handleItemUpdate(e) {
     const itemId = parseInt(e.target.getAttribute('data-id'));
-    const field = e.target.className;
+    const field = e.target.classList[0];
     const value = e.target.value;
 
     const item = window.invoiceItems.find(i => i.id === itemId);
@@ -589,6 +589,18 @@ export function handleItemUpdate(e) {
         item.quantity = Number(value) || 1;
     } else if (field === 'item-price') {
         item.price = Number(value) || 0;
+    }
+    else if (field === 'discount-percent-input') {
+     item.discountPercent = Number(value) || 0;
+    }
+
+// Recalculate discount on change
+    item.discountAmount = Number(item.price) * Number(item.quantity) * (Number(item.discountPercent) / 100);
+
+     // Update discount amount in UI
+    const discountAmountCell = document.querySelector(`.discount-amount[data-id="${itemId}"]`);
+    if (discountAmountCell) {
+        discountAmountCell.textContent = `Rs. ${item.discountAmount.toFixed(2)}`;
     }
 
     updateItemTotal(itemId, window.invoiceItems);
