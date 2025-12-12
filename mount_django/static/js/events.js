@@ -529,7 +529,7 @@ function selectProductFromHint(itemId, hintElement) {
     const productName = hintElement.getAttribute('data-product-name');
     const sellingPrice = hintElement.getAttribute('data-product-selling-price');
     const costPrice = hintElement.getAttribute('data-product-cost-price');
-    const category = hintElement.getAttribute('data-product-category');
+    // const category = hintElement.getAttribute('data-product-category');
 
     const product = window.products.find(p => p.id === parseInt(productId));
     if (!product) return;
@@ -540,7 +540,7 @@ function selectProductFromHint(itemId, hintElement) {
     // Update the item with product details - USE SELLING PRICE for invoices
     item.productId = product.id;
     item.productName = product.name;
-    item.description = product.category || 'Product';
+    // item.description = product.category || 'Product';
     item.price = Number(product.selling_price); // Use selling price
 
     // Update the row inputs
@@ -548,11 +548,11 @@ function selectProductFromHint(itemId, hintElement) {
     if (!row) return;
 
     const searchInput = row.querySelector('.product-search-input');
-    const descriptionInput = row.querySelector('.item-description');
+    // const descriptionInput = row.querySelector('.item-description');
     const priceInput = row.querySelector('.item-price');
 
     if (searchInput) searchInput.value = product.name;
-    if (descriptionInput) descriptionInput.value = product.category || 'Product';
+    // if (descriptionInput) descriptionInput.value = product.category || 'Product';
     if (priceInput) priceInput.value = product.selling_price; // Use selling price
 
     // Hide hints
@@ -736,9 +736,10 @@ function handleClientSearchBlur(e) {
     }, 200);
 }
 
-function selectClientFromHint(hintElement) {
-    const clientId = hintElement.getAttribute('data-client-id');
-    const client = window.clients.find(c => c.id === parseInt(clientId));
+//removed the client id to client name and worked fine
+export function selectClientFromHint(hintElement) {
+    const clientName = hintElement.getAttribute('data-client-name');
+    const client = window.clients.find(c => c.name === (clientName));
     if (client) {
         fillClientDetails(client);
         hideClientSearchHint();

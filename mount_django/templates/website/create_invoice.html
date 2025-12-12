@@ -8,12 +8,12 @@
 {% endblock %}
 
 {% block content %}
-<div class="create-invoice-page">
+<div class="create-invoice-page" id="createInvoicePage">
     <div class="page-header">
         <div class="header-content">
             <h1><i class="fas fa-file-invoice-dollar"></i> Create New Invoice</h1>
-            <button class="btn btn-light" id="cancelInvoiceBtn">
-                <i class="fas fa-times"></i> Cancel
+            <button class="cancel-button" id="cancelInvoiceBtn">
+                <i class="fas fa-times"></i>
             </button>
         </div>
     </div>
@@ -21,6 +21,17 @@
     <div class="page-content">
         <!-- Three column row for invoice details -->
         <div class="form-row-3">
+            <div class="left-group">
+               <div class="form-group" style="position: relative;">
+                <label for="clientName">Client Name</label>
+                <input type="text" id="clientName" class="form-control client-search-input" 
+                       placeholder="Type client name (Tab to complete)...">
+                <div class="search-hint" id="client-search-hint" style="display: none; position: absolute; background: white; border: 1px solid #ddd; max-height: 150px; overflow-y: auto; z-index: 1000; width: 100%;">
+                    <!-- Client suggestions will appear here -->
+                </div>
+            </div>
+            </div>
+            <div class="right-column">
             <div class="form-group">
                 <label for="invoiceNumber">Invoice Number</label>
                 <input type="text" id="invoiceNumber" class="form-control" value="INV-001" readonly>
@@ -29,17 +40,9 @@
                 <label for="invoiceDate">Invoice Date</label>
                 <input type="date" id="invoiceDate" class="form-control" value="">
             </div>
-            <div class="form-group" style="position: relative;">
-                <label for="clientName">Client Name</label>
-                <input type="text" id="clientName" class="form-control client-search-input" 
-                       placeholder="Type client name (Tab to complete)...">
-                <div class="search-hint" id="client-search-hint" style="display: none; position: absolute; background: white; border: 1px solid #ddd; max-height: 150px; overflow-y: auto; z-index: 1000; width: 100%;">
-                    <!-- Client suggestions will appear here -->
-                </div>
-            </div>
         </div>
-        
-        
+        </div>
+             
         <div class="invoice-items">
             <div class="invoice-items-header">
                 <h4>Invoice Items</h4>
@@ -49,7 +52,6 @@
                 <thead>
                     <tr>
                         <th>Product</th>
-                        <th>Description</th>
                         <th>Quantity</th>
                         <th>Price</th>
                         <th>Discount</th>
@@ -63,7 +65,7 @@
                  <tfoot>
         <tr id="subtotalRow">
              <!-- Add Item Button -->
-            <td colspan="3"><button class="add-item-btn" id="addItemBtn">
+            <td colspan="2"><button class="add-item-btn" id="addItemBtn">
                 <i class="fas fa-plus"></i> Add Item
             </button></td>
             <td class="subtotal-label">Subtotal:</td>
@@ -74,68 +76,58 @@
     </tfoot>
             </table>
         </div>
-        
-        <!-- Discount, Tax and Totals Section -->
-        <div class="totals-section" id="totalSection">
+        <!-- Discount, Tax and additional section-->
+        <div class="charges" id="totalCharges">
             <div class="invoice-items">
                 <!--discount,tax amount button-->
-                <div class="form-group" id="additionalChargesWrapper">
-                    <button type="button" id="addDiscountBtn">+Add discount</button>
-                    <div id="discountContainer"></div>
-                    <button type="button" id="addTaxBtn">+Add Tax</button>
-                    <div id="taxContainer"></div>
+           <div class="form-group" id="additionalChargesWrapper">
+            <!-- Dynamic inputs will go here -->
+                <div id="discountContainer"></div>
+                <div id="taxContainer"></div>
+                <div id="additionalInputsContainer"></div>
 
-                    <!--for additional charges-->
-               
-                    <div id="additionalInputsContainer">
-                    <!-- Inputs will be appended here -->
-                    </div>
-                    <button type="button" id="addChargeBtn">+Add Additional Charge</button>
-                    </div>
+                <!-- Buttons in a row -->
+            <div class="button-row">
+            <button type="button" id="addDiscountBtn">+Add discount</button>
+            <button type="button" id="addTaxBtn">+Add Tax</button>
+            <button type="button" id="addChargeBtn">+Add Additional Charge</button>
+            </div>
+            </div>
 
-                <!-- Single row for discount and tax -->
-                {% comment %} <div class="form-row-2-compact">
-                    <div class="form-group">
-                        <label for="globalDiscount">Global Discount (%)</label>
-                        <input type="number" id="globalDiscount" class="form-control" value="0" min="0" max="100" step="0.01">
-                    </div>
-                    <div class="form-group">
-                        <label for="globalTax">Tax (%)</label>
-                        <input type="number" id="globalTax" class="form-control" value="0" min="0" max="100" step="0.01">
-                    </div>
-                </div> {% endcomment %}
-              
-                
+             </div> 
+             </div>  
                 <!-- Totals Section -->
-                <div class="invoice-totals-compact">
-                    <table>
-                        <tr class="total-row">
-                            <td>Total:</td>
-                            <td id="totalAmount">$0.00</td>
-                        </tr>
-                        {% comment %} <tr>
-                            <td>Discount:</td>
-                            <td id="discountAmount">$0.00</td>
-                        </tr>
-                        <tr>
-                            <td>Tax:</td>
-                            <td id="taxAmount">$0.00</td>
-                        </tr> {% endcomment %}
-                        <tr>
-                            <td>Received Amount:</td>
-                            <td id="receivedAmount">$0.00</td>
-                        </tr>
-                    </table>
-                </div>
+     <div class='totals-section' id="totalSection">
+    <div class="invoice-totals-compact">
+        <div class="total-column">
+            <div class="field-row">
+                <label for="totalAmount">Total:</label>
+                <input type='text' id="totalAmount" placeholder="$0.00" readonly>
+            </div>
+            <div class="field-row">
+                <label for="receivedAmount">Received Amount:</label>
+                <input type="text" id="receivedAmount">
+            </div>
+            <div class="field-row">
+                <label for="payment">Payment Mode:</label>
+                <select name="payment" id="payment">
+                    <option value="Cash">Cash</option>
+                    <option value="Cheque">Cheque</option>
+                </select>
             </div>
         </div>
+    </div>
+</div>
+
+            
+        
         
         <div class="page-footer">
             <button class="btn btn-light" id="cancelInvoiceBtnBottom">Cancel</button>
             <button class="btn btn-primary" id="saveInvoiceBtn">Save Invoice</button>
         </div>
     </div>
-</div>
+
 {% endblock %}
 
 {% block extra_js %}

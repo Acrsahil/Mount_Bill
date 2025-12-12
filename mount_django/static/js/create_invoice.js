@@ -12,6 +12,7 @@ import {
     setupProductSearchHandlers,
     handleItemUpdate,
     handleRemoveItem,
+    selectClientFromHint,
 } from './events.js';
 
 // Track currently selected hint for keyboard navigation
@@ -45,16 +46,20 @@ const clientNameInput = document.getElementById('clientName');
 const clientSearchHint = document.getElementById('client-search-hint');
 const invoiceItemsBody = document.getElementById('invoiceItemsBody');
 const addItemBtn = document.getElementById('addItemBtn');
-const saveInvoiceBtn = document.getElementById('saveInvoiceBtn');
+
 const cancelInvoiceBtn = document.getElementById('cancelInvoiceBtn');
 const cancelInvoiceBtnBottom = document.getElementById('cancelInvoiceBtnBottom');
-const globalDiscountInput = document.getElementById('globalDiscount');
-const globalTaxInput = document.getElementById('globalTax');
-// get the total section
-const totalSection = document.getElementById('totalSection');
 
+// get the charge section
+const totalCharges = document.getElementById('totalCharges');
+const totalAtFirst = document.getElementById('beforeProduct')
 // Initialize the page
 document.addEventListener('DOMContentLoaded', function() {
+    const saveInvoiceBtn = document.getElementById('saveInvoiceBtn');
+    // Save invoice button
+    if (saveInvoiceBtn) {
+        saveInvoiceBtn.addEventListener('click', () => saveInvoice());
+    }
     console.log('Create Invoice Page loaded');
     
     // Set today's date as default
@@ -89,49 +94,9 @@ document.addEventListener('DOMContentLoaded',() => {
 
 //function to show total section
 function showTotalSection(){
-    totalSection.style.display = 'block';
-}
+    totalCharges.style.display = 'block';
 
-// Setup all event listeners for the page
-function setupPageEventListeners() {
-   
-    // Add item button
-    if (addItemBtn) {
-        addItemBtn.addEventListener('click', () => addInvoiceItem());
-    }
-    
-    // Save invoice button
-    if (saveInvoiceBtn) {
-        saveInvoiceBtn.addEventListener('click', () => saveInvoice());
-    }
-    
-    // Cancel buttons
-    if (cancelInvoiceBtn) {
-        cancelInvoiceBtn.addEventListener('click', () => cancelInvoice());
-    }
-    
-    if (cancelInvoiceBtnBottom) {
-        cancelInvoiceBtnBottom.addEventListener('click', () => cancelInvoice());
-    }
-    
-    // Global discount and tax listeners
-    if (globalDiscountInput) {
-        globalDiscountInput.addEventListener('input', function(e) {
-            const value = Number(e.target.value) || 0;
-            window.globalDiscount = value;
-            updateTotals(window.invoiceItems, value, window.globalTax);
-        });
-    }
-    
-    if (globalTaxInput) {
-        globalTaxInput.addEventListener('input', function(e) {
-            const value = Number(e.target.value) || 0;
-            window.globalTax = value;
-            updateTotals(window.invoiceItems, window.globalDiscount, value);
-        });
-    }
 }
-
 
 //for discount charges
 document.getElementById('addDiscountBtn').onclick = () => { 
@@ -143,7 +108,67 @@ document.getElementById('addDiscountBtn').onclick = () => {
         </div>
     `;
     addDiscountBtn.style.display='none';
+    window.globalDiscountInput = document.getElementById('globalDiscountAmount');
 };
+
+//for tax charges
+
+addTaxBtn.onclick = () => {
+  const taxContainer = document.getElementById('taxContainer');
+
+  taxContainer.innerHTML = `
+    <div class="form-group">
+      <label for="globalTax">Tax(%)</label>
+      <input type="number" id="globalTax" class="form-control"
+             value="0" min="0" max="100" step="0.01">
+      <input type="number" id="taxAmount" class="form-control"
+             value="0" readonly>
+    </div>
+  `;
+
+  addTaxBtn.style.display = 'none'; 
+  window.globalTaxInput = document.getElementById('taxAmount');  
+};
+
+
+
+// Setup all event listeners for the page
+function setupPageEventListeners() {
+   
+    // Add item button
+    if (addItemBtn) {
+        addItemBtn.addEventListener('click', () => addInvoiceItem());
+    }
+    
+    
+    // Cancel buttons
+    if (cancelInvoiceBtn) {
+        cancelInvoiceBtn.addEventListener('click', () => cancelInvoice());
+    }
+    
+    if (cancelInvoiceBtnBottom) {
+        cancelInvoiceBtnBottom.addEventListener('click', () => cancelInvoice());
+    }
+    
+    // Global discount and tax listeners
+    if (window.globalDiscountInput) {
+        globalDiscountInput.addEventListener('input', function(e) {
+            const value = Number(e.target.value) || 0;
+            window.globalDiscount = value;
+            updateTotals(window.invoiceItems, value, window.globalTax);
+        });
+    }
+    
+    if (window.globalTaxInput) {
+        globalTaxInput.addEventListener('input', function(e) {
+            const value = Number(e.target.value) || 0;
+            window.globalTax = value;
+            updateTotals(window.invoiceItems, window.globalDiscount, value);
+        });
+    }
+}
+
+
 
 document.addEventListener("input", function (e) {
     // Read shared values
@@ -169,25 +194,6 @@ document.addEventListener("input", function (e) {
     }
 });
 
-
-//for tax charges
-const addTaxBtn = document.getElementById('addTaxBtn');
-
-addTaxBtn.onclick = () => {
-  const taxContainer = document.getElementById('taxContainer');
-
-  taxContainer.innerHTML = `
-    <div class="form-group">
-      <label for="globalTax">Tax(%)</label>
-      <input type="number" id="globalTax" class="form-control"
-             value="0" min="0" max="100" step="0.01">
-      <input type="number" id="taxAmount" class="form-control"
-             value="0" readonly>
-    </div>
-  `;
-
-  addTaxBtn.style.display = 'none';   
-};
 
 //for additional charges
 document.addEventListener('DOMContentLoaded', () => {
@@ -636,11 +642,21 @@ function handleRemoveItemWrapper(e) {
 
 // Save invoice
 async function saveInvoice() {
+    
     const clientName = clientNameInput.value.trim();
     const invoiceDateValue = invoiceDate.value;
-    const discount = parseFloat(globalDiscountInput.value) || 0;
-    const tax = parseFloat(globalTaxInput.value) || 0;
-    
+    console.log("Are we here?")
+    // console.log(globalDiscountInput)
+    // console.log(globalTaxInput)
+    // const discount = parseFloat(globalDiscountInput.value) || 0;
+     const discount = window.globalDiscountInput
+        ? parseFloat(window.globalDiscountInput.value) || 0
+        : 0;
+
+    console.log("Discount value:", discount);
+    const tax = window.globalTaxInput? parseFloat(globalTaxInput.value) || 0: 0;
+    console.log("tax value: ",tax)
+    //console.log(tax)
     // Validation
     if (!clientName) {
         showAlert('Please enter client name', 'error');
@@ -694,7 +710,7 @@ async function saveInvoice() {
             // Redirect to dashboard after short delay
             setTimeout(() => {
                 window.location.href = '/dashboard/invoices/';
-            }, 2000);
+            }, 1000);
         } else {
             showAlert('Error: ' + (result.error || 'Failed to save invoice'), 'error');
             saveInvoiceBtn.innerHTML = originalText;

@@ -1,6 +1,6 @@
 // DOM manipulation functions
 import { updateItemTotal, updateTotals, formatDate } from './utils.js';
-
+import { selectClientFromHint } from './events.js';
 // RENDER INVOICE ITEMS
 export function renderInvoiceItems(invoiceItems, invoiceItemsBody, setupProductSearchHandlers, handleItemUpdate, handleRemoveItem) {
     invoiceItemsBody.innerHTML = '';
@@ -20,7 +20,6 @@ export function renderInvoiceItems(invoiceItems, invoiceItemsBody, setupProductS
         <!-- Product suggestions will be dynamically added here -->
     </div>
 </td>
-<td><input type="text" class="item-description" data-id="${item.id}" value="${item.description}" style="width: 100%;"></td>
 <td><input type="number" class="item-quantity" data-id="${item.id}" value="${item.quantity}" min="1" style="width: 100%;"></td>
 <td><input type="number" class="item-price" data-id="${item.id}" value="${item.price}" min="0" step="0.01" style="width: 100%;"></td>
 <!-- DISCOUNT CELL -->
@@ -106,7 +105,7 @@ export function showClientSuggestions(clients, searchTerm = '', selectClientFrom
 
     if (filteredClients.length > 0) {
         hintContainer.innerHTML = filteredClients.map(client => `
-<div class="hint-item" data-client-id="${client.id}" 
+ <div class="hint-item" data-client-id="${client.id}" 
 data-client-name="${client.name}" 
 data-client-email="${client.email || ''}" 
 data-client-address="${client.address || ''}">
@@ -233,11 +232,12 @@ export function hideSearchHints() {
 }
 
 // Fill client details
+//removed the clientId,clientEmail,clientAddress from the UI so removed from here too and worked fine
 export function fillClientDetails(client) {
     document.getElementById('clientName').value = client.name;
-    document.getElementById('clientId').value = `CLI-${client.id.toString().padStart(3, '0')}`;
-    document.getElementById('clientEmail').value = client.email || '';
-    document.getElementById('clientAddress').value = client.address || '';
+    // document.getElementById('clientId').value = `CLI-${client.id.toString().padStart(3, '0')}`;
+    // document.getElementById('clientEmail').value = client.email || '';
+    // document.getElementById('clientAddress').value = client.address || '';
 }
 
 // Clear client details
