@@ -529,7 +529,7 @@ function selectProductFromHint(itemId, hintElement) {
     const productName = hintElement.getAttribute('data-product-name');
     const sellingPrice = hintElement.getAttribute('data-product-selling-price');
     const costPrice = hintElement.getAttribute('data-product-cost-price');
-    const category = hintElement.getAttribute('data-product-category');
+    // const category = hintElement.getAttribute('data-product-category');
 
     const product = window.products.find(p => p.id === parseInt(productId));
     if (!product) return;
@@ -540,7 +540,7 @@ function selectProductFromHint(itemId, hintElement) {
     // Update the item with product details - USE SELLING PRICE for invoices
     item.productId = product.id;
     item.productName = product.name;
-    item.description = product.category || 'Product';
+    // item.description = product.category || 'Product';
     item.price = Number(product.selling_price); // Use selling price
 
     // Update the row inputs
@@ -548,11 +548,11 @@ function selectProductFromHint(itemId, hintElement) {
     if (!row) return;
 
     const searchInput = row.querySelector('.product-search-input');
-    const descriptionInput = row.querySelector('.item-description');
+    // const descriptionInput = row.querySelector('.item-description');
     const priceInput = row.querySelector('.item-price');
 
     if (searchInput) searchInput.value = product.name;
-    if (descriptionInput) descriptionInput.value = product.category || 'Product';
+    // if (descriptionInput) descriptionInput.value = product.category || 'Product';
     if (priceInput) priceInput.value = product.selling_price; // Use selling price
 
     // Hide hints
@@ -579,7 +579,7 @@ function selectProductFromHint(itemId, hintElement) {
 // Handle item updates
 export function handleItemUpdate(e) {
     const itemId = parseInt(e.target.getAttribute('data-id'));
-    const field = e.target.className;
+    const field = e.target.classList[0];
     const value = e.target.value;
 
     const item = window.invoiceItems.find(i => i.id === itemId);
@@ -589,6 +589,18 @@ export function handleItemUpdate(e) {
         item.quantity = Number(value) || 1;
     } else if (field === 'item-price') {
         item.price = Number(value) || 0;
+    }
+    else if (field === 'discount-percent-input') {
+     item.discountPercent = Number(value) || 0;
+    }
+
+// Recalculate discount on change
+    item.discountAmount = Number(item.price) * Number(item.quantity) * (Number(item.discountPercent) / 100);
+
+     // Update discount amount in UI
+    const discountAmountCell = document.querySelector(`.discount-amount[data-id="${itemId}"]`);
+    if (discountAmountCell) {
+        discountAmountCell.textContent = `Rs. ${item.discountAmount.toFixed(2)}`;
     }
 
     updateItemTotal(itemId, window.invoiceItems);
@@ -724,9 +736,10 @@ function handleClientSearchBlur(e) {
     }, 200);
 }
 
-function selectClientFromHint(hintElement) {
-    const clientId = hintElement.getAttribute('data-client-id');
-    const client = window.clients.find(c => c.id === parseInt(clientId));
+//removed the client id to client name and worked fine
+export function selectClientFromHint(hintElement) {
+    const clientName = hintElement.getAttribute('data-client-name');
+    const client = window.clients.find(c => c.name === (clientName));
     if (client) {
         fillClientDetails(client);
         hideClientSearchHint();
