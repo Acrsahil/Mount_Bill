@@ -1,59 +1,7 @@
 // DOM manipulation functions
-import { updateItemTotal, updateTotals, formatDate } from './utils.js';
-import { selectClientFromHint } from './events.js';
+import { formatDate } from './utils.js';
 // RENDER INVOICE ITEMS
-export function renderInvoiceItems(invoiceItems, invoiceItemsBody, setupProductSearchHandlers, handleItemUpdate, handleRemoveItem) {
-    invoiceItemsBody.innerHTML = '';
 
-    invoiceItems.forEach(item => {
-        const discountAmount = Number(item.price) * Number(item.quantity) * (Number(item.discountPercent) / 100);
-        const row = document.createElement('tr');
-        row.innerHTML = `
-<td style="position: relative;">
-    <input type="text" 
-        class="product-search-input" 
-        data-id="${item.id}"
-        placeholder="Type product name (Tab to complete)..."
-        value="${item.productName || ''}"
-        style="width: 100%;">
-    <div class="search-hint product-search-hint" id="search-hint-${item.id}" style="display: none; position: absolute; background: white; border: 1px solid #ddd; max-height: 150px; overflow-y: auto; z-index: 1000; width: 100%;">
-        <!-- Product suggestions will be dynamically added here -->
-    </div>
-</td>
-<td><input type="number" class="item-quantity" data-id="${item.id}" value="${item.quantity}" min="1" style="width: 100%;"></td>
-<td><input type="number" class="item-price" data-id="${item.id}" value="${item.price}" min="0" step="0.01" style="width: 100%;"></td>
-<!-- DISCOUNT CELL -->
-            <td class="discount-cell">
-                <input type="number"
-                       class="discount-percent-input"
-                       data-id="${item.id}"
-                       value="${item.discountPercent}"
-                       min="0" max="100" step="0.01">
-                <span>%</span>
-                <span class="discount-amount" data-id="${item.id}">
-                    Rs. ${discountAmount.toFixed(2)}
-                </span>
-            </td>
-
-<td class="item-total" data-id="${item.id}">Rs. ${(Number(item.price) * Number(item.quantity) - discountAmount).toFixed(2)}</td>
-<td><button class="remove-item-btn" data-id="${item.id}"><i class="fas fa-trash"></i></button></td>
-`;
-        invoiceItemsBody.appendChild(row);
-    });
-
-    // Add event listeners to the new inputs
-    setupProductSearchHandlers();
-
-    document.querySelectorAll('.item-quantity, .item-price').forEach(input => {
-        input.addEventListener('input', handleItemUpdate);
-    });
-    document.querySelectorAll('.discount-percent-input').forEach(input => {
-    input.addEventListener('input', handleItemUpdate);
-});
-    document.querySelectorAll('.remove-item-btn').forEach(button => {
-        button.addEventListener('click', handleRemoveItem);
-    });
-}
 
 // Show product suggestions
 export function showProductSuggestions(itemId, products, searchTerm = '', selectProductFromHint) {
@@ -96,13 +44,14 @@ export function showClientSuggestions(clients, searchTerm = '', selectClientFrom
     const hintContainer = document.getElementById('client-search-hint');
     if (!hintContainer) return;
 
+    console.log("show client suggestion?")
     const filteredClients = searchTerm 
         ? clients.filter(client => 
-            client.name.toLowerCase().includes(searchTerm) ||
-                (client.email && client.email.toLowerCase().includes(searchTerm))
+            client.name.toLowerCase().includes(searchTerm)
         )
         : clients;
-
+        
+    console.log("clients: ",clients)
     if (filteredClients.length > 0) {
         hintContainer.innerHTML = filteredClients.map(client => `
  <div class="hint-item" data-client-id="${client.id}" 

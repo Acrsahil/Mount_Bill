@@ -1,5 +1,5 @@
 // Main entry point - orchestrates all modules
-import { updateTotals, updateStats, updateClientStats } from './utils.js';
+import {  updateStats, updateClientStats } from './utils.js';
 import { 
     loadInvoices, 
     loadProducts, 
@@ -7,20 +7,17 @@ import {
     filterInvoices, 
     filterProducts, 
     filterClients,
-    renderInvoiceItems,
+    
     clearClientDetails
 } from './dom.js';
+import { setupClientSearch,setupProductSearchHandlersForPage, } from './create_invoice.js';
 import { 
     setupEventListeners,
-    setupClientSearch,
+
     setupProductNameSearch,
     setupCategorySearch,
-    openCreateInvoiceModal,
-    closeInvoiceModalFunc,
-    closeProductModalFunc,
-    closeClientModalFunc,
     addInvoiceItem,
-    setupProductSearchHandlers,
+    
     handleItemUpdate,
     handleRemoveItem,
     editProduct,

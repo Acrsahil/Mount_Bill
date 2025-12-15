@@ -189,35 +189,37 @@ class OrderSummary(models.Model):
     final_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     calculated_on = models.DateTimeField(auto_now=True)
 
-    def calculate_totals(self, save=True):
-        total = Decimal("0.0")
-        total = total + 2
-        total /= Decimal("2.0")
+    # def calculate_totals(self, save=True):
+    #     total = Decimal("0.0")
+    #     total = total + 2
+    #     total /= Decimal("2.0")
 
-        print(type(total))
-        print(total)
+    #     print(type(total))
+    #     print(total)
 
-        for bill in self.order.bills.all():
-            product_price_decimal = Decimal(str(bill.product_price))
-            total += product_price_decimal * bill.quantity
-            print(type(total))
+    #     for bill in self.order.bills.all():
+    #         product_price_decimal = Decimal(str(bill.product_price))
+    #         total += product_price_decimal * bill.quantity
+    #         print(type(total))
 
-        discount_decimal = Decimal(str(self.discount))
-        tax_decimal = Decimal(str(self.tax))
+    #     discount_decimal = Decimal(str(self.discount))
+    #     tax_decimal = Decimal(str(self.tax))
 
-        # If discount is meant to be added (unusual but based on your original code)
-        total_after_discount = total * (
-            Decimal("1.0") + Decimal(str(discount_decimal / Decimal("100.0")))
-        )
+    #     # If discount is meant to be added (unusual but based on your original code)
+    #     total_after_discount = total * (
+    #         Decimal("1.0") + Decimal(str(discount_decimal / Decimal("100.0")))
+    #     )
 
-        # Calculate tax
-        total_after_tax = total_after_discount * (
-            Decimal("1.0") + tax_decimal / Decimal("100.0")
-        )
+    #     # Calculate tax
+    #     total_after_tax = total_after_discount * (
+    #         Decimal("1.0") + tax_decimal / Decimal("100.0")
+    #     )
 
-        self.total_amount = total
-        self.final_amount = total_after_tax
+    #     self.total_amount = total
+    #     self.final_amount = total_after_tax
 
-        if save:
-            print("hello i am correct!")
-            self.save()
+    #     if save:
+    #         print("hello i am correct!")
+    #         self.save()
+    def __str__(self):
+        return f"total amount:{self.total_amount}"

@@ -43,7 +43,7 @@ def get_serialized_data(user, active_tab="dashboard"):
                         "client": order.customer.name,
                         "issueDate": order.order_date.date().isoformat(),
                         # Convert Decimal to float
-                        "amount": float(summary.final_amount),
+                        "amount": float(summary.total_amount),
                         "status": "pending",
                     }
                 )
@@ -71,9 +71,9 @@ def get_serialized_data(user, active_tab="dashboard"):
         }
         for c in customers
     ]
-
+    print(customers_data)
     categories_data = [{"id": cat.id, "name": cat.name} for cat in categories]
-
+    
     return {
         "product": json.dumps(products_data),
         "customer": json.dumps(customers_data),
@@ -263,8 +263,9 @@ def save_invoice(request):
         invoice_items = data.get("items", [])
         global_discount = float(data.get("globalDiscount", 0))
         global_tax = float(data.get("globalTax", 0))
+        total_amount = float(data.get("totalAmount"))
         user = request.user
-
+        print(f"total amount ko value:{total_amount}")
         company = None
         if user.owned_company:
             company = user.owned_company
@@ -318,40 +319,40 @@ def save_invoice(request):
         )
 
         # Process invoice items
-        total_amount = 0
-        for item in invoice_items:
-            product_name = item.get("productName", "").strip()
-            quantity = int(item.get("quantity", 1))
-            price = float(item.get("price", 0))
-            if not product_name:
-                continue
+        # total_amount = 0
+        # for item in invoice_items:
+        #     product_name = item.get("productName", "").strip()
+        #     quantity = int(item.get("quantity", 1))
+        #     price = float(item.get("price", 0))
+        #     if not product_name:
+        #         continue
 
-            # Find or create product - use selling price as default
-            default_category = ProductCategory.objects.first()
-            if not default_category:
-                default_category = ProductCategory.objects.create(name="General")
+        #     # Find or create product - use selling price as default
+        #     default_category = ProductCategory.objects.first()
+        #     if not default_category:
+        #         default_category = ProductCategory.objects.create(name="General")
 
-            product, _ = Product.objects.get_or_create(
-                name=product_name,
-                defaults={
-                    # Default cost price (80% of selling)
-                    # "cost_price": price * 0.8,
-                    "selling_price": price,
-                    "category": default_category,
-                },
-            )
+        #     product, _ = Product.objects.get_or_create(
+        #         name=product_name,
+        #         defaults={
+        #             # Default cost price (80% of selling)
+        #             # "cost_price": price * 0.8,
+        #             "selling_price": price,
+        #             "category": default_category,
+        #         },
+        #     )
 
-            # Create bill entry
-            Bill.objects.create(
-                order=order,
-                product=product,
-                product_price=Decimal(
-                    str(price)
-                ),  # Convert to Decimal    quantity=quantity,
-                bill_date=timezone.now(),
-            )
+        #     # Create bill entry
+        #     Bill.objects.create(
+        #         order=order,
+        #         product=product,
+        #         product_price=Decimal(
+        #             str(price)
+        #         ),  # Convert to Decimal    quantity=quantity,
+        #         bill_date=timezone.now(),
+        #     )
 
-            total_amount += quantity * price
+        #     total_amount += quantity * price
         # Create order summary
         order_summary = OrderSummary.objects.create(
             order=order,
@@ -359,7 +360,7 @@ def save_invoice(request):
             discount=global_discount,
             tax=global_tax,
         )
-        order_summary.calculate_totals()
+        # order_summary.calculate_totals()
         print(order_summary)
 
         print("it passed order creation section!")
@@ -372,7 +373,7 @@ def save_invoice(request):
                     "number": f"INV-{order.id:03d}",
                     "client": customer.name,
                     "date": order.order_date.isoformat(),
-                    "total_amount": order_summary.final_amount,
+                    "total_amount": order_summary.total_amount,
                     "items_count": len(invoice_items),
                 },
             }
@@ -499,11 +500,7 @@ def create_invoice_page(request):
     """Full page view for creating invoice"""
     try:
         # Get serialized data for the invoice creation page
-        serialized_data = get_serialized_data()
-        context = {
-            "active_tab": "invoices",
-        }
-        context.update(serialized_data)
+        context = get_serialized_data(request.user, "dashboard")
         return render(request, "website/create_invoice.html", context)
     except Exception as e:
         print(f"Error in create_invoice_page view: {e}")
