@@ -1,7 +1,6 @@
 // Event listeners and UI interaction handlers
 import { updateItemTotal, updateTotals } from './create_invoice.js';
 import { 
-    renderInvoiceItems, 
 
     loadProducts, 
     loadClients, 
