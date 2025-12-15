@@ -140,6 +140,9 @@ export function updateTotals(invoiceItems, globalDiscount, globalTax) {
     if (discountAmountEl) discountAmountEl.textContent = `$${discountValue.toFixed(2)}`;
     if (taxAmountEl) taxAmountEl.textContent = `$${taxValue.toFixed(2)}`;
     if (totalAmountEl) totalAmountEl.value = `$${total.toFixed(2)}`;
+    return{
+        total,
+    }
 }
 
 

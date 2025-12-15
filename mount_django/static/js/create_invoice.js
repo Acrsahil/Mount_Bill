@@ -657,6 +657,9 @@ async function saveInvoice() {
     const tax = window.globalTaxInput? parseFloat(globalTaxInput.value) || 0: 0;
     console.log("tax value: ",tax)
     //console.log(tax)
+
+    //getting total from updateTotals
+    const totals=updateTotals(window.invoiceItems,discount,tax);
     // Validation
     if (!clientName) {
         showAlert('Please enter client name', 'error');
@@ -674,6 +677,7 @@ async function saveInvoice() {
     saveInvoiceBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving Invoice...';
     saveInvoiceBtn.disabled = true;
     
+    //preparing for sending data
     try {
         const invoiceData = {
             clientName: clientName,
@@ -685,7 +689,8 @@ async function saveInvoice() {
                 price: item.price || 0
             })),
             globalDiscount: discount,
-            globalTax: tax
+            globalTax: tax,
+            totalAmount: totals.total,
         };
         
         const response = await fetch('/dashboard/save-invoice/', {
