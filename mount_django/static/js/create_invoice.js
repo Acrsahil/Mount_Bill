@@ -1,15 +1,14 @@
 // Create Invoice Page - Standalone page version
-import { updateTotals, updateItemTotal, updateStats, showAlert } from './utils.js';
+import { updateStats, showAlert } from './utils.js';
 import { 
-    renderInvoiceItems, 
     showProductSuggestions,
     showClientSuggestions,
     hideClientSearchHint,
     fillClientDetails,
     clearClientDetails,
+    loadInvoices,
 } from './dom.js';
 import { 
-    setupProductSearchHandlers,
     handleItemUpdate,
     handleRemoveItem,
     selectClientFromHint,
@@ -92,6 +91,40 @@ document.addEventListener('DOMContentLoaded', function() {
 document.addEventListener('DOMContentLoaded',() => {
     addInvoiceItem()
 
+    //for discount charges
+    document.getElementById('addDiscountBtn').onclick = () => { 
+        document.getElementById('discountContainer').innerHTML = `
+            <div class="form-group">
+                <label for="globalDiscount">Discount(%)</label>
+                <input type="number" id="globalDiscount" class="form-control" value="0" min="0" max="100" step="0.01">
+                <input type="number" id="globalDiscountAmount" class="form-control" value="0" readonly>
+            </div>
+        `;
+        addDiscountBtn.style.display='none';
+        window.globalDiscountInput = document.getElementById('globalDiscountAmount');
+    };
+
+    
+    //for tax charges
+
+    addTaxBtn.onclick = () => {
+    const taxContainer = document.getElementById('taxContainer');
+
+    taxContainer.innerHTML = `
+        <div class="form-group">
+        <label for="globalTax">Tax(%)</label>
+        <input type="number" id="globalTax" class="form-control"
+                value="0" min="0" max="100" step="0.01">
+        <input type="number" id="taxAmount" class="form-control"
+                value="0" readonly>
+        </div>
+    `;
+
+    addTaxBtn.style.display = 'none'; 
+    window.globalTaxInput = document.getElementById('taxAmount');  
+    };
+
+
 });
 
 //function to show total section
@@ -99,39 +132,6 @@ function showTotalSection(){
     totalCharges.style.display = 'block';
 
 }
-
-//for discount charges
-document.getElementById('addDiscountBtn').onclick = () => { 
-    document.getElementById('discountContainer').innerHTML = `
-        <div class="form-group">
-            <label for="globalDiscount">Discount(%)</label>
-            <input type="number" id="globalDiscount" class="form-control" value="0" min="0" max="100" step="0.01">
-            <input type="number" id="globalDiscountAmount" class="form-control" value="0" readonly>
-        </div>
-    `;
-    addDiscountBtn.style.display='none';
-    window.globalDiscountInput = document.getElementById('globalDiscountAmount');
-};
-
-//for tax charges
-
-addTaxBtn.onclick = () => {
-  const taxContainer = document.getElementById('taxContainer');
-
-  taxContainer.innerHTML = `
-    <div class="form-group">
-      <label for="globalTax">Tax(%)</label>
-      <input type="number" id="globalTax" class="form-control"
-             value="0" min="0" max="100" step="0.01">
-      <input type="number" id="taxAmount" class="form-control"
-             value="0" readonly>
-    </div>
-  `;
-
-  addTaxBtn.style.display = 'none'; 
-  window.globalTaxInput = document.getElementById('taxAmount');  
-};
-
 
 
 // Setup all event listeners for the page
@@ -277,12 +277,8 @@ document.addEventListener('DOMContentLoaded', () => {
     recalcTotals();
 });
 
-
-
-
-
 // CLIENT SEARCH FUNCTIONS
-function setupClientSearch() {
+export function setupClientSearch() {
     if (!clientNameInput || !clientSearchHint) return;
     
     // Event listeners for client search
@@ -386,7 +382,7 @@ function handleClientSearchBlur(e) {
 }
 
 // PRODUCT SEARCH HANDLERS (reused from events.js but adapted for this page)
-function setupProductSearchHandlersForPage() {
+export function setupProductSearchHandlersForPage() {
     document.querySelectorAll('.product-search-input').forEach(input => {
         input.addEventListener('focus', (e) => handleProductSearchFocus(e));
         input.addEventListener('input', (e) => handleProductSearch(e));
@@ -587,6 +583,59 @@ function selectProductFromHint(itemId, hintElement) {
     showTotalSection();
 }
 
+export function renderInvoiceItems(invoiceItems, invoiceItemsBody, setupProductSearchHandlers, handleItemUpdate, handleRemoveItem) {
+    invoiceItemsBody.innerHTML = '';
+
+    invoiceItems.forEach(item => {
+        const discountAmount = Number(item.price) * Number(item.quantity) * (Number(item.discountPercent) / 100);
+        const row = document.createElement('tr');
+        row.innerHTML = `
+<td style="position: relative;">
+    <input type="text" 
+        class="product-search-input" 
+        data-id="${item.id}"
+        placeholder="Type product name (Tab to complete)..."
+        value="${item.productName || ''}"
+        style="width: 100%;">
+    <div class="search-hint product-search-hint" id="search-hint-${item.id}" style="display: none; position: absolute; background: white; border: 1px solid #ddd; max-height: 150px; overflow-y: auto; z-index: 1000; width: 100%;">
+        <!-- Product suggestions will be dynamically added here -->
+    </div>
+</td>
+<td><input type="number" class="item-quantity" data-id="${item.id}" value="${item.quantity}" min="1" style="width: 100%;"></td>
+<td><input type="number" class="item-price" data-id="${item.id}" value="${item.price}" min="0" step="0.01" style="width: 100%;"></td>
+<!-- DISCOUNT CELL -->
+            <td class="discount-cell">
+                <input type="number"
+                       class="discount-percent-input"
+                       data-id="${item.id}"
+                       value="${item.discountPercent}"
+                       min="0" max="100" step="0.01">
+                <span>%</span>
+                <span class="discount-amount" data-id="${item.id}">
+                    Rs. ${discountAmount.toFixed(2)}
+                </span>
+            </td>
+
+<td class="item-total" data-id="${item.id}">Rs. ${(Number(item.price) * Number(item.quantity) - discountAmount).toFixed(2)}</td>
+<td><button class="remove-item-btn" data-id="${item.id}"><i class="fas fa-trash"></i></button></td>
+`;
+        invoiceItemsBody.appendChild(row);
+    });
+
+    // Add event listeners to the new inputs
+    setupProductSearchHandlers();
+
+    document.querySelectorAll('.item-quantity, .item-price').forEach(input => {
+        input.addEventListener('input', handleItemUpdate);
+    });
+    document.querySelectorAll('.discount-percent-input').forEach(input => {
+    input.addEventListener('input', handleItemUpdate);
+});
+    document.querySelectorAll('.remove-item-btn').forEach(button => {
+        button.addEventListener('click', handleRemoveItem);
+    });
+}
+
 // Add invoice item
 function addInvoiceItem() {
     const itemId = window.invoiceItems.length + 1;
@@ -645,8 +694,97 @@ function handleRemoveItemWrapper(e) {
     }
 }
 
+// Update item total
+export function updateItemTotal(itemId, invoiceItems) {
+    const item = invoiceItems.find(i => i.id === itemId);
+    if (!item) return;
+
+    const quantity = Number(item.quantity) || 0;
+    const price = Number(item.price) || 0;
+    const discountPercent = Number(item.discountPercent) || 0;
+
+    const discountAmount = quantity * price * (discountPercent / 100);
+    const total = (quantity * price) - discountAmount;
+
+    const row = document.querySelector(`.product-search-input[data-id="${itemId}"]`)?.closest('tr');
+    if (!row) return;
+
+    const itemTotalCell = row.querySelector('.item-total');
+    if (!itemTotalCell) return;
+
+    itemTotalCell.textContent = `Rs. ${total.toFixed(2)}`;
+}
+
+// Update totals
+// Enhanced updateTotals to include additional charges
+export function updateTotals(invoiceItems, globalDiscount, globalTax) {
+    let subtotal = 0;
+    let subtotalDiscountvalue = 0;
+    let subtotalAmountValue = 0;
+    console.log("utilko subtotal")
+    // Calculate subtotal from all items
+    invoiceItems.forEach(item => {
+        const quantity = Number(item.quantity) || 0;
+        const price = Number(item.price) || 0;
+        const discountPercent = Number(item.discountPercent) || 0;
+
+        const itemTotal = quantity * price;
+        const discountAmount = itemTotal * (discountPercent / 100);
+        const rowTotalAfterDiscount = itemTotal - discountAmount;
+
+        subtotal += itemTotal;
+        subtotalDiscountvalue += discountAmount;
+        subtotalAmountValue += rowTotalAfterDiscount;
+    });
+    console.log("aaunu parne subtotal discount pani garisakerw",subtotalAmountValue)
+
+
+    // **Sum all additional charges dynamically**
+    let additionalChargesTotal = 0;
+    document.querySelectorAll('#additionalInputsContainer input[type="number"]').forEach(input => {
+        additionalChargesTotal += Number(input.value) || 0;
+    });
+    
+    // Update display
+    const subtotalAmount = document.getElementById('subtotalAmount');
+    const subtotalAmountEl = document.getElementById('subtotalAmounts');
+    const subtotalDiscounts = document.getElementById('subtotalDiscount');
+    const discountAmountEl = document.getElementById('discountAmount');
+    const taxAmountEl = document.getElementById('taxAmount');
+    const totalAmountEl = document.getElementById('totalAmount');
+    // const pailakototal=document.getElementById('subtotalAmounts');
+
+    //yo chai hamro discount laaerw aako subtotal esma garne sab calculation
+    const subtotalValue = Number(subtotalAmountEl.innerText.replace('$', ''));
+
+
+    //esma hamile subtotal ko value haalexum tyo chai without discount ko value item ko just quantity*price
+    // Calculate discount amount (percentage of subtotal)
+    const discountValue = (subtotalValue * globalDiscount) / 100;
+    // console.log("discount amount yo ho ",discountValue)
+
+    // Calculate taxable amount (after discount)
+    const taxableAmount = subtotalValue - discountValue;
+    // console.log("tax yo amount ma jodinxa",taxableAmount)
+
+
+    // Calculate tax amount (percentage of taxable amount)
+    const taxValue = (taxableAmount * globalTax) / 100;
+
+     // Calculate final total including additional charges
+    const total = taxableAmount + taxValue + additionalChargesTotal;
+    window.currentTotalValue=total;
+    console.log("yo total chai global total",total);
+
+    if (subtotalAmountEl) subtotalAmountEl.textContent = `$${subtotalAmountValue.toFixed(2)}`;
+    if (subtotalAmount) subtotalAmount.textContent = `$${subtotal.toFixed(2)}`;
+    if (subtotalDiscounts) subtotalDiscounts.textContent = `$${subtotalDiscountvalue.toFixed(2)}`;
+    if (discountAmountEl) discountAmountEl.textContent = `$${discountValue.toFixed(2)}`;
+    if (taxAmountEl) taxAmountEl.textContent = `$${taxValue.toFixed(2)}`;
+    if (totalAmountEl) totalAmountEl.value = `$${total.toFixed(2)}`;
+}
 // Save invoice
-async function saveInvoice() {
+export async function saveInvoice(createInvoicePage,invoiceItemsBody) {
     
     const clientName = clientNameInput.value.trim();
     const invoiceDateValue = invoiceDate.value;
@@ -719,20 +857,40 @@ async function saveInvoice() {
         if (result.success) {
             showAlert(result.message, 'success');
             
+                        // Update the invoices list
+                        if (result.invoice) {
+                            const newInvoice = {
+                                id: result.invoice.id,
+                                number: result.invoice.number,
+                                client: result.invoice.client,
+                                issueDate: result.invoice.date,
+                                amount: result.invoice.totalAmount,
+                                status: 'pending'
+                            };
+                            
+                            // Update invoices array (this will be handled by main.js state management)
+                            if (window.invoices) {
+                                window.invoices.unshift(newInvoice);
+                                const invoicesTableBody = document.getElementById('invoicesTableBody');
+                                if (invoicesTableBody) {
+                                    loadInvoices(window.invoices, invoicesTableBody);
+                                }
+                            }
+                        }
             //Redirect to dashboard after short delay
             setTimeout(() => {
                 window.location.href = '/dashboard/invoices/';
             }, 1000);
         } else {
             showAlert('Error: ' + (result.error || 'Failed to save invoice'), 'error');
-            saveInvoiceBtn.innerHTML = originalText;
-            saveInvoiceBtn.disabled = false;
+            saveBtn.innerHTML = originalText;
+            saveBtn.disabled = false;
         }
     } catch (error) {
         console.error('Error saving invoice:', error);
         showAlert('Network error. Please check your connection and try again.', 'error');
-        saveInvoiceBtn.innerHTML = originalText;
-        saveInvoiceBtn.disabled = false;
+        saveBtn.innerHTML = originalText;
+        saveBtn.disabled = false;
     }
 }
 
