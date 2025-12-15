@@ -24,6 +24,8 @@ const invoices = Array.isArray(window.djangoData.invoices) ? window.djangoData.i
 const products = Array.isArray(window.djangoData.products) ? window.djangoData.products : [];
 const productCategories = Array.isArray(window.djangoData.product_cat) ? window.djangoData.product_cat : [];
 let clients = Array.isArray(window.djangoData.clients) ? window.djangoData.clients : [];
+
+console.log("heram clients: ",clients)
 const csrfToken = window.djangoData.csrfToken || "";
 
 // Make these available globally
@@ -292,6 +294,7 @@ function setupClientSearch() {
 
 function handleClientSearchFocus() {
     if (clientSearchHint) {
+        console.log("focus chaliraxa?")
         showClientSuggestions(window.clients, '', (hintElement) => selectClientFromHint(hintElement));
         
         // Add click event to hints
@@ -305,12 +308,14 @@ function handleClientSearchFocus() {
 }
 
 function handleClientSearch(e) {
+    console.log("input jaadaexa?")
     const searchTerm = e.target.value.toLowerCase();
     showClientSuggestions(window.clients, searchTerm, (hintElement) => selectClientFromHint(hintElement));
 }
 
 function handleClientSearchKeydown(e) {
     if (!clientSearchHint || clientSearchHint.style.display === 'none') {
+        console.log("kei pani client suggestion xaina?")
         return;
     }
     

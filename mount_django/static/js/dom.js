@@ -96,13 +96,14 @@ export function showClientSuggestions(clients, searchTerm = '', selectClientFrom
     const hintContainer = document.getElementById('client-search-hint');
     if (!hintContainer) return;
 
+    console.log("show client suggestion?")
     const filteredClients = searchTerm 
         ? clients.filter(client => 
-            client.name.toLowerCase().includes(searchTerm) ||
-                (client.email && client.email.toLowerCase().includes(searchTerm))
+            client.name.toLowerCase().includes(searchTerm)
         )
         : clients;
-
+        
+    console.log("clients: ",clients)
     if (filteredClients.length > 0) {
         hintContainer.innerHTML = filteredClients.map(client => `
  <div class="hint-item" data-client-id="${client.id}" 
