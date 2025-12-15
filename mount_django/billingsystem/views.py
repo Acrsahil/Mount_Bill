@@ -71,9 +71,9 @@ def get_serialized_data(user, active_tab="dashboard"):
         }
         for c in customers
     ]
-
+    print(customers_data)
     categories_data = [{"id": cat.id, "name": cat.name} for cat in categories]
-
+    
     return {
         "product": json.dumps(products_data),
         "customer": json.dumps(customers_data),
@@ -500,11 +500,7 @@ def create_invoice_page(request):
     """Full page view for creating invoice"""
     try:
         # Get serialized data for the invoice creation page
-        serialized_data = get_serialized_data()
-        context = {
-            "active_tab": "invoices",
-        }
-        context.update(serialized_data)
+        context = get_serialized_data(request.user, "dashboard")
         return render(request, "website/create_invoice.html", context)
     except Exception as e:
         print(f"Error in create_invoice_page view: {e}")

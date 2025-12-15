@@ -664,7 +664,7 @@ async function saveInvoice() {
     //console.log(tax)
 
     //getting total from updateTotals
-    const totals=updateTotals(window.invoiceItems,discount,tax);
+    const totalAmount=window.currentTotalValue;
     // Validation
     if (!clientName) {
         showAlert('Please enter client name', 'error');
@@ -678,9 +678,11 @@ async function saveInvoice() {
     }
     
     // Show loading state
-    const originalText = saveInvoiceBtn.innerHTML;
-    saveInvoiceBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving Invoice...';
-    saveInvoiceBtn.disabled = true;
+    const saveBtn = document.getElementById('saveInvoiceBtn');
+    const originalText = saveBtn.innerHTML;
+    
+    saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving Invoice...';
+    saveBtn.disabled = true;
     
     //preparing for sending data
     try {
@@ -695,7 +697,7 @@ async function saveInvoice() {
             })),
             globalDiscount: discount,
             globalTax: tax,
-            totalAmount: totals.total,
+            totalAmount: totalAmount,
         };
         
         const response = await fetch('/dashboard/save-invoice/', {
@@ -717,7 +719,7 @@ async function saveInvoice() {
         if (result.success) {
             showAlert(result.message, 'success');
             
-            // Redirect to dashboard after short delay
+            //Redirect to dashboard after short delay
             setTimeout(() => {
                 window.location.href = '/dashboard/invoices/';
             }, 1000);

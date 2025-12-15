@@ -94,7 +94,7 @@ export function updateTotals(invoiceItems, globalDiscount, globalTax) {
         subtotalDiscountvalue += discountAmount;
         subtotalAmountValue += rowTotalAfterDiscount;
     });
-    console.log(subtotal)
+    console.log("aaunu parne subtotal discount pani garisakerw",subtotalAmountValue)
 
 
     // **Sum all additional charges dynamically**
@@ -121,7 +121,6 @@ export function updateTotals(invoiceItems, globalDiscount, globalTax) {
     const discountValue = (subtotalValue * globalDiscount) / 100;
     // console.log("discount amount yo ho ",discountValue)
 
-    
     // Calculate taxable amount (after discount)
     const taxableAmount = subtotalValue - discountValue;
     // console.log("tax yo amount ma jodinxa",taxableAmount)
@@ -132,7 +131,8 @@ export function updateTotals(invoiceItems, globalDiscount, globalTax) {
 
      // Calculate final total including additional charges
     const total = taxableAmount + taxValue + additionalChargesTotal;
-    console.log(total)
+    window.currentTotalValue=total;
+    console.log("yo total chai global total",total);
 
     if (subtotalAmountEl) subtotalAmountEl.textContent = `$${subtotalAmountValue.toFixed(2)}`;
     if (subtotalAmount) subtotalAmount.textContent = `$${subtotal.toFixed(2)}`;
@@ -140,9 +140,6 @@ export function updateTotals(invoiceItems, globalDiscount, globalTax) {
     if (discountAmountEl) discountAmountEl.textContent = `$${discountValue.toFixed(2)}`;
     if (taxAmountEl) taxAmountEl.textContent = `$${taxValue.toFixed(2)}`;
     if (totalAmountEl) totalAmountEl.value = `$${total.toFixed(2)}`;
-    return{
-        total,
-    }
 }
 
 
