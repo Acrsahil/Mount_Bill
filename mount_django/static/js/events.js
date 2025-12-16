@@ -1,5 +1,6 @@
 // Event listeners and UI interaction handlers
 import { updateItemTotal, updateTotals } from './create_invoice.js';
+import { updateClientStats,showAlert } from './utils.js';
 import { 
 
     loadProducts, 
@@ -217,14 +218,14 @@ export async function saveClient(addClientModal, clientsTableBody) {
             
             // Update the nextClientId to avoid conflicts
             window.nextClientId = Math.max(window.nextClientId, result.client.id + 1);
-
+            
             // Update UI
             loadClients(window.clients, clientsTableBody);
+            
             updateClientStats(window.clients);
-
+            
             // Show success message
             showAlert(result.message, 'success');
-
             // Close modal after short delay
             setTimeout(() => {
                 closeClientModalFunc(addClientModal);
@@ -245,6 +246,29 @@ export async function saveClient(addClientModal, clientsTableBody) {
 }
 
 
+export function openAddProductModal(addProductModal) {
+    // Reset form
+    document.getElementById('productName').value = '';
+    document.getElementById('productCostPrice').value = '';
+    document.getElementById('productSellingPrice').value = '';
+    document.getElementById('productCategory').value = '';
+
+    // Show modal
+    addProductModal.style.display = 'flex';
+
+    // Auto-focus on product name field
+    setTimeout(() => {
+        const productNameInput = document.getElementById('productName');
+        if (productNameInput) {
+            productNameInput.focus();
+        }
+    }, 100);
+}
+
+export function closeProductModalFunc(addProductModal) {
+    addProductModal.style.display = 'none';
+    hideSearchHints();
+}
 
 export function addInvoiceItem(invoiceItemsBody) {
     const itemId = window.invoiceItems.length + 1;
