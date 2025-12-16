@@ -392,21 +392,46 @@ textarea.form-control {
 .hint-item:last-child {
     border-bottom: none;
 }
-#additionalChargesWrapper {
+.notes-charges-wrapper {
     display: flex;
-    flex-direction: column; /* stack input rows on top, buttons at bottom */
-    gap: 10px; /* space between inputs and buttons */
-    align-items: flex-end; /* buttons aligned to right */
+    align-items: flex-start;
+    gap: 20px;
 }
 
-/* Container that holds buttons in a row */
+/* LEFT */
+#additionalNotes {
+    flex: 1;
+}
+
+#additionalNotes textarea {
+    caret-color: black; 
+    padding: 10px;   
+    color: grey;
+    font-size: 17px;
+    outline: none;
+    border: 2px solid;
+    border-radius: 5px;
+
+}
+
+/* RIGHT */
+#additionalChargesWrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-end;   /* right aligned */
+    margin-left: auto;       /* push to right end */
+}
+
+/* Buttons stacked */
 .button-row {
     display: flex;
+    flex-direction: row;
     gap: 10px;
-    width: 100%;
-    justify-content: flex-end; /* right align buttons */
+    align-items: flex-end;
 }
-#addDiscountBtn,#addTaxBtn,#addChargeBtn{
+
+#addDiscountBtn,#addTaxBtn,#addChargeBtn,#addnoteBtn{
     font-size: 20px !important;
     cursor:pointer;
     font-weight:600;
@@ -416,7 +441,8 @@ textarea.form-control {
     font-size: 17px;
 }
 #discountContainer .form-control,
-#taxContainer .form-control {
+#taxContainer .form-control, 
+#additionalNotes .form-control{
     font-size: 17px; 
 }
 
@@ -441,6 +467,7 @@ textarea.form-control {
 
 #addChargeBtn,
 #addDiscountBtn,
+#addnoteBtn,
 #addTaxBtn {
     font-size: 17px;
     padding: 5px 10px;

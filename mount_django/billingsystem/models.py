@@ -187,6 +187,7 @@ class OrderSummary(models.Model):
     discount = models.DecimalField(max_digits=5, decimal_places=2, default=0.0)
     tax = models.DecimalField(max_digits=5, decimal_places=2, default=0.0)
     final_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    received_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     calculated_on = models.DateTimeField(auto_now=True)
 
     # def calculate_totals(self, save=True):
@@ -223,3 +224,17 @@ class OrderSummary(models.Model):
     #         self.save()
     def __str__(self):
         return f"total amount:{self.total_amount}"
+class AdditionalCharges(models.Model):
+    additional_charges=models.ForeignKey(OrderList,on_delete=models.CASCADE, related_name="charges")
+    charge_name=models.CharField(max_length=200)
+    additional_amount=models.DecimalField(max_digits=5, decimal_places=2, default=0.0)
+    def __str__(self):
+        return f"Additional amount: {self.additional_amount}"
+
+class RemainingAmount(models.Model):
+    customer=models.OneToOneField(
+        Customer, on_delete=models.CASCADE, related_name="customer"
+    )
+    remaining_amount=models.DecimalField(max_digits=5, decimal_places=2, default=0.0)
+    def __str__(self):
+        return self.remaining_amount
