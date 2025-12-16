@@ -121,6 +121,131 @@ export function setupEventListeners(
 }
 
 
+// CLIENT MANAGEMENT FUNCTIONS
+export function openClientModal(addClientModal) {
+    console.log('Opening client modal');
+    
+    if (!addClientModal) {
+        console.error('Client modal not found!');
+        return;
+    }
+    
+    // Reset only the fields that exist in the simplified modal
+    document.getElementById('clientNameInput').value = '';
+    document.getElementById('clientPhoneInput').value = '';
+    
+    // Show the modal
+    addClientModal.style.display = 'flex';
+    
+    // Auto-focus on the first input field
+    setTimeout(() => {
+        const firstInput = document.getElementById('clientNameInput');
+        if (firstInput) {
+            firstInput.focus();
+        }
+    }, 100);
+}
+
+export function closeClientModalFunc(addClientModal) {
+    if (addClientModal) {
+        addClientModal.style.display = 'none';
+    }
+}
+
+// Save client to database via AJAX
+export async function saveClient(addClientModal, clientsTableBody) {
+    // Only get fields that exist in the simplified modal
+    const clientName = document.getElementById('clientNameInput').value.trim();
+    const clientPhone = document.getElementById('clientPhoneInput').value.trim();
+    const clientAddress = document.getElementById("clientAddressInput").value.trim();
+    const clientEmail = document.getElementById('clientEmailInput').value.trim();
+    const clientPanNo = document.getElementById('clientPanNoInput').value.trim();
+    // Validation
+    if (!clientName || !clientPhone) {
+        showAlert('Please fill in all required fields (Name, Phone)', 'error');
+        return;
+    }
+
+
+    // Show loading state
+    const saveBtn = document.getElementById('saveClientBtn');
+    const originalText = saveBtn.innerHTML;
+    
+    saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+    saveBtn.disabled = true;
+
+    try {
+        // Prepare data for sending to database
+        const clientData = {
+            name: clientName,
+            email: clientEmail,
+            phone: clientPhone,
+            address: clientAddress,
+            pan_id: clientPanNo,
+        };
+
+        console.log('Saving client to database:', clientData);
+
+        // Send AJAX request to Django backend
+        const response = await fetch('/dashboard/save-client/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': window.djangoData.csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify(clientData)
+        });
+
+        const result = await response.json();
+        console.log('Server response:', result);
+
+        if (result.success) {
+            // Add the new client to the local clients array with the ID from database
+            const newClient = {
+                id: result.client.id,
+                name: result.client.name,
+                email: result.client.email,
+                phone: result.client.phone,
+                address: result.client.address,
+                totalInvoices: 0,
+                totalSpent: 0
+            };
+
+            // Update the global clients array
+            window.clients.push(newClient);
+            
+            // Update the nextClientId to avoid conflicts
+            window.nextClientId = Math.max(window.nextClientId, result.client.id + 1);
+
+            // Update UI
+            loadClients(window.clients, clientsTableBody);
+            updateClientStats(window.clients);
+
+            // Show success message
+            showAlert(result.message, 'success');
+
+            // Close modal after short delay
+            setTimeout(() => {
+                closeClientModalFunc(addClientModal);
+            }, 1500);
+
+        } else {
+            showAlert('Error: ' + (result.error || 'Failed to save client'), 'error');
+        }
+
+    } catch (error) {
+        console.error('Error saving client:', error);
+        showAlert('Network error. Please check your connection and try again.', 'error');
+    } finally {
+        // Restore button state
+        saveBtn.innerHTML = originalText;
+        saveBtn.disabled = false;
+    }
+}
+
+
+
 export function addInvoiceItem(invoiceItemsBody) {
     const itemId = window.invoiceItems.length + 1;
 
