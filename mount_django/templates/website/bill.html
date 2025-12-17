@@ -4,6 +4,7 @@
 {% block title %}InvoicePro - Billing System{% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/product.css' %}">
 <link rel="stylesheet" href="{% static 'css/bill.css' %}">
 <link rel="stylesheet" href="{%static 'css/client.css'%}">
 {% endblock %}
@@ -405,6 +406,11 @@
     </div>
 </div>
 
+<div class="stock-popup" id="addStockPopup">
+    <button class="popup-btn">Add Stock</button>
+    <button class="popup-btn">Remove Stock</button>
+</div>
+
 <!-- Add Client Modal - SIMPLIFIED -->
 <div class="modal" id="addClientModal">
     <div class="modal-content">
@@ -507,6 +513,7 @@ document.addEventListener('DOMContentLoaded', function() {
 -->
 <script src="{%static 'js/client.js'%}"></script>
 <script src="{% static 'js/delete.js' %}"></script>
+<script src="{%static 'js/product.js'%}"></script>
 <script src="{% static 'js/bill_layout.js' %}"></script>
 <script type="module" src="{% static 'js/main.js' %}"></script>
 {% endblock %}

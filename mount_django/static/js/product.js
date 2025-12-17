@@ -132,6 +132,8 @@ export function loadProducts(products, productList, editProduct, deleteProduct) 
     <button class="btn btn-danger delete-product-btn" data-id="${product.id}">
         <i class="fas fa-trash"></i> Delete
     </button>
+    <button class="btn btn-success adjust-stock-btn" data-id="${product.id}">Adjust Stock
+    </button>
 </div>
 `;
         productList.appendChild(productCard);
@@ -153,6 +155,30 @@ export function loadProducts(products, productList, editProduct, deleteProduct) 
     });
 }
 
+document.addEventListener('DOMContentLoaded', function () {
+    console.log("inside add btn");
+const popup = document.getElementById('addStockPopup');
+
+document.addEventListener('click', function (e) {
+    const adjustBtn = e.target.closest('.adjust-stock-btn');
+
+    // CLICKED ADJUST STOCK
+    if (adjustBtn) {
+        const rect = adjustBtn.getBoundingClientRect();
+
+        popup.style.display = 'flex';
+        popup.style.top = rect.bottom + window.scrollY + 'px';
+        popup.style.left = rect.left + window.scrollX + 'px';
+
+        popup.dataset.productId = adjustBtn.dataset.id;
+        e.stopPropagation();
+        return;
+    }
+
+    // CLICKED OUTSIDE → CLOSE
+    popup.style.display = 'none';
+});
+});
 // Product edit/delete functions
 export function editProduct(productId) {
     const product = window.products.find(p => p.id === productId);
