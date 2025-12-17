@@ -3,7 +3,6 @@ import { updateItemTotal, updateTotals } from './create_invoice.js';
 import { updateClientStats,showAlert } from './utils.js';
 import { 
 
-    loadProducts, 
     loadClients, 
     loadInvoices, 
     filterInvoices, 
@@ -21,9 +20,8 @@ import {
     clearClientDetails,
     fillProductDetails
 } from './dom.js';
-import { saveProduct } from './api.js';
 import { saveInvoice,renderInvoiceItems } from './create_invoice.js';
-
+import { editProduct,deleteProduct,saveProduct,loadProducts } from './product.js';
 // Track currently selected hint for keyboard navigation
 let currentSelectedHintIndex = -1;
 let currentSelectedProductHintIndex = -1;
@@ -65,7 +63,7 @@ export function setupEventListeners(
 ) {
     if (createInvoiceBtn) {
         createInvoiceBtn.addEventListener('click', () => {
-            openCreateInvoiceModal(invoiceNumber, invoiceDate, createInvoiceModal, globalDiscountInput, globalTaxInput, invoiceItemsBody);
+             window.location.href = '/dashboard/create-invoice/';
         });
     }
     if (addProductBtn) addProductBtn.addEventListener('click', () => openAddProductModal(addProductModal));
@@ -252,9 +250,11 @@ export function openAddProductModal(addProductModal) {
     document.getElementById('productCostPrice').value = '';
     document.getElementById('productSellingPrice').value = '';
     document.getElementById('productCategory').value = '';
+    document.getElementById('productQuantity').value ='';
 
     // Show modal
     addProductModal.style.display = 'flex';
+    document.getElementById('updateProductBtn').style.display = 'none';
 
     // Auto-focus on product name field
     setTimeout(() => {
@@ -642,35 +642,3 @@ function handleCategorySearchBlur(e) {
     }, 200);
 }
 
-// Product edit/delete functions
-export function editProduct(productId) {
-    const product = window.products.find(p => p.id === productId);
-    if (product) {
-        // Populate form with product data
-        document.getElementById('productName').value = product.name;
-        document.getElementById('productCostPrice').value = product.cost_price;
-        document.getElementById('productSellingPrice').value = product.selling_price;
-        document.getElementById('productCategory').value = product.category || '';
-
-        // Change modal title and button
-        document.querySelector('#addProductModal .modal-header h3').textContent = 'Edit Product';
-        document.getElementById('saveProductBtn').textContent = 'Update Product';
-
-        // Show modal
-        const addProductModal = document.getElementById('addProductModal');
-        if (addProductModal) {
-            addProductModal.style.display = 'flex';
-        }
-    }
-}
-
-export function deleteProduct(productId) {
-    if (confirm('Are you sure you want to delete this product?')) {
-        window.products = window.products.filter(p => p.id !== productId);
-        const productList = document.getElementById('productList');
-        if (productList && window.loadProducts) {
-            window.loadProducts();
-        }
-        alert('Product deleted successfully!');
-    }
-}

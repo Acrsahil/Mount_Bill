@@ -2,7 +2,6 @@
 import {  updateStats, updateClientStats } from './utils.js';
 import { 
     loadInvoices, 
-    loadProducts, 
     loadClients, 
     filterInvoices, 
     filterProducts, 
@@ -20,10 +19,8 @@ import {
     
     handleItemUpdate,
     handleRemoveItem,
-    editProduct,
-    deleteProduct
 } from './events.js';
-
+import { editProduct,deleteProduct,loadProducts } from './product.js';
 import { setupTabs } from './tabs.js';
 
 // ULTRA SAFE INITIALIZATION

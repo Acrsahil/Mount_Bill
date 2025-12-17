@@ -121,9 +121,11 @@ class OrderList(models.Model):
         ("PARTIAL", "Partial"),
         ("PAID", "Paid"),
     ]
+
     payment_status = models.CharField(
         max_length=50, choices=PAYMENT_STATUS_CHOICES, default="UNPAID"
     )
+    notes= models.TextField(blank=True,null=True)
     is_simple_invoice = models.BooleanField(default=False)
     invoice_description = models.TextField(blank=True, null=True)
 

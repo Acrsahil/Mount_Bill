@@ -86,17 +86,24 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }, 100);
 });
+let is_addnotebtn = false
  //first row on table on first page load
+
 document.addEventListener('DOMContentLoaded',() => {
     addInvoiceItem()
     //for notes or remarks
+    
+    // console.log(notes.innerText)
+
     document.getElementById('addnoteBtn').onclick =() =>{
+        is_addnotebtn = true
         document.getElementById('additionalNotes').innerHTML=`
         <div class='form-group'>
         <label for='notes'>Notes or Remarks</label>
-        <textarea  placeholder="Notes here........" rows="8" cols="50" style="resize:none"></textarea></div>
+        <textarea placeholder="Notes here........" id="note" style="resize:none" rows="10" cols="50"></textarea></div>
         `;
         addnoteBtn.style.display ='none';
+         
     };
 
     //for discount charges
@@ -140,7 +147,6 @@ function showTotalSection(){
     totalCharges.style.display = 'block';
 
 }
-
 
 // Setup all event listeners for the page
 function setupPageEventListeners() {
@@ -820,7 +826,6 @@ export async function saveInvoice(createInvoicePage,invoiceItemsBody) {
     
     const clientName = clientNameInput.value.trim();
     const invoiceDateValue = invoiceDate.value;
-    const chargeName = 
     console.log("Are we here?")
     // console.log(globalDiscountInput)
     // console.log(globalTaxInput)
@@ -833,7 +838,10 @@ export async function saveInvoice(createInvoicePage,invoiceItemsBody) {
     const tax = window.globalTaxInput? parseFloat(globalTaxInput.value) || 0: 0;
     console.log("tax value: ",tax)
     //console.log(tax)
-
+    let noteshere = ""
+    if(is_addnotebtn){
+        noteshere = document.getElementById('note').value
+    }
     const additionalchargeName = additionalChargeName()
 
     //getting total from updateTotals
@@ -872,7 +880,8 @@ export async function saveInvoice(createInvoicePage,invoiceItemsBody) {
             globalDiscount: discount,
             globalTax: tax,
             additionalCharges: window.additionalChargesTotal,
-            additionalchargeName: additionalchargeName
+            additionalchargeName: additionalchargeName,
+            noteshere: noteshere,
             // totalAmount: totalAmount,
         };
         

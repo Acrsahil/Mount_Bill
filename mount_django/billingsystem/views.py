@@ -123,13 +123,7 @@ def dashboard(request):
 def save_product(request):
     """Save new product via AJAX - COMPATIBLE VERSION"""
     try:
-        print("=== DEBUG SAVE PRODUCT ===")
-        print("Raw request body:", request.body.decode("utf-8"))
-
         data = json.loads(request.body)
-        print("Parsed data:", data)
-        print("Data keys:", list(data.keys()))
-
         name = data.get("name", "").strip()
         category_name = data.get("category", "").strip()
 
@@ -146,20 +140,13 @@ def save_product(request):
             company = user.active_company
 
         if not company:
-            print("ma cheai product ko not company vitra xuu!")
             return JsonResponse({"success": False, "error": "No company for the user"})
         # If using old format with single 'price' field
+
         if cost_price is None and selling_price is None and "price" in data:
             cost_price = data.get("price")
             selling_price = data.get("price")  # Use same price for both
-            print("Using old price format - single price field")
-
-        print(
-            f"Extracted - name: '{name}', cost_price: {cost_price}, selling_price: {
-                selling_price
-            }"
-        )
-
+ 
         # Rest of your validation code remains the same...
         if not name:
             return JsonResponse(
@@ -213,13 +200,13 @@ def save_product(request):
             )
 
         # Get or create category
-
+        
         category = None
         if category_name:
             category, _ = ProductCategory.objects.get_or_create(
                 name=category_name, company=company
             )
-
+        
             # Create product
         product = Product.objects.create(
             name=name,
@@ -229,7 +216,7 @@ def save_product(request):
             product_quantity=quantity,
             company=company,
         )
-
+        print("ya samma aaeraxa?")
         return JsonResponse(
             {
                 "success": True,
@@ -251,6 +238,107 @@ def save_product(request):
             {"success": False, "error": f"Server error: {str(e)}"}, status=500
         )
 
+@login_required
+@csrf_exempt
+@require_POST
+def update_product(request):
+    try:
+        data = json.loads(request.body)
+
+        product_id = data.get("id")
+        print(product_id)
+        name = data.get("name", "").strip()
+        category_name = data.get("category", "").strip()
+        cost_price = data.get("cost_price")
+        selling_price = data.get("selling_price")
+        quantity = data.get("quantity")
+
+        user = request.user
+        if user.owned_company:
+            company = user.owned_company
+        elif user.active_company:
+            company = user.active_company
+
+        if not company:
+            return JsonResponse({"success": False, "error": "No company for the user"}, status=400)
+
+        # Fetch product
+        product = Product.objects.get(id=product_id, company=company)
+
+        try:
+            cost_price = float(cost_price)
+            selling_price = float(selling_price)
+            quantity = int(quantity)
+
+            if quantity <= 0:
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "error": "Product quantity cannot be 0 or less.",
+                    },
+                    status=400,
+                )
+
+            if cost_price <= 0 or selling_price <= 0:
+                return JsonResponse(
+                    {"success": False, "error": "Prices must be positive"}, status=400
+                )
+            if selling_price < cost_price:
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "error": "Selling price cannot be less than cost price",
+                    },
+                    status=400,
+                )
+        except (TypeError, ValueError):
+            return JsonResponse(
+                {"success": False, "error": "Valid prices are required"}, status=400
+            )
+
+        if Product.objects.filter(
+            company=company,
+            name__iexact=name
+        ).exclude(id=product.id).exists():
+            return JsonResponse(
+                {"success": False, "error": "Product with this name already exists"},
+                status=400
+            )
+
+        # Category
+        category = None
+        if category_name:
+            category, _ = ProductCategory.objects.get_or_create(
+                name=category_name,
+                company=company
+            )
+        product.name = name
+        product.cost_price = cost_price
+        product.selling_price = selling_price
+        product.product_quantity = quantity
+        product.category = category
+        product.save()
+
+        return JsonResponse({
+            "success": True,
+            "message": "Product updated successfully",
+            "product": {
+                "id": product.id,
+                "name": product.name,
+                "cost_price": float(product.cost_price),
+                "selling_price": float(product.selling_price),
+                "category": product.category.name if product.category else "",
+                "quantity": product.product_quantity,
+            }
+        })
+
+    except Exception as e:
+        print("Update product error:", e)
+        return JsonResponse(
+            {"success": False, "error": f"Server error: {str(e)}"},
+            status=500
+        )
+
 
 @login_required
 @csrf_exempt
@@ -266,6 +354,8 @@ def save_invoice(request):
         global_tax = float(data.get("globalTax", 0)) 
         additional_charges = float(data.get("additionalCharges",0))
         charge_name_amount = data.get("additionalchargeName",[])
+        notes_here = data.get("noteshere", "").strip()
+        print(notes_here)
         # total_amount = float(data.get("totalAmount"))
         user = request.user
 
@@ -319,7 +409,7 @@ def save_invoice(request):
 
         # Create order
         order = OrderList.objects.create(
-            company=company, customer=customer, order_date=invoice_date
+            company=company, customer=customer, order_date=invoice_date,notes=notes_here
         )
 
         # Process invoice items
