@@ -51,6 +51,7 @@
             <table class="invoice-items-table">
                 <thead>
                     <tr>
+                        <th>S.N</th>
                         <th>Product</th>
                         <th>Quantity</th>
                         <th>Price</th>
@@ -65,7 +66,7 @@
                  <tfoot>
         <tr id="subtotalRow">
              <!-- Add Item Button -->
-            <td colspan="2"><button class="add-item-btn" id="addItemBtn">
+            <td colspan="3"><button class="add-item-btn" id="addItemBtn">
                 <i class="fas fa-plus"></i> Add Item
             </button></td>
             <td class="subtotal-label">Subtotal:</td>
@@ -77,25 +78,34 @@
             </table>
         </div>
         <!-- Discount, Tax and additional section-->
-        <div class="charges" id="totalCharges">
-            <div class="invoice-items">
-                <!--discount,tax amount button-->
-           <div class="form-group" id="additionalChargesWrapper">
-            <!-- Dynamic inputs will go here -->
+       <div class="charges" id="totalCharges">
+    <div class="invoice-items">
+        <div class="notes-charges-wrapper">
+
+            <!-- LEFT -->
+            <div id="additionalNotes"></div>
+
+            <!-- RIGHT -->
+            <div class="form-group" id="additionalChargesWrapper">
+
                 <div id="discountContainer"></div>
                 <div id="taxContainer"></div>
                 <div id="additionalInputsContainer"></div>
 
-                <!-- Buttons in a row -->
-            <div class="button-row">
-            <button type="button" id="addDiscountBtn">+Add discount</button>
-            <button type="button" id="addTaxBtn">+Add Tax</button>
-            <button type="button" id="addChargeBtn">+Add Additional Charge</button>
-            </div>
+                <!-- Buttons MUST be inside right column -->
+                <div class="button-row">
+                    <button type="button" id="addnoteBtn">+Add notes</button>
+                    <button type="button" id="addDiscountBtn">+Add discount</button>
+                    <button type="button" id="addTaxBtn">+Add Tax</button>
+                    <button type="button" id="addChargeBtn">+Add Additional Charge</button>
+                </div>
+
             </div>
 
-             </div> 
-             </div>  
+        </div>
+    </div>
+</div>
+  
                 <!-- Totals Section -->
      <div class='totals-section' id="totalSection">
     <div class="invoice-totals-compact">

@@ -8,7 +8,7 @@ to_delete.addEventListener("click", async (e) => {
     const csrfToken = deleteBtn.getAttribute("data-token");
     
     try {
-        const response = await fetch(`/bill/delete_invoice/${invoiceId}/`, {
+        const response = await fetch(`/dashboard/delete_invoice/${invoiceId}/`, {
             method: "POST",
             headers: { "X-CSRFToken": csrfToken, "X-Requested-With": "XMLHttpRequest" }
         });

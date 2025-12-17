@@ -4,6 +4,7 @@
 {% block title %}InvoicePro - Billing System{% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/product.css' %}">
 <link rel="stylesheet" href="{% static 'css/bill.css' %}">
 <link rel="stylesheet" href="{%static 'css/client.css'%}">
 {% endblock %}
@@ -347,126 +348,6 @@
 
 <!-- INVOICE VIEW MODAL (Added this section) -->
 {% include "website/bill_layout.html" %}
-<!-- Create Invoice Modal -->
-{% comment %} <div class="modal" id="createInvoiceModal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3>Create New Invoice</h3>
-            <button class="close-btn" id="closeInvoiceModal">&times;</button>
-        </div>
-        <div class="modal-body">
-            <!-- Three column row for invoice details -->
-            <div class="form-row-3">
-                <div class="form-group">
-                    <label for="invoiceNumber">Invoice Number</label>
-                    <input type="text" id="invoiceNumber" class="form-control" value="INV-001" readonly>
-                </div>
-                <div class="form-group">
-                    <label for="invoiceDate">Invoice Date</label>
-                    <input type="date" id="invoiceDate" class="form-control" value="">
-                </div>
-                <div class="form-group" style="position: relative;">
-                    <label for="clientName">Client Name</label>
-                    <input type="text" id="clientName" class="form-control client-search-input" 
-                           placeholder="Type client name (Tab to complete)...">
-                    <div class="search-hint" id="client-search-hint" style="display: none; position: absolute; background: white; border: 1px solid #ddd; max-height: 150px; overflow-y: auto; z-index: 1000; width: 100%;">
-                        <!-- Client suggestions will appear here -->
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Three column row for client details -->
-            <div class="form-row-3">
-                <div class="form-group">
-                    <label for="clientId">Client ID</label>
-                    <input type="text" id="clientId" class="form-control" placeholder="Auto-filled" readonly>
-                </div>
-                <div class="form-group">
-                    <label for="clientEmail">Client Email</label>
-                    <input type="email" id="clientEmail" class="form-control" placeholder="Auto-filled" readonly>
-                </div>
-                <div class="form-group">
-                    <label for="clientAddress">Client Address</label>
-                    <textarea id="clientAddress" class="form-control" rows="2" placeholder="Auto-filled" readonly></textarea>
-                </div>
-            </div>
-            
-            <div class="invoice-items">
-                <div class="invoice-items-header">
-                    <h4>Invoice Items</h4>
-                </div>
-                
-                <table class="invoice-items-table">
-                    <thead>
-                        <tr>
-                            <th>Product</th>
-                            <th>Description</th>
-                            <th>Quantity</th>
-                            <th>Price</th>
-                            <th>Total</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="invoiceItemsBody">
-                        <!-- Invoice items will be added here -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        
-        <!-- Fixed Add Item Button -->
-        <div class="fixed-add-item-container">
-            <button class="add-item-btn" id="addItemBtn">
-                <i class="fas fa-plus"></i> Add Item
-            </button>
-        </div>
-        
-        <!-- Discount, Tax and Totals Section - Compact -->
-        <div class="modal-body-continued">
-            <div class="invoice-items">
-                <!-- Single row for discount and tax -->
-                <div class="form-row-2-compact">
-                    <div class="form-group">
-                        <label for="globalDiscount">Global Discount (%)</label>
-                        <input type="number" id="globalDiscount" class="form-control" value="0" min="0" max="100" step="0.01">
-                    </div>
-                    <div class="form-group">
-                        <label for="globalTax">Tax (%)</label>
-                        <input type="number" id="globalTax" class="form-control" value="0" min="0" max="100" step="0.01">
-                    </div>
-                </div>
-                
-                <!-- Compact Totals Section -->
-                <div class="invoice-totals-compact">
-                    <table>
-                        <tr>
-                            <td>Subtotal:</td>
-                            <td id="subtotalAmount">$0.00</td>
-                        </tr>
-                        <tr>
-                            <td>Discount:</td>
-                            <td id="discountAmount">$0.00</td>
-                        </tr>
-                        <tr>
-                            <td>Tax:</td>
-                            <td id="taxAmount">$0.00</td>
-                        </tr>
-                        <tr class="total-row">
-                            <td>Total:</td>
-                            <td id="totalAmount">$0.00</td>
-                        </tr>
-                    </table>
-                </div>
-            </div>
-        </div>
-        
-        <div class="modal-footer">
-            <button class="btn btn-light" id="cancelInvoiceBtn">Cancel</button>
-            <button class="btn btn-primary" id="saveInvoiceBtn">Save Invoice</button>
-        </div>
-    </div>
-</div> {% endcomment %}
-
 <!-- Add Product Modal - WITH SUGGESTIONS -->
 <div class="modal" id="addProductModal">
     <div class="modal-content">
@@ -475,6 +356,7 @@
             <button class="close-btn" id="closeProductModal">&times;</button>
         </div>
         <div class="modal-body">
+            <input type = "hidden" id = "productId">
             <div class="form-group" style="position: relative;">
                 <label for="productName">Product Name *</label>
                 <input type="text" id="productName" class="form-control product-name-search-input" 
@@ -483,12 +365,14 @@
                     <!-- Product suggestions will appear here -->
                 </div>
             </div>
+            <div class = "productQuantities">
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="productQuantity">Product Quantity</label>
+                        <label for="productQuantity" class="updateProduct">Product Quantity</label>
                         <input type="number" id="productQuantity" class="form-control" placeholder="0.00" min="0" step="0.01" required>
                     </div>
                 </div>
+            </div>
             <div class="form-row">
                 <div class="form-col">
                     <div class="form-group">
@@ -517,8 +401,14 @@
         <div class="modal-footer">
             <button class="btn btn-light" id="cancelProductBtn">Cancel</button>
             <button class="btn btn-primary" id="saveProductBtn">Save Product</button>
+            <button class="btn btn-primary" id="updateProductBtn">Update Product</button>
         </div>
     </div>
+</div>
+
+<div class="stock-popup" id="addStockPopup">
+    <button class="popup-btn">Add Stock</button>
+    <button class="popup-btn">Remove Stock</button>
 </div>
 
 <!-- Add Client Modal - SIMPLIFIED -->
@@ -623,6 +513,7 @@ document.addEventListener('DOMContentLoaded', function() {
 -->
 <script src="{%static 'js/client.js'%}"></script>
 <script src="{% static 'js/delete.js' %}"></script>
+<script src="{%static 'js/product.js'%}"></script>
 <script src="{% static 'js/bill_layout.js' %}"></script>
 <script type="module" src="{% static 'js/main.js' %}"></script>
 {% endblock %}

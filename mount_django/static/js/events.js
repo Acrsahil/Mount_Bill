@@ -1,8 +1,8 @@
 // Event listeners and UI interaction handlers
 import { updateItemTotal, updateTotals } from './create_invoice.js';
+import { updateClientStats,showAlert } from './utils.js';
 import { 
 
-    loadProducts, 
     loadClients, 
     loadInvoices, 
     filterInvoices, 
@@ -20,9 +20,8 @@ import {
     clearClientDetails,
     fillProductDetails
 } from './dom.js';
-import { saveProduct } from './api.js';
 import { saveInvoice,renderInvoiceItems } from './create_invoice.js';
-
+import { editProduct,deleteProduct,saveProduct,loadProducts } from './product.js';
 // Track currently selected hint for keyboard navigation
 let currentSelectedHintIndex = -1;
 let currentSelectedProductHintIndex = -1;
@@ -64,7 +63,7 @@ export function setupEventListeners(
 ) {
     if (createInvoiceBtn) {
         createInvoiceBtn.addEventListener('click', () => {
-            openCreateInvoiceModal(invoiceNumber, invoiceDate, createInvoiceModal, globalDiscountInput, globalTaxInput, invoiceItemsBody);
+             window.location.href = '/dashboard/create-invoice/';
         });
     }
     if (addProductBtn) addProductBtn.addEventListener('click', () => openAddProductModal(addProductModal));
@@ -120,6 +119,156 @@ export function setupEventListeners(
     });
 }
 
+
+// CLIENT MANAGEMENT FUNCTIONS
+export function openClientModal(addClientModal) {
+    console.log('Opening client modal');
+    
+    if (!addClientModal) {
+        console.error('Client modal not found!');
+        return;
+    }
+    
+    // Reset only the fields that exist in the simplified modal
+    document.getElementById('clientNameInput').value = '';
+    document.getElementById('clientPhoneInput').value = '';
+    
+    // Show the modal
+    addClientModal.style.display = 'flex';
+    
+    // Auto-focus on the first input field
+    setTimeout(() => {
+        const firstInput = document.getElementById('clientNameInput');
+        if (firstInput) {
+            firstInput.focus();
+        }
+    }, 100);
+}
+
+export function closeClientModalFunc(addClientModal) {
+    if (addClientModal) {
+        addClientModal.style.display = 'none';
+    }
+}
+
+// Save client to database via AJAX
+export async function saveClient(addClientModal, clientsTableBody) {
+    // Only get fields that exist in the simplified modal
+    const clientName = document.getElementById('clientNameInput').value.trim();
+    const clientPhone = document.getElementById('clientPhoneInput').value.trim();
+    const clientAddress = document.getElementById("clientAddressInput").value.trim();
+    const clientEmail = document.getElementById('clientEmailInput').value.trim();
+    const clientPanNo = document.getElementById('clientPanNoInput').value.trim();
+    // Validation
+    if (!clientName || !clientPhone) {
+        showAlert('Please fill in all required fields (Name, Phone)', 'error');
+        return;
+    }
+
+
+    // Show loading state
+    const saveBtn = document.getElementById('saveClientBtn');
+    const originalText = saveBtn.innerHTML;
+    
+    saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+    saveBtn.disabled = true;
+
+    try {
+        // Prepare data for sending to database
+        const clientData = {
+            name: clientName,
+            email: clientEmail,
+            phone: clientPhone,
+            address: clientAddress,
+            pan_id: clientPanNo,
+        };
+
+        console.log('Saving client to database:', clientData);
+
+        // Send AJAX request to Django backend
+        const response = await fetch('/dashboard/save-client/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': window.djangoData.csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify(clientData)
+        });
+
+        const result = await response.json();
+        console.log('Server response:', result);
+
+        if (result.success) {
+            // Add the new client to the local clients array with the ID from database
+            const newClient = {
+                id: result.client.id,
+                name: result.client.name,
+                email: result.client.email,
+                phone: result.client.phone,
+                address: result.client.address,
+                totalInvoices: 0,
+                totalSpent: 0
+            };
+
+            // Update the global clients array
+            window.clients.push(newClient);
+            
+            // Update the nextClientId to avoid conflicts
+            window.nextClientId = Math.max(window.nextClientId, result.client.id + 1);
+            
+            // Update UI
+            loadClients(window.clients, clientsTableBody);
+            
+            updateClientStats(window.clients);
+            
+            // Show success message
+            showAlert(result.message, 'success');
+            // Close modal after short delay
+            setTimeout(() => {
+                closeClientModalFunc(addClientModal);
+            }, 1500);
+
+        } else {
+            showAlert('Error: ' + (result.error || 'Failed to save client'), 'error');
+        }
+
+    } catch (error) {
+        console.error('Error saving client:', error);
+        showAlert('Network error. Please check your connection and try again.', 'error');
+    } finally {
+        // Restore button state
+        saveBtn.innerHTML = originalText;
+        saveBtn.disabled = false;
+    }
+}
+
+
+export function openAddProductModal(addProductModal) {
+    // Reset form
+    document.getElementById('productName').value = '';
+    document.getElementById('productCostPrice').value = '';
+    document.getElementById('productSellingPrice').value = '';
+    document.getElementById('productCategory').value = '';
+    document.getElementById('productQuantity').value ='';
+
+    // Show modal
+    addProductModal.style.display = 'flex';
+    document.getElementById('updateProductBtn').style.display = 'none';
+
+    // Auto-focus on product name field
+    setTimeout(() => {
+        const productNameInput = document.getElementById('productName');
+        if (productNameInput) {
+            productNameInput.focus();
+        }
+    }, 100);
+}
+
+export function closeProductModalFunc(addProductModal) {
+    addProductModal.style.display = 'none';
+    hideSearchHints();
+}
 
 export function addInvoiceItem(invoiceItemsBody) {
     const itemId = window.invoiceItems.length + 1;
@@ -493,35 +642,3 @@ function handleCategorySearchBlur(e) {
     }, 200);
 }
 
-// Product edit/delete functions
-export function editProduct(productId) {
-    const product = window.products.find(p => p.id === productId);
-    if (product) {
-        // Populate form with product data
-        document.getElementById('productName').value = product.name;
-        document.getElementById('productCostPrice').value = product.cost_price;
-        document.getElementById('productSellingPrice').value = product.selling_price;
-        document.getElementById('productCategory').value = product.category || '';
-
-        // Change modal title and button
-        document.querySelector('#addProductModal .modal-header h3').textContent = 'Edit Product';
-        document.getElementById('saveProductBtn').textContent = 'Update Product';
-
-        // Show modal
-        const addProductModal = document.getElementById('addProductModal');
-        if (addProductModal) {
-            addProductModal.style.display = 'flex';
-        }
-    }
-}
-
-export function deleteProduct(productId) {
-    if (confirm('Are you sure you want to delete this product?')) {
-        window.products = window.products.filter(p => p.id !== productId);
-        const productList = document.getElementById('productList');
-        if (productList && window.loadProducts) {
-            window.loadProducts();
-        }
-        alert('Product deleted successfully!');
-    }
-}

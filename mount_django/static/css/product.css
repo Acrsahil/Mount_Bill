@@ -1,0 +1,28 @@
+.stock-popup {
+    position: absolute;
+    display: none;
+    flex-direction: column;   /* STACK VERTICALLY */
+    gap: 8px;
+
+    background: white;
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    z-index: 1000;
+
+    width: max-content;       /* JUST FIT BUTTONS */
+}
+
+.popup-btn {
+    padding: 6px 14px;
+    border: none;
+    border-radius: 4px;
+    background: #f2f2f2;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.popup-btn:hover {
+    background: #e0e0e0;
+}

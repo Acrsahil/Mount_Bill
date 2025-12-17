@@ -1,7 +1,7 @@
 // DOM manipulation functions
 import { formatDate } from './utils.js';
 // RENDER INVOICE ITEMS
-
+import { editProduct,deleteProduct } from './product.js';
 
 // Show product suggestions
 export function showProductSuggestions(itemId, products, searchTerm = '', selectProductFromHint) {
@@ -206,56 +206,7 @@ export function fillProductDetails(product) {
     document.getElementById('productQuantity').value = product.quantity;
 }
 
-// LOAD PRODUCTS
-export function loadProducts(products, productList, editProduct, deleteProduct) {
-    if (!productList) return;
 
-    productList.innerHTML = '';
-
-    // Check if we have products from database
-    if (products.length === 0) {
-        productList.innerHTML = '<p>No products found in database.</p>';
-        return;
-    }
-
-    products.forEach(product => {
-        const productCard = document.createElement('div');
-        productCard.className = 'product-card';
-        productCard.innerHTML = `
-<h4>${product.name}</h4>
-<p>Category: ${product.category || 'N/A'}</p>
-<div class="product-price">
-    <div>Cost: $${product.cost_price}</div>
-    <div>Selling: $${product.selling_price}</div>
-    <div>Product Qty: ${product.quantity}</div>
-</div>
-<div class="product-actions">
-    <button class="btn btn-primary edit-product-btn" data-id="${product.id}">
-        <i class="fas fa-edit"></i> Edit
-    </button>
-    <button class="btn btn-danger delete-product-btn" data-id="${product.id}">
-        <i class="fas fa-trash"></i> Delete
-    </button>
-</div>
-`;
-        productList.appendChild(productCard);
-    });
-
-    // Add event listeners to product buttons
-    document.querySelectorAll('.edit-product-btn').forEach(button => {
-        button.addEventListener('click', function() {
-            const productId = parseInt(this.getAttribute('data-id'));
-            editProduct(productId);
-        });
-    });
-
-    document.querySelectorAll('.delete-product-btn').forEach(button => {
-        button.addEventListener('click', function() {
-            const productId = parseInt(this.getAttribute('data-id'));
-            deleteProduct(productId);
-        });
-    });
-}
 
 // Load clients
 export function loadClients(clients, clientsTableBody) {

@@ -12,6 +12,8 @@ from .models import (
     Product,
     ProductCategory,
     User,
+    AdditionalCharges,
+    RemainingAmount,
 )
 
 
@@ -214,3 +216,13 @@ class OrderSummaryAdmin(admin.ModelAdmin):
 
 # Register User with Custom Admin
 admin.site.register(User, CustomUserAdmin)
+
+@admin.register(AdditionalCharges)
+class AdditionalChargesAdmin(admin.ModelAdmin):
+    list_display = ("additional_charges","charge_name","additional_amount",)
+    search_fields = ("charge_name",)
+
+@admin.register(RemainingAmount)
+class RemainingAmountAdmin(admin.ModelAdmin):
+    list_display = ("customer","remaining_amount",)
+    search_fields = ("customer",)

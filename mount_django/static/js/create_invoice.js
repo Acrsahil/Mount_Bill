@@ -53,7 +53,6 @@ const cancelInvoiceBtnBottom = document.getElementById('cancelInvoiceBtnBottom')
 
 // get the charge section
 const totalCharges = document.getElementById('totalCharges');
-const totalAtFirst = document.getElementById('beforeProduct')
 // Initialize the page
 document.addEventListener('DOMContentLoaded', function() {
     const saveInvoiceBtn = document.getElementById('saveInvoiceBtn');
@@ -87,9 +86,25 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }, 100);
 });
+let is_addnotebtn = false
  //first row on table on first page load
+
 document.addEventListener('DOMContentLoaded',() => {
     addInvoiceItem()
+    //for notes or remarks
+    
+    // console.log(notes.innerText)
+
+    document.getElementById('addnoteBtn').onclick =() =>{
+        is_addnotebtn = true
+        document.getElementById('additionalNotes').innerHTML=`
+        <div class='form-group'>
+        <label for='notes'>Notes or Remarks</label>
+        <textarea placeholder="Notes here........" id="note" style="resize:none" rows="10" cols="50"></textarea></div>
+        `;
+        addnoteBtn.style.display ='none';
+         
+    };
 
     //for discount charges
     document.getElementById('addDiscountBtn').onclick = () => { 
@@ -132,7 +147,6 @@ function showTotalSection(){
     totalCharges.style.display = 'block';
 
 }
-
 
 // Setup all event listeners for the page
 function setupPageEventListeners() {
@@ -200,7 +214,7 @@ document.addEventListener("input", function (e) {
 //for additional charges
 document.addEventListener('DOMContentLoaded', () => {
     const invoiceBody = document.getElementById('invoiceItemsBody'); // tbody containing item rows
-    const additionalContainer = document.getElementById('additionalInputsContainer');
+    window.additionalContainer = document.getElementById('additionalInputsContainer');
     const addChargeBtn = document.getElementById('addChargeBtn');
 
     // Helper: recalc totals
@@ -264,7 +278,7 @@ document.addEventListener('DOMContentLoaded', () => {
         inputDiv.appendChild(numberInput);
         inputDiv.appendChild(removeBtn);
 
-        additionalContainer.appendChild(inputDiv);
+        window.additionalContainer.appendChild(inputDiv);
 
         recalcTotals();
     });
@@ -275,7 +289,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initial calculation
     recalcTotals();
+
+    
 });
+
+//sending additional charges name and amount
+function additionalChargeName(){
+    const charges = []
+    const chargesDiv = window.additionalContainer.querySelectorAll('.additional-input')
+    chargesDiv.forEach(div => {
+        const chargeName = div.querySelector('input[type="text"]').value.trim()
+        const chargeAmount = parseFloat(div.querySelector('input[type="number"]').value) || 0
+        charges.push({chargeName,chargeAmount});
+    })
+    console.log(charges)
+    return charges
+    }
 
 // CLIENT SEARCH FUNCTIONS
 export function setupClientSearch() {
@@ -586,11 +615,13 @@ function selectProductFromHint(itemId, hintElement) {
 export function renderInvoiceItems(invoiceItems, invoiceItemsBody, setupProductSearchHandlers, handleItemUpdate, handleRemoveItem) {
     invoiceItemsBody.innerHTML = '';
 
-    invoiceItems.forEach(item => {
+    invoiceItems.forEach((item,index) => {
         const discountAmount = Number(item.price) * Number(item.quantity) * (Number(item.discountPercent) / 100);
         const row = document.createElement('tr');
         row.innerHTML = `
-<td style="position: relative;">
+        <td>${index+1}</td>
+    <td style="position: relative;">
+
     <input type="text" 
         class="product-search-input" 
         data-id="${item.id}"
@@ -634,6 +665,13 @@ export function renderInvoiceItems(invoiceItems, invoiceItemsBody, setupProductS
     document.querySelectorAll('.remove-item-btn').forEach(button => {
         button.addEventListener('click', handleRemoveItem);
     });
+    // const tbody = invoiceItemsBody;
+
+    // const lastRow = tbody.rows[tbody.rows.length - 1];
+    // console.log(lastRow);
+    // const lastItem=invoiceItems[invoiceItems.length-2].id
+    // console.log(lastItem)
+
 }
 
 // Add invoice item
@@ -740,9 +778,9 @@ export function updateTotals(invoiceItems, globalDiscount, globalTax) {
 
 
     // **Sum all additional charges dynamically**
-    let additionalChargesTotal = 0;
+     window.additionalChargesTotal = 0;
     document.querySelectorAll('#additionalInputsContainer input[type="number"]').forEach(input => {
-        additionalChargesTotal += Number(input.value) || 0;
+        window.additionalChargesTotal += Number(input.value) || 0;
     });
     
     // Update display
@@ -800,9 +838,14 @@ export async function saveInvoice(createInvoicePage,invoiceItemsBody) {
     const tax = window.globalTaxInput? parseFloat(globalTaxInput.value) || 0: 0;
     console.log("tax value: ",tax)
     //console.log(tax)
+    let noteshere = ""
+    if(is_addnotebtn){
+        noteshere = document.getElementById('note').value
+    }
+    const additionalchargeName = additionalChargeName()
 
     //getting total from updateTotals
-    const totalAmount=window.currentTotalValue;
+    // const totalAmount=window.currentTotalValue;
     // Validation
     if (!clientName) {
         showAlert('Please enter client name', 'error');
@@ -831,11 +874,15 @@ export async function saveInvoice(createInvoicePage,invoiceItemsBody) {
                 productName: item.productName || '',
                 description: item.description || '',
                 quantity: item.quantity || 1,
-                price: item.price || 0
+                price: item.price || 0,
+                discountPercent: item.discountPercent || 0,
             })),
             globalDiscount: discount,
             globalTax: tax,
-            totalAmount: totalAmount,
+            additionalCharges: window.additionalChargesTotal,
+            additionalchargeName: additionalchargeName,
+            noteshere: noteshere,
+            // totalAmount: totalAmount,
         };
         
         const response = await fetch('/dashboard/save-invoice/', {

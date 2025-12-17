@@ -16,6 +16,7 @@ from .models import (
     OrderSummary,
     Product,
     ProductCategory,
+    AdditionalCharges,
 )
 
 
@@ -122,13 +123,7 @@ def dashboard(request):
 def save_product(request):
     """Save new product via AJAX - COMPATIBLE VERSION"""
     try:
-        print("=== DEBUG SAVE PRODUCT ===")
-        print("Raw request body:", request.body.decode("utf-8"))
-
         data = json.loads(request.body)
-        print("Parsed data:", data)
-        print("Data keys:", list(data.keys()))
-
         name = data.get("name", "").strip()
         category_name = data.get("category", "").strip()
 
@@ -145,20 +140,13 @@ def save_product(request):
             company = user.active_company
 
         if not company:
-            print("ma cheai product ko not company vitra xuu!")
             return JsonResponse({"success": False, "error": "No company for the user"})
         # If using old format with single 'price' field
+
         if cost_price is None and selling_price is None and "price" in data:
             cost_price = data.get("price")
             selling_price = data.get("price")  # Use same price for both
-            print("Using old price format - single price field")
-
-        print(
-            f"Extracted - name: '{name}', cost_price: {cost_price}, selling_price: {
-                selling_price
-            }"
-        )
-
+ 
         # Rest of your validation code remains the same...
         if not name:
             return JsonResponse(
@@ -212,13 +200,13 @@ def save_product(request):
             )
 
         # Get or create category
-
+        
         category = None
         if category_name:
             category, _ = ProductCategory.objects.get_or_create(
                 name=category_name, company=company
             )
-
+        
             # Create product
         product = Product.objects.create(
             name=name,
@@ -228,7 +216,7 @@ def save_product(request):
             product_quantity=quantity,
             company=company,
         )
-
+        print("ya samma aaeraxa?")
         return JsonResponse(
             {
                 "success": True,
@@ -250,6 +238,107 @@ def save_product(request):
             {"success": False, "error": f"Server error: {str(e)}"}, status=500
         )
 
+@login_required
+@csrf_exempt
+@require_POST
+def update_product(request):
+    try:
+        data = json.loads(request.body)
+
+        product_id = data.get("id")
+        print(product_id)
+        name = data.get("name", "").strip()
+        category_name = data.get("category", "").strip()
+        cost_price = data.get("cost_price")
+        selling_price = data.get("selling_price")
+        quantity = data.get("quantity")
+
+        user = request.user
+        if user.owned_company:
+            company = user.owned_company
+        elif user.active_company:
+            company = user.active_company
+
+        if not company:
+            return JsonResponse({"success": False, "error": "No company for the user"}, status=400)
+
+        # Fetch product
+        product = Product.objects.get(id=product_id, company=company)
+
+        try:
+            cost_price = float(cost_price)
+            selling_price = float(selling_price)
+            quantity = int(quantity)
+
+            if quantity <= 0:
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "error": "Product quantity cannot be 0 or less.",
+                    },
+                    status=400,
+                )
+
+            if cost_price <= 0 or selling_price <= 0:
+                return JsonResponse(
+                    {"success": False, "error": "Prices must be positive"}, status=400
+                )
+            if selling_price < cost_price:
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "error": "Selling price cannot be less than cost price",
+                    },
+                    status=400,
+                )
+        except (TypeError, ValueError):
+            return JsonResponse(
+                {"success": False, "error": "Valid prices are required"}, status=400
+            )
+
+        if Product.objects.filter(
+            company=company,
+            name__iexact=name
+        ).exclude(id=product.id).exists():
+            return JsonResponse(
+                {"success": False, "error": "Product with this name already exists"},
+                status=400
+            )
+
+        # Category
+        category = None
+        if category_name:
+            category, _ = ProductCategory.objects.get_or_create(
+                name=category_name,
+                company=company
+            )
+        product.name = name
+        product.cost_price = cost_price
+        product.selling_price = selling_price
+        product.product_quantity = quantity
+        product.category = category
+        product.save()
+
+        return JsonResponse({
+            "success": True,
+            "message": "Product updated successfully",
+            "product": {
+                "id": product.id,
+                "name": product.name,
+                "cost_price": float(product.cost_price),
+                "selling_price": float(product.selling_price),
+                "category": product.category.name if product.category else "",
+                "quantity": product.product_quantity,
+            }
+        })
+
+    except Exception as e:
+        print("Update product error:", e)
+        return JsonResponse(
+            {"success": False, "error": f"Server error: {str(e)}"},
+            status=500
+        )
+
 
 @login_required
 @csrf_exempt
@@ -262,10 +351,15 @@ def save_invoice(request):
         invoice_date_str = data.get("invoiceDate", "")
         invoice_items = data.get("items", [])
         global_discount = float(data.get("globalDiscount", 0))
-        global_tax = float(data.get("globalTax", 0))
-        total_amount = float(data.get("totalAmount"))
+        global_tax = float(data.get("globalTax", 0)) 
+        additional_charges = float(data.get("additionalCharges",0))
+        charge_name_amount = data.get("additionalchargeName",[])
+        notes_here = data.get("noteshere", "").strip()
+        print(notes_here)
+        # total_amount = float(data.get("totalAmount"))
         user = request.user
-        print(f"total amount ko value:{total_amount}")
+
+        # print(f"total amount ko value:{total_amount}")
         company = None
         if user.owned_company:
             company = user.owned_company
@@ -315,44 +409,51 @@ def save_invoice(request):
 
         # Create order
         order = OrderList.objects.create(
-            company=company, customer=customer, order_date=invoice_date
+            company=company, customer=customer, order_date=invoice_date,notes=notes_here
         )
 
         # Process invoice items
-        # total_amount = 0
-        # for item in invoice_items:
-        #     product_name = item.get("productName", "").strip()
-        #     quantity = int(item.get("quantity", 1))
-        #     price = float(item.get("price", 0))
-        #     if not product_name:
-        #         continue
+        total_amount = 0
+        for item in invoice_items:
+            product_name = item.get("productName", "").strip()
+            quantity = int(item.get("quantity", 1))
+            price = float(item.get("price", 0))
+            discountPercent = float(item.get("discountPercent",0))
+            print(f"k tmro discountPercent yaa xa?{discountPercent}")
+            if not product_name:
+                continue
 
-        #     # Find or create product - use selling price as default
-        #     default_category = ProductCategory.objects.first()
-        #     if not default_category:
-        #         default_category = ProductCategory.objects.create(name="General")
+            # Find or create product - use selling price as default
+            default_category = ProductCategory.objects.first()
+            if not default_category:
+                default_category = ProductCategory.objects.create(name="General")
 
-        #     product, _ = Product.objects.get_or_create(
-        #         name=product_name,
-        #         defaults={
-        #             # Default cost price (80% of selling)
-        #             # "cost_price": price * 0.8,
-        #             "selling_price": price,
-        #             "category": default_category,
-        #         },
-        #     )
+            product, _ = Product.objects.get_or_create(
+                name=product_name,
+                defaults={
+                    # Default cost price (80% of selling)
+                    # "cost_price": price * 0.8,
+                    "selling_price": price,
+                    "category": default_category,
+                },
+            )
 
-        #     # Create bill entry
-        #     Bill.objects.create(
-        #         order=order,
-        #         product=product,
-        #         product_price=Decimal(
-        #             str(price)
-        #         ),  # Convert to Decimal    quantity=quantity,
-        #         bill_date=timezone.now(),
-        #     )
+            # Create bill entry
+            Bill.objects.create(
+                order=order,
+                product=product,
+                product_price=Decimal(
+                    str(price)
+                ),  # Convert to Decimal    quantity=quantity,
+                bill_date=timezone.now(),
+            )
 
-        #     total_amount += quantity * price
+            total_amount += (quantity * price) -((quantity * price) *(discountPercent/100))
+            print(f"tmro total_amount kati ho? {total_amount}")
+
+        # grand total amount
+        total_amount = (total_amount - global_discount) + global_tax + additional_charges
+        print(f" yo hamro django ma garirako total haii tw :{total_amount}")
         # Create order summary
         order_summary = OrderSummary.objects.create(
             order=order,
@@ -362,6 +463,20 @@ def save_invoice(request):
         )
         # order_summary.calculate_totals()
         print(order_summary)
+
+        for charge in charge_name_amount:
+            # print(charge['chargeName'])
+
+            charge_name=charge.get('chargeName')
+            charge_amount=charge.get('chargeAmount')
+            # creating additional entry
+            print(charge_name)
+            print(charge_amount)
+            AdditionalCharges.objects.create(
+                additional_charges=order,
+                charge_name=charge_name,
+                additional_amount=charge_amount)
+
 
         print("it passed order creation section!")
         return JsonResponse(
@@ -460,7 +575,6 @@ def save_client(request):
 @csrf_exempt
 @require_POST
 def delete_invoice(request, id):
-    print(f"Request method is: {request.method}")
     if request.method == "POST":
         try:
             order_list = OrderList.objects.get(id=id)
