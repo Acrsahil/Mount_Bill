@@ -155,30 +155,46 @@ export function loadProducts(products, productList, editProduct, deleteProduct) 
     });
 }
 
+//for add and reduce stock btn
 document.addEventListener('DOMContentLoaded', function () {
-    console.log("inside add btn");
-const popup = document.getElementById('addStockPopup');
+    const popup = document.getElementById('addStockPopup');
+    if (!popup) return;
 
-document.addEventListener('click', function (e) {
-    const adjustBtn = e.target.closest('.adjust-stock-btn');
+    let currentProductId = null; // track which product popup is open for
 
-    // CLICKED ADJUST STOCK
-    if (adjustBtn) {
-        const rect = adjustBtn.getBoundingClientRect();
+    document.addEventListener('click', function (e) {
+        const adjustBtn = e.target.closest('.adjust-stock-btn');
 
-        popup.style.display = 'flex';
-        popup.style.top = rect.bottom + window.scrollY + 'px';
-        popup.style.left = rect.left + window.scrollX + 'px';
+        if (adjustBtn) {
+            const productId = adjustBtn.dataset.id;
 
-        popup.dataset.productId = adjustBtn.dataset.id;
-        e.stopPropagation();
-        return;
-    }
+            // If popup is already open for the same product → close it
+            if (currentProductId === productId && popup.style.display === 'flex') {
+                popup.style.display = 'none';
+                currentProductId = null;
+                return;
+            }
 
-    // CLICKED OUTSIDE → CLOSE
-    popup.style.display = 'none';
+            // Otherwise, show popup under clicked button
+            const rect = adjustBtn.getBoundingClientRect();
+
+            popup.style.display = 'flex';
+            popup.style.top = rect.bottom + window.scrollY + 'px';
+            popup.style.left = rect.left + window.scrollX + 'px';
+
+            popup.dataset.productId = productId;
+            currentProductId = productId;
+
+            e.stopPropagation();
+            return;
+        }
+
+        // Clicked outside → close popup
+        popup.style.display = 'none';
+        currentProductId = null;
+    });
 });
-});
+
 // Product edit/delete functions
 export function editProduct(productId) {
     const product = window.products.find(p => p.id === productId);
