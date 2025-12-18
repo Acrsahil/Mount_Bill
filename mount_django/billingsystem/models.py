@@ -237,6 +237,6 @@ class RemainingAmount(models.Model):
     customer=models.OneToOneField(
         Customer, on_delete=models.CASCADE, related_name="customer"
     )
-    remaining_amount=models.DecimalField(max_digits=5, decimal_places=2, default=0.0)
+    remaining_amount=models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
     def __str__(self):
-        return self.remaining_amount
+        return f"remaining amount:{self.remaining_amount}"
