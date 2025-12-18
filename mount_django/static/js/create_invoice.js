@@ -948,9 +948,9 @@ export async function saveInvoice(createInvoicePage,invoiceItemsBody) {
                             }
                         }
             //Redirect to dashboard after short delay
-            // setTimeout(() => {
-            //     window.location.href = '/dashboard/invoices/';
-            // }, 1000);
+            setTimeout(() => {
+                window.location.href = '/dashboard/invoices/';
+            }, 1000);
         } else {
             showAlert('Error: ' + (result.error || 'Failed to save invoice'), 'error');
             saveBtn.innerHTML = originalText;
