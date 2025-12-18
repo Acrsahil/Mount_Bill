@@ -153,6 +153,16 @@ export function loadProducts(products, productList, editProduct, deleteProduct) 
             deleteProduct(productId);
         });
     });
+     document.addEventListener('click', function(e) {
+        const addStock = e.target.id === 'addStock';
+        if(addStock){
+            const addStockModal = document.getElementById('addStockModal');
+            if (addStockModal) {
+            addStockModal.style.display = 'flex';
+        }
+        }
+        
+    })
 }
 
 //for add and reduce stock btn
@@ -167,7 +177,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (adjustBtn) {
             const productId = adjustBtn.dataset.id;
-
+            
             // If popup is already open for the same product → close it
             if (currentProductId === productId && popup.style.display === 'flex') {
                 popup.style.display = 'none';
@@ -181,7 +191,7 @@ document.addEventListener('DOMContentLoaded', function () {
             popup.style.display = 'flex';
             popup.style.top = rect.bottom + window.scrollY + 'px';
             popup.style.left = rect.left + window.scrollX + 'px';
-
+            console.log("am i getting clicked?")
             popup.dataset.productId = productId;
             currentProductId = productId;
 

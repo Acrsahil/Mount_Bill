@@ -348,6 +348,7 @@
 
 <!-- INVOICE VIEW MODAL (Added this section) -->
 {% include "website/bill_layout.html" %}
+{% include "website/product.html" %}
 <!-- Add Product Modal - WITH SUGGESTIONS -->
 <div class="modal" id="addProductModal">
     <div class="modal-content">
@@ -406,9 +407,10 @@
     </div>
 </div>
 
+<!--stock buttons-->
 <div class="stock-popup" id="addStockPopup">
-    <button class="popup-btn">Add Stock</button>
-    <button class="popup-btn">Remove Stock</button>
+    <button class="popup-btn" id="addStock">Add Stock</button>
+    <button class="popup-btn" id="removeStock">Remove Stock</button>
 </div>
 
 <!-- Add Client Modal - SIMPLIFIED -->

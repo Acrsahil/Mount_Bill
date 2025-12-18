@@ -369,7 +369,7 @@ th {
 .modal-content {
     background-color: white;
     border-radius: 12px;
-    width: 95%;
+    width: 50%;
     max-width: 1400px;
     max-height: 85vh;
     overflow: hidden;
