@@ -193,16 +193,6 @@ document.addEventListener('DOMContentLoaded', function () {
         popup.style.display = 'none';
         currentProductId = null;
     });
-    document.addEventListener('click', function(e) {
-        const addStock = e.target.id === 'addStock';
-        if(addStock){
-            const addProductModal = document.getElementById('addProductModal');
-            if (addProductModal) {
-            addProductModal.style.display = 'flex';
-        }
-        }
-        
-    })
 });
 
 // Product edit/delete functions
