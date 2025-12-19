@@ -9,7 +9,6 @@ export async function saveProduct(addProductModal) {
     const productPrice = document.getElementById('productPrice')?.value; // Fallback for old field name
     const productCategory = document.getElementById('productCategory').value.trim();
     const quantity = document.getElementById('productQuantity').value;
-
     // Client-side validation
     if (!productName) {
         showAlert('Please enter product name', 'error');
@@ -115,6 +114,7 @@ export function loadProducts(products, productList, editProduct, deleteProduct) 
     }
 
     products.forEach(product => {
+        console.log("Product ko value",product.quantity);
         const productCard = document.createElement('div');
         productCard.className = 'product-card';
         productCard.innerHTML = `
@@ -123,7 +123,8 @@ export function loadProducts(products, productList, editProduct, deleteProduct) 
 <div class="product-price">
     <div>Cost: $${product.cost_price}</div>
     <div>Selling: $${product.selling_price}</div>
-    <div>Product Qty: ${product.quantity}</div>
+
+    <div>Product Qty: ${String(product.quantity)}</div>
 </div>
 <div class="product-actions">
     <button class="btn btn-primary edit-product-btn" data-id="${product.id}">
@@ -153,7 +154,10 @@ export function loadProducts(products, productList, editProduct, deleteProduct) 
             deleteProduct(productId);
         });
     });
-     document.addEventListener('click', function(e) {
+
+   
+}
+  document.addEventListener('click', function(e) {
         const addStock = e.target.id === 'addStock';
         if(addStock){
             const addStockModal = document.getElementById('addStockModal');
@@ -163,8 +167,17 @@ export function loadProducts(products, productList, editProduct, deleteProduct) 
         }
         
     })
-}
 
+     document.addEventListener('click', function(e) {
+        const reduceStock = e.target.id === 'reduceStock';
+        if(reduceStock){
+            const reduceStockModal = document.getElementById('reduceStockModal');
+            if (reduceStockModal) {
+            reduceStockModal.style.display = 'flex';
+        }
+        }
+        
+    })
 //for add and reduce stock btn
 document.addEventListener('DOMContentLoaded', function () {
     const popup = document.getElementById('addStockPopup');
@@ -177,7 +190,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (adjustBtn) {
             const productId = adjustBtn.dataset.id;
-            
+            const modal = document.getElementById('addStockModal');
+            const modal1 = document.getElementById('reduceStockModal');
+            modal.dataset.productId = productId; 
+            modal1.dataset.productId = productId;
             // If popup is already open for the same product → close it
             if (currentProductId === productId && popup.style.display === 'flex') {
                 popup.style.display = 'none';
@@ -204,6 +220,218 @@ document.addEventListener('DOMContentLoaded', function () {
         currentProductId = null;
     });
 });
+
+const addStockBtn = document.getElementById('saveStockBtn');
+if(!addStockBtn){
+        console.log("are we here then??")
+    } 
+else{
+    addStockBtn.addEventListener('click',() => addStock(addStockModal));
+}      
+
+const reduceStockBtn = document.getElementById('reduceStockBtn');
+if(!reduceStockBtn){
+        console.log("are we here then??")
+    } 
+else{
+    reduceStockBtn.addEventListener('click',() => reduceStock(reduceStockModal));
+} 
+
+async function addStock(addStockModal) {
+    const modal = document.getElementById('addStockModal');
+    const productId = modal?.dataset.productId;
+
+    console.log("Product ID:", productId);
+
+    const stockQuantity = document.getElementById('stockQuantity')?.value;
+    const productPrices = document.getElementById('productPrices')?.value;
+    const stockDate = document.getElementById('stockDate')?.value;
+    const stockRemarks = document.getElementById('stockRemarks')?.value || "";
+
+    if (!productId) {
+        showAlert('Product ID not found!', 'error');
+        return;
+    }
+
+    if (!stockQuantity || Number(stockQuantity) <= 0) {
+        showAlert('Please enter a valid stock quantity!', 'error');
+        document.getElementById('stockQuantity')?.focus();
+        return;
+    }
+
+    // Button loading state
+    // const addStockBtn = document.getElementById('addStockBtn');
+    // const originalText = addStockBtn.innerHTML;
+
+    addStockBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
+    addStockBtn.disabled = true;
+
+    try {
+        const productData = {
+            id: productId,
+            stock_to_add: Number(stockQuantity),
+            price: productPrices,
+            date: stockDate,
+            remarks: stockRemarks
+        };
+
+        const response = await fetch(`/dashboard/add-stock/${productId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': window.djangoData.csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify(productData)
+        });
+
+        // 🔥 VERY IMPORTANT
+        if (!response.ok) {
+            throw new Error(`Server error: ${response.status}`);
+        }
+
+        const result = await response.json();
+        console.log('Server response:', result);
+        console.log('Server response:', result.product);
+        if (result.success) {
+            // Update local products array
+            if (window.products && result.product) {
+                const index = window.products.findIndex(
+                    p => p.id === result.product.id
+                );
+
+                if (index !== -1) {
+                    window.products[index].quantity = result.product.quantity;
+                }
+            }
+
+            // Refresh UI
+            if (window.loadProducts) {
+                console.log("okay here in loadproduct")
+                window.loadProducts();
+            }
+
+            showAlert(result.message || 'Stock added successfully!', 'success');
+
+            // Close modal
+            setTimeout(() => {
+                if (addStockModal) {
+                    addStockModal.style.display = 'none';
+                }
+            }, 1200);
+
+        } else {
+            showAlert(result.error || 'Failed to add stock', 'error');
+        }
+
+    } catch (error) {
+        console.error('Add stock error:', error);
+        showAlert('Something went wrong. Please try again.', 'error');
+
+    } finally {
+        // Restore button
+        // addStockBtn.innerHTML = originalText;
+        // addStockBtn.disabled = false;
+    }
+}
+
+async function reduceStock(reduceStockModal) {
+    const modal1 = document.getElementById('reduceStockModal');
+    const productId = modal1?.dataset.productId;
+
+    console.log("Product ID:", productId);
+
+    const stockQuantities = document.getElementById('stockQuantities')?.value;
+    console.log("reduceStock ko quantity",stockQuantities)
+    const productPrices = document.getElementById('productPricess')?.value;
+    const stockDate = document.getElementById('stockDates')?.value;
+    const stockRemarks = document.getElementById('stockRemarkss')?.value || "";
+
+    if (!productId) {
+        showAlert('Product ID not found!', 'error');
+        return;
+    }
+
+    if (!stockQuantity || Number(stockQuantity) <= 0) {
+        showAlert('Please enter a valid stock quantity!', 'error');
+        document.getElementById('stockQuantities')?.focus();
+        return;
+    }
+
+    // Button loading state
+    // const addStockBtn = document.getElementById('addStockBtn');
+    // const originalText = addStockBtn.innerHTML;
+
+    reduceStockBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Reducing...';
+    reduceStockBtn.disabled = true;
+    
+    try {
+        const productData = {
+            id: productId,
+            stock_to_remove: Number(stockQuantities),
+            price: productPrices,
+            date: stockDate,
+            remarks: stockRemarks
+        };
+
+        const response = await fetch(`/dashboard/reduce-stock/${productId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': window.djangoData.csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify(productData)
+        });
+
+        // 🔥 VERY IMPORTANT
+        if (!response.ok) {
+            throw new Error(`Server error: ${response.status}`);
+        }
+
+        const result = await response.json();
+        console.log('Server response:', result);
+
+        if (result.success) {
+            // Update local products array
+            if (window.products && result.product) {
+                const index = window.products.findIndex(
+                    p => p.id === result.product.id
+                );
+
+                if (index !== -1) {
+                    window.products[index].quantity = result.product.quantity;
+                }
+            }
+
+            // Refresh UI
+            if (window.loadProducts) {
+                window.loadProducts();
+            }
+
+            showAlert(result.message || 'Stock removed successfully!', 'success');
+
+            // Close modal
+            setTimeout(() => {
+                if (reduceStockModal) {
+                    reduceStockModal.style.display = 'none';
+                }
+            }, 1200);
+
+        } else {
+            showAlert(result.error || 'Failed to remove stock', 'error');
+        }
+
+    } catch (error) {
+        console.error('Add stock error:', error);
+        showAlert('Something went wrong. Please try again.', 'error');
+
+    } finally {
+        // Restore button
+        // addStockBtn.innerHTML = originalText;
+        // addStockBtn.disabled = false;
+    }
+}
 
 // Product edit/delete functions
 export function editProduct(productId) {
@@ -306,7 +534,9 @@ export async function updateProduct(addProductModal) {
             // // Add the new product to the local products array
             if (window.products) {
                 const index = window.products.findIndex(p  => p.id === result.product.id);
+                
                 if (index !== -1){
+                    console.log("ma quantity 0 ho")
                     window.products[index] = result.product
                 }
                 else{
@@ -363,3 +593,43 @@ export function deleteProduct(productId) {
         alert('Product deleted successfully!');
     }
 }
+// AddStock modal section
+
+const stockdate = document.getElementById('stockDate');
+document.addEventListener('DOMContentLoaded', function(){
+    if(stockdate){
+        const today = new Date().toISOString().split('T')[0];
+        stockdate.value = today;
+    }
+})
+// Close addStockModal
+const closeStockModal = document.getElementById('closeStockModal');
+const cancelStockBtn = document.getElementById('cancelStockBtn');
+const closereduceModal = document.getElementById('closeStockModals');
+const cancelStockBtns = document.getElementById('cancelStockBtns');
+if(closereduceModal){
+    closereduceModal.addEventListener('click', () => closeModalFunc1(reduceStockModal))
+}
+if(closeStockModal){
+    closeStockModal.addEventListener('click', () => closeModalFunc(addStockModal));
+    
+}
+
+if(cancelStockBtn){
+    cancelStockBtn.addEventListener('click',() => closeModalFunc(addStockModal));
+    
+}
+
+if(cancelStockBtns){
+    cancelStockBtns.addEventListener('click',() => closeModalFunc(reduceStockModal));
+    
+}
+//function to close stockmodal
+function closeModalFunc(addStockModal){
+    addStockModal.style.display = 'none';
+}
+
+function closeModalFunc1(reduceStockModal){
+    reduceStockModal.style.display = 'none';
+}
+

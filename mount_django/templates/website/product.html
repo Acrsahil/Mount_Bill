@@ -7,11 +7,13 @@
 {% endblock %}
 
 {% block content %}
-<!--stock buttons-->
+<!--addstock buttons-->
 <div class="stock-popup" id="addStockPopup">
     <button class="popup-btn" id="addStock">Add Stock</button>
-    <button class="popup-btn" id="removeStock">Remove Stock</button>
+    <button class="popup-btn" id="reduceStock">Remove Stock</button>
 </div>
+
+<!--addStock popup-->
 <div class="modal" id="addStockModal">
     <div class="modal-content">
         <div class="modal-header">
@@ -45,6 +47,46 @@
         <div class="modal-footer">
             <button class="btn btn-light" id="cancelStockBtn">Cancel</button>
             <button class="btn btn-primary" id="saveStockBtn">Add Stock</button>
+        </div>
+
+    </div>
+</div>
+
+
+<!--reduceStock popup-->
+<div class="modal" id="reduceStockModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Reduce Stock</h3>
+            <button class="close-btn" id="closeStockModals">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label for="stockQuantity">Quantity To Reduce</label>
+                <input type="text" id="stockQuantities" class="form-control stock-quantity" required>
+            </div>
+            <div class="productPrices">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="productPrices" class="product-price">Cost Price</label>
+                        <input type="number" id="productPricess" class="form-control" placeholder="0.00" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="stockDate">Date</label>
+                        <input type="date" id="stockDates" class="form-control">
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="stockRemarks">Remarks</label>
+                <input type="text" id="stockRemarkss" class="form-control"
+                       placeholder="Enter remarks.....">
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn btn-light" id="cancelStockBtns">Cancel</button>
+            <button class="btn btn-primary" id="reduceStockBtn">Remove Stock</button>
         </div>
 
     </div>
