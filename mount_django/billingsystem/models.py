@@ -64,6 +64,18 @@ class Customer(models.Model):  # sabina
     def __str__(self):
         return f"{self.name} ({self.company})"
 
+class Supplier(models.Model):
+    company = models.ForeignKey(
+        Company, on_delete=models.CASCADE, related_name="suppliers"
+    )
+    name = models.CharField(max_length=100)
+    phone = models.CharField(max_length=15, blank=True)
+    email = models.EmailField(blank=True)
+    pan_id = models.CharField(max_length=15, blank=True)
+    address = models.CharField(max_length=15, blank=True)
+
+    def __str__(self):
+        return f"{self.name} ({self.company})"
 
 class ProductCategory(models.Model):
     company = models.ForeignKey(
@@ -237,6 +249,6 @@ class RemainingAmount(models.Model):
     customer=models.OneToOneField(
         Customer, on_delete=models.CASCADE, related_name="customer"
     )
-    remaining_amount=models.DecimalField(max_digits=5, decimal_places=2, default=0.0)
+    remaining_amount=models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
     def __str__(self):
-        return self.remaining_amount
+        return f"remaining amount:{self.remaining_amount}"

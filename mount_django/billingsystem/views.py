@@ -17,6 +17,7 @@ from .models import (
     Product,
     ProductCategory,
     AdditionalCharges,
+    RemainingAmount,
 )
 
 
@@ -355,6 +356,9 @@ def save_invoice(request):
         additional_charges = float(data.get("additionalCharges",0))
         charge_name_amount = data.get("additionalchargeName",[])
         notes_here = data.get("noteshere", "").strip()
+        received_amount = float(data.get("receivedAmount"))
+
+        print(f"uta bata pathaune recieved amount haii tw {received_amount}")
         print(notes_here)
         # total_amount = float(data.get("totalAmount"))
         user = request.user
@@ -419,7 +423,7 @@ def save_invoice(request):
             quantity = int(item.get("quantity", 1))
             price = float(item.get("price", 0))
             discountPercent = float(item.get("discountPercent",0))
-            print(f"k tmro discountPercent yaa xa?{discountPercent}")
+           
             if not product_name:
                 continue
 
@@ -449,11 +453,11 @@ def save_invoice(request):
             )
 
             total_amount += (quantity * price) -((quantity * price) *(discountPercent/100))
-            print(f"tmro total_amount kati ho? {total_amount}")
+            
 
         # grand total amount
         total_amount = (total_amount - global_discount) + global_tax + additional_charges
-        print(f" yo hamro django ma garirako total haii tw :{total_amount}")
+       
         # Create order summary
         order_summary = OrderSummary.objects.create(
             order=order,
@@ -476,7 +480,18 @@ def save_invoice(request):
                 additional_charges=order,
                 charge_name=charge_name,
                 additional_amount=charge_amount)
+        
+        # calculating remaining amount
+        remaining_amount = 0
+        remaining_amount = Decimal(str(total_amount)) - Decimal(str(received_amount))
+        print(f"mero remaining amount {remaining_amount}")
 
+        remaining,created = RemainingAmount.objects.get_or_create(customer=customer, defaults={"remaining_amount":remaining_amount})
+        print(f"kati raixa tw remaining amount {remaining.remaining_amount}")
+        if not created:
+            remaining.remaining_amount+=remaining_amount
+            remaining.save()
+        print(f"total tirna parne kati tw{remaining.remaining_amount}")
 
         print("it passed order creation section!")
         return JsonResponse(

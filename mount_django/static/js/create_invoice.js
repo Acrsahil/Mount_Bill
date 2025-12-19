@@ -47,7 +47,8 @@ const clientNameInput = document.getElementById('clientName');
 const clientSearchHint = document.getElementById('client-search-hint');
 const invoiceItemsBody = document.getElementById('invoiceItemsBody');
 const addItemBtn = document.getElementById('addItemBtn');
-
+const checkAmount = document.getElementById('checkAmount')
+console.log(checkAmount);
 const cancelInvoiceBtn = document.getElementById('cancelInvoiceBtn');
 const cancelInvoiceBtnBottom = document.getElementById('cancelInvoiceBtnBottom');
 
@@ -196,7 +197,6 @@ document.addEventListener("input", function (e) {
     // Update discount amount field if it exists
     const discountAmountInput = document.getElementById("globalDiscountAmount");
     if (discountAmountInput) discountAmountInput.value = discountAmount.toFixed(2);
-
     // Recalculate totals
     updateTotals(invoiceItems, globalDiscount, globalTax);
 
@@ -790,10 +790,11 @@ export function updateTotals(invoiceItems, globalDiscount, globalTax) {
     const discountAmountEl = document.getElementById('discountAmount');
     const taxAmountEl = document.getElementById('taxAmount');
     const totalAmountEl = document.getElementById('totalAmount');
+    
     // const pailakototal=document.getElementById('subtotalAmounts');
 
     //yo chai hamro discount laaerw aako subtotal esma garne sab calculation
-    const subtotalValue = Number(subtotalAmountEl.innerText.replace('$', ''));
+    const subtotalValue = Number(subtotalAmountEl.innerText.replace('Rs.', ''));
 
 
     //esma hamile subtotal ko value haalexum tyo chai without discount ko value item ko just quantity*price
@@ -814,19 +815,40 @@ export function updateTotals(invoiceItems, globalDiscount, globalTax) {
     window.currentTotalValue=total;
     console.log("yo total chai global total",total);
 
-    if (subtotalAmountEl) subtotalAmountEl.textContent = `$${subtotalAmountValue.toFixed(2)}`;
-    if (subtotalAmount) subtotalAmount.textContent = `$${subtotal.toFixed(2)}`;
-    if (subtotalDiscounts) subtotalDiscounts.textContent = `$${subtotalDiscountvalue.toFixed(2)}`;
-    if (discountAmountEl) discountAmountEl.textContent = `$${discountValue.toFixed(2)}`;
-    if (taxAmountEl) taxAmountEl.textContent = `$${taxValue.toFixed(2)}`;
-    if (totalAmountEl) totalAmountEl.value = `$${total.toFixed(2)}`;
+    if (subtotalAmountEl) subtotalAmountEl.textContent = `Rs.${subtotalAmountValue.toFixed(2)}`;
+    if (subtotalAmount) subtotalAmount.textContent = `Rs.${subtotal.toFixed(2)}`;
+    if (subtotalDiscounts) subtotalDiscounts.textContent = `Rs.${subtotalDiscountvalue.toFixed(2)}`;
+    if (discountAmountEl) discountAmountEl.textContent = `Rs.${discountValue.toFixed(2)}`;
+    if (taxAmountEl) taxAmountEl.textContent = `Rs.${taxValue.toFixed(2)}`;
+    if (totalAmountEl) totalAmountEl.value = `Rs.${total.toFixed(2)}`;
+    console.log(totalAmountEl.readOnly);
+    // check box for received amount
+   
+    const checkAmount = document.getElementById('checkAmount');
+    window.receivableAmount = document.getElementById("receivedAmount");
+    checkAmount.addEventListener('change', function() {
+        
+        if(checkAmount.checked){
+            window.receivableAmount.value = `${total.toFixed(2)}`;
+            window.receivableAmount.readOnly = true;
+            console.log("are we inside",receivableAmount.value);
+        }
+        else{
+            window.receivableAmount.value = '';
+            window.receivableAmount.readOnly = false;
+        }
+        
+    });
+
+
 }
 // Save invoice
 export async function saveInvoice(createInvoicePage,invoiceItemsBody) {
-    
     const clientName = clientNameInput.value.trim();
     const invoiceDateValue = invoiceDate.value;
-    console.log("Are we here?")
+    // const receiveAmount = document.getElementById("receivedAmount");
+    const receivedAmount = window.receivableAmount? parseFloat(window.receivableAmount.value) || 0: 0;
+    console.log("yo receivable amount",receivedAmount);
     // console.log(globalDiscountInput)
     // console.log(globalTaxInput)
     // const discount = parseFloat(globalDiscountInput.value) || 0;
@@ -882,6 +904,7 @@ export async function saveInvoice(createInvoicePage,invoiceItemsBody) {
             additionalCharges: window.additionalChargesTotal,
             additionalchargeName: additionalchargeName,
             noteshere: noteshere,
+            receivedAmount: receivedAmount,
             // totalAmount: totalAmount,
         };
         
