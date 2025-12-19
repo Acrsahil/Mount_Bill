@@ -340,7 +340,60 @@ def update_product(request):
             status=500
         )
 
+@login_required
+@csrf_exempt
+@require_POST
+def add_stock(request,id):
+    try:
+        data = json.loads(request.body)
+        product_id = data.get("id")
+        print(product_id)
+        stock = int(data.get("stock_to_add"))
+        print(f"add garne stock {stock}")
+        product = Product.objects.get(id=product_id)
+        product.product_quantity += stock
+        product.save()
 
+        return JsonResponse({"success":True,
+        "message": "Stock updated successfully",
+        "product": {
+                "id": product.id,
+                "quantity":product.product_quantity}
+                })
+    except Exception as e:
+        print("Update product error:", e)
+        return JsonResponse(
+            {"success": False, "error": f"Server error: {str(e)}"},
+            status=500
+        )
+    
+
+@login_required
+@csrf_exempt
+@require_POST
+def reduce_stock(request,id):
+    try:
+        data = json.loads(request.body)
+        product_id = data.get("id")
+        print(product_id)
+        stock = int(data.get("stock_to_remove"))
+        print(f"add garne stock {stock}")
+        product = Product.objects.get(id=product_id)
+        product.product_quantity -= stock
+        product.save()
+
+        return JsonResponse({"success":True,
+        "message": "Stock updated successfully",
+        "product": {
+                "id": product.id,
+               "quantity":product.product_quantity,} })
+    except Exception as e:
+        print("Update product error:", e)
+        return JsonResponse(
+            {"success": False, "error": f"Server error: {str(e)}"},
+            status=500
+        )
+    
 @login_required
 @csrf_exempt
 @require_POST
