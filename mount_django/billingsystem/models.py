@@ -12,6 +12,7 @@ class User(AbstractUser):
     email = models.EmailField(blank=True)
     has_paid_for_company = models.BooleanField(default=False)
     payment_date = models.DateField(null=True, blank=True)
+    sabina = models.CharField(max_length=15, blank=True)
 
     owned_company = models.OneToOneField(
         "Company",
