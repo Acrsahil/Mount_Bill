@@ -1,6 +1,5 @@
 # billingsystem/models.py - OPTION A
 import uuid
-from decimal import Decimal
 
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
@@ -64,6 +63,7 @@ class Customer(models.Model):  # sabina
     def __str__(self):
         return f"{self.name} ({self.company})"
 
+
 class Supplier(models.Model):
     company = models.ForeignKey(
         Company, on_delete=models.CASCADE, related_name="suppliers"
@@ -76,6 +76,7 @@ class Supplier(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.company})"
+
 
 class ProductCategory(models.Model):
     company = models.ForeignKey(
@@ -137,7 +138,7 @@ class OrderList(models.Model):
     payment_status = models.CharField(
         max_length=50, choices=PAYMENT_STATUS_CHOICES, default="UNPAID"
     )
-    notes= models.TextField(blank=True,null=True)
+    notes = models.TextField(blank=True, null=True)
     is_simple_invoice = models.BooleanField(default=False)
     invoice_description = models.TextField(blank=True, null=True)
 
@@ -202,6 +203,7 @@ class OrderSummary(models.Model):
     tax = models.DecimalField(max_digits=5, decimal_places=2, default=0.0)
     final_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     received_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    due_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     calculated_on = models.DateTimeField(auto_now=True)
 
     # def calculate_totals(self, save=True):
@@ -238,17 +240,24 @@ class OrderSummary(models.Model):
     #         self.save()
     def __str__(self):
         return f"total amount:{self.total_amount}"
+
+
 class AdditionalCharges(models.Model):
-    additional_charges=models.ForeignKey(OrderList,on_delete=models.CASCADE, related_name="charges")
-    charge_name=models.CharField(max_length=200)
-    additional_amount=models.DecimalField(max_digits=5, decimal_places=2, default=0.0)
+    additional_charges = models.ForeignKey(
+        OrderList, on_delete=models.CASCADE, related_name="charges"
+    )
+    charge_name = models.CharField(max_length=200)
+    additional_amount = models.DecimalField(max_digits=5, decimal_places=2, default=0.0)
+
     def __str__(self):
         return f"Additional amount: {self.additional_amount}"
 
+
 class RemainingAmount(models.Model):
-    customer=models.OneToOneField(
+    customer = models.OneToOneField(
         Customer, on_delete=models.CASCADE, related_name="customer"
     )
-    remaining_amount=models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
+    remaining_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
+
     def __str__(self):
         return f"remaining amount:{self.remaining_amount}"

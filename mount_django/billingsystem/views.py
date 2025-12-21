@@ -10,13 +10,13 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
 from .models import (
+    AdditionalCharges,
     Bill,
     Customer,
     OrderList,
     OrderSummary,
     Product,
     ProductCategory,
-    AdditionalCharges,
     RemainingAmount,
 )
 
@@ -49,7 +49,6 @@ def get_serialized_data(user, active_tab="dashboard"):
                         "status": "pending",
                     }
                 )
-    print(invoice_data)
 
     products_data = [
         {
@@ -73,9 +72,8 @@ def get_serialized_data(user, active_tab="dashboard"):
         }
         for c in customers
     ]
-    print(customers_data)
     categories_data = [{"id": cat.id, "name": cat.name} for cat in categories]
-    
+
     return {
         "product": json.dumps(products_data),
         "customer": json.dumps(customers_data),
@@ -93,15 +91,10 @@ def dashboard(request):
         context = get_serialized_data(
             request.user, "dashboard"
         )  # Set active_tab="dashboard"
-        print(
-            "yo user name hooooooooooooooooooooooooooooooooooooooooo",
-            request.user.username,
-        )
         # serialized_data = get_serialized_data()
 
         # # Merge both dictionaries
         # context.update(serialized_data)
-        print(context)
         return render(request, "website/bill.html", context)
     except Exception as e:
         print(f"Error in dashboard view: {e}")
@@ -147,7 +140,7 @@ def save_product(request):
         if cost_price is None and selling_price is None and "price" in data:
             cost_price = data.get("price")
             selling_price = data.get("price")  # Use same price for both
- 
+
         # Rest of your validation code remains the same...
         if not name:
             return JsonResponse(
@@ -201,13 +194,13 @@ def save_product(request):
             )
 
         # Get or create category
-        
+
         category = None
         if category_name:
             category, _ = ProductCategory.objects.get_or_create(
                 name=category_name, company=company
             )
-        
+
             # Create product
         product = Product.objects.create(
             name=name,
@@ -217,7 +210,6 @@ def save_product(request):
             product_quantity=quantity,
             company=company,
         )
-        print("ya samma aaeraxa?")
         return JsonResponse(
             {
                 "success": True,
@@ -239,6 +231,7 @@ def save_product(request):
             {"success": False, "error": f"Server error: {str(e)}"}, status=500
         )
 
+
 @login_required
 @csrf_exempt
 @require_POST
@@ -247,7 +240,6 @@ def update_product(request):
         data = json.loads(request.body)
 
         product_id = data.get("id")
-        print(product_id)
         name = data.get("name", "").strip()
         category_name = data.get("category", "").strip()
         cost_price = data.get("cost_price")
@@ -261,7 +253,9 @@ def update_product(request):
             company = user.active_company
 
         if not company:
-            return JsonResponse({"success": False, "error": "No company for the user"}, status=400)
+            return JsonResponse(
+                {"success": False, "error": "No company for the user"}, status=400
+            )
 
         # Fetch product
         product = Product.objects.get(id=product_id, company=company)
@@ -297,21 +291,21 @@ def update_product(request):
                 {"success": False, "error": "Valid prices are required"}, status=400
             )
 
-        if Product.objects.filter(
-            company=company,
-            name__iexact=name
-        ).exclude(id=product.id).exists():
+        if (
+            Product.objects.filter(company=company, name__iexact=name)
+            .exclude(id=product.id)
+            .exists()
+        ):
             return JsonResponse(
                 {"success": False, "error": "Product with this name already exists"},
-                status=400
+                status=400,
             )
 
         # Category
         category = None
         if category_name:
             category, _ = ProductCategory.objects.get_or_create(
-                name=category_name,
-                company=company
+                name=category_name, company=company
             )
         product.name = name
         product.cost_price = cost_price
@@ -320,80 +314,83 @@ def update_product(request):
         product.category = category
         product.save()
 
-        return JsonResponse({
-            "success": True,
-            "message": "Product updated successfully",
-            "product": {
-                "id": product.id,
-                "name": product.name,
-                "cost_price": float(product.cost_price),
-                "selling_price": float(product.selling_price),
-                "category": product.category.name if product.category else "",
-                "quantity": product.product_quantity,
+        return JsonResponse(
+            {
+                "success": True,
+                "message": "Product updated successfully",
+                "product": {
+                    "id": product.id,
+                    "name": product.name,
+                    "cost_price": float(product.cost_price),
+                    "selling_price": float(product.selling_price),
+                    "category": product.category.name if product.category else "",
+                    "quantity": product.product_quantity,
+                },
             }
-        })
+        )
 
     except Exception as e:
         print("Update product error:", e)
         return JsonResponse(
-            {"success": False, "error": f"Server error: {str(e)}"},
-            status=500
+            {"success": False, "error": f"Server error: {str(e)}"}, status=500
         )
+
 
 @login_required
 @csrf_exempt
 @require_POST
-def add_stock(request,id):
+def add_stock(request, id):
     try:
         data = json.loads(request.body)
         product_id = data.get("id")
-        print(product_id)
         stock = int(data.get("stock_to_add"))
-        print(f"add garne stock {stock}")
         product = Product.objects.get(id=product_id)
         product.product_quantity += stock
         product.save()
 
-        return JsonResponse({"success":True,
-        "message": "Stock updated successfully",
-        "product": {
-                "id": product.id,
-                "quantity":product.product_quantity}
-                })
+        return JsonResponse(
+            {
+                "success": True,
+                "message": "Stock updated successfully",
+                "product": {"id": product.id, "quantity": product.product_quantity},
+            }
+        )
     except Exception as e:
         print("Update product error:", e)
         return JsonResponse(
-            {"success": False, "error": f"Server error: {str(e)}"},
-            status=500
+            {"success": False, "error": f"Server error: {str(e)}"}, status=500
         )
-    
+
 
 @login_required
 @csrf_exempt
 @require_POST
-def reduce_stock(request,id):
+def reduce_stock(request, id):
     try:
         data = json.loads(request.body)
         product_id = data.get("id")
-        print(product_id)
         stock = int(data.get("stock_to_remove"))
-        print(f"add garne stock {stock}")
         product = Product.objects.get(id=product_id)
         product.product_quantity -= stock
         product.save()
 
-        return JsonResponse({"success":True,
-        "message": "Stock updated successfully",
-        "product": {
-                "id": product.id,
-               "quantity":product.product_quantity,} })
+        return JsonResponse(
+            {
+                "success": True,
+                "message": "Stock updated successfully",
+                "product": {
+                    "id": product.id,
+                    "quantity": product.product_quantity,
+                },
+            }
+        )
     except Exception as e:
         print("Update product error:", e)
         return JsonResponse(
-            {"success": False, "error": f"Server error: {str(e)}"},
-            status=500
+            {"success": False, "error": f"Server error: {str(e)}"}, status=500
         )
-    
+
+
 @login_required
 @csrf_exempt
 @require_POST
@@ -401,13 +398,16 @@ def save_invoice(request):
     """Save complete invoice via AJAX - REMOVED REDUNDANT CODE"""
     try:
         data = json.loads(request.body)
+        print("data-0----------------------------", data)
         client_name = data.get("clientName", "").strip()
         invoice_date_str = data.get("invoiceDate", "")
         invoice_items = data.get("items", [])
-        global_discount = float(data.get("globalDiscount", 0))
-        global_tax = float(data.get("globalTax", 0)) 
-        additional_charges = float(data.get("additionalCharges",0))
-        charge_name_amount = data.get("additionalchargeName",[])
+        global_discount = float(data.get("globalDiscountPercent", 0))
+
+        print("yo cheai global_discount ho hai->>>>>>>>>>>>>>>>...", global_discount)
+        global_tax = float(data.get("globalTaxPercent", 0))
+        additional_charges = float(data.get("additionalCharges", 0))
+        charge_name_amount = data.get("additionalchargeName", [])
         notes_here = data.get("noteshere", "").strip()
         received_amount = float(data.get("receivedAmount"))
 
@@ -445,6 +445,7 @@ def save_invoice(request):
             )
 
         # Find or create customer
+
         customer, created = Customer.objects.get_or_create(
             name=client_name,
             defaults={
@@ -466,7 +467,10 @@ def save_invoice(request):
 
         # Create order
         order = OrderList.objects.create(
-            company=company, customer=customer, order_date=invoice_date,notes=notes_here
+            company=company,
+            customer=customer,
+            order_date=invoice_date,
+            notes=notes_here,
         )
 
         # Process invoice items
@@ -475,8 +479,8 @@ def save_invoice(request):
             product_name = item.get("productName", "").strip()
             quantity = int(item.get("quantity", 1))
             price = float(item.get("price", 0))
-            discountPercent = float(item.get("discountPercent",0))
-           
+            discountPercent = float(item.get("discountPercent", 0))
+
             if not product_name:
                 continue
 
@@ -499,54 +503,57 @@ def save_invoice(request):
             Bill.objects.create(
                 order=order,
                 product=product,
+                quantity=quantity,
                 product_price=Decimal(
                     str(price)
                 ),  # Convert to Decimal    quantity=quantity,
                 bill_date=timezone.now(),
             )
 
-            total_amount += (quantity * price) -((quantity * price) *(discountPercent/100))
-            
+            total_amount += (quantity * price) - (
+                (quantity * price) * (discountPercent / 100)
+            )
 
         # grand total amount
-        total_amount = (total_amount - global_discount) + global_tax + additional_charges
-       
+        total_amount = (
+            (total_amount - global_discount) + global_tax + additional_charges
+        )
+
+        remaining_amount = 0
+        remaining_amount = Decimal(str(total_amount)) - Decimal(str(received_amount))
+
+        print("this is global_discount-> ", global_discount)
+
         # Create order summary
         order_summary = OrderSummary.objects.create(
             order=order,
             total_amount=total_amount,
             discount=global_discount,
             tax=global_tax,
+            received_amount=received_amount,
+            due_amount=remaining_amount,
         )
         # order_summary.calculate_totals()
-        print(order_summary)
 
         for charge in charge_name_amount:
-            # print(charge['chargeName'])
-
-            charge_name=charge.get('chargeName')
-            charge_amount=charge.get('chargeAmount')
+            charge_name = charge.get("chargeName")
+            charge_amount = charge.get("chargeAmount")
             # creating additional entry
-            print(charge_name)
-            print(charge_amount)
             AdditionalCharges.objects.create(
                 additional_charges=order,
                 charge_name=charge_name,
-                additional_amount=charge_amount)
-        
+                additional_amount=charge_amount,
+            )
+
         # calculating remaining amount
-        remaining_amount = 0
-        remaining_amount = Decimal(str(total_amount)) - Decimal(str(received_amount))
-        print(f"mero remaining amount {remaining_amount}")
 
-        remaining,created = RemainingAmount.objects.get_or_create(customer=customer, defaults={"remaining_amount":remaining_amount})
-        print(f"kati raixa tw remaining amount {remaining.remaining_amount}")
+        remaining, created = RemainingAmount.objects.get_or_create(
+            customer=customer, defaults={"remaining_amount": remaining_amount}
+        )
         if not created:
-            remaining.remaining_amount+=remaining_amount
+            remaining.remaining_amount += remaining_amount
             remaining.save()
-        print(f"total tirna parne kati tw{remaining.remaining_amount}")
 
-        print("it passed order creation section!")
         return JsonResponse(
             {
                 "success": True,
@@ -605,7 +612,6 @@ def save_client(request):
 
         company = None
         if user.owned_company:
-            print("hello")
             company = user.owned_company
 
         elif user.active_company:
@@ -684,8 +690,7 @@ def create_invoice_page(request):
         # Get serialized data for the invoice creation page
         context = get_serialized_data(request.user, "dashboard")
         return render(request, "website/create_invoice.html", context)
-    except Exception as e:
-        print(f"Error in create_invoice_page view: {e}")
+    except Exception:
         return render(
             request,
             "website/create_invoice.html",
