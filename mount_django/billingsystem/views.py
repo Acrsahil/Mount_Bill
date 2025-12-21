@@ -235,83 +235,29 @@ def save_product(request):
 @login_required
 @csrf_exempt
 @require_POST
-def update_product(request):
+def update_product(request, id):
     try:
         data = json.loads(request.body)
 
         product_id = data.get("id")
+        print(product_id)
         name = data.get("name", "").strip()
         category_name = data.get("category", "").strip()
         cost_price = data.get("cost_price")
         selling_price = data.get("selling_price")
-        quantity = data.get("quantity")
-
-        user = request.user
-        if user.owned_company:
-            company = user.owned_company
-        elif user.active_company:
-            company = user.active_company
-
-        if not company:
-            return JsonResponse(
-                {"success": False, "error": "No company for the user"}, status=400
-            )
-
-        # Fetch product
-        product = Product.objects.get(id=product_id, company=company)
-
-        try:
-            cost_price = float(cost_price)
-            selling_price = float(selling_price)
-            quantity = int(quantity)
-
-            if quantity <= 0:
-                return JsonResponse(
-                    {
-                        "success": False,
-                        "error": "Product quantity cannot be 0 or less.",
-                    },
-                    status=400,
-                )
-
-            if cost_price <= 0 or selling_price <= 0:
-                return JsonResponse(
-                    {"success": False, "error": "Prices must be positive"}, status=400
-                )
-            if selling_price < cost_price:
-                return JsonResponse(
-                    {
-                        "success": False,
-                        "error": "Selling price cannot be less than cost price",
-                    },
-                    status=400,
-                )
-        except (TypeError, ValueError):
-            return JsonResponse(
-                {"success": False, "error": "Valid prices are required"}, status=400
-            )
-
-        if (
-            Product.objects.filter(company=company, name__iexact=name)
-            .exclude(id=product.id)
-            .exists()
-        ):
-            return JsonResponse(
-                {"success": False, "error": "Product with this name already exists"},
-                status=400,
-            )
-
-        # Category
-        category = None
+        product = Product.objects.get(id=product_id)
         if category_name:
-            category, _ = ProductCategory.objects.get_or_create(
-                name=category_name, company=company
+            category_obj, created = ProductCategory.objects.get_or_create(
+                name=category_name, company=product.company
             )
+            product.category = category_obj
+        else:
+            product.category = None
+
         product.name = name
         product.cost_price = cost_price
         product.selling_price = selling_price
-        product.product_quantity = quantity
-        product.category = category
+
         product.save()
 
         return JsonResponse(
