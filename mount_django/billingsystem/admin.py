@@ -4,6 +4,7 @@ from django.contrib.auth.admin import UserAdmin
 from django.utils.translation import gettext_lazy as _
 
 from .models import (
+    AdditionalCharges,
     Bill,
     Company,
     Customer,
@@ -11,9 +12,8 @@ from .models import (
     OrderSummary,
     Product,
     ProductCategory,
-    User,
-    AdditionalCharges,
     RemainingAmount,
+    User,
 )
 
 
@@ -170,7 +170,14 @@ class ProductAdmin(admin.ModelAdmin):
 # Order List Admin
 @admin.register(OrderList)
 class OrderListAdmin(admin.ModelAdmin):
-    list_display = ("id", "customer", "company", "order_date", "created_by","payment_status")
+    list_display = (
+        "id",
+        "customer",
+        "company",
+        "order_date",
+        "created_by",
+        "payment_status",
+    )
     list_filter = ("company", "order_date")
     search_fields = ("customer__name", "company__name", "created_by__username")
     raw_id_fields = ("customer", "created_by")
@@ -207,6 +214,7 @@ class OrderSummaryAdmin(admin.ModelAdmin):
         "discount",
         "tax",
         "final_amount",
+        "due_amount",
         "calculated_on",
     )
     list_filter = ("calculated_on",)
@@ -217,12 +225,21 @@ class OrderSummaryAdmin(admin.ModelAdmin):
 # Register User with Custom Admin
 admin.site.register(User, CustomUserAdmin)
 
+
 @admin.register(AdditionalCharges)
 class AdditionalChargesAdmin(admin.ModelAdmin):
-    list_display = ("additional_charges","charge_name","additional_amount",)
+    list_display = (
+        "additional_charges",
+        "charge_name",
+        "additional_amount",
+    )
     search_fields = ("charge_name",)
+
 
 @admin.register(RemainingAmount)
 class RemainingAmountAdmin(admin.ModelAdmin):
-    list_display = ("customer","remaining_amount",)
+    list_display = (
+        "customer",
+        "remaining_amount",
+    )
     search_fields = ("customer",)
