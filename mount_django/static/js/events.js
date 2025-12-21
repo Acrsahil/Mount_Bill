@@ -252,10 +252,17 @@ export function openAddProductModal(addProductModal) {
     document.getElementById('productCategory').value = '';
     document.getElementById('productQuantity').value ='';
 
+    //first 
+    document.getElementById('updateProductBtn').style.display = 'none';
+    
+    // reset modal title and button after edit 
+    document.querySelector('#addProductModal .modal-header h3').textContent = 'Add New Product';
+    document.getElementById('saveProductBtn').style.display = 'flex';
+    const quantity = document.querySelector('.productQuantities');
+        quantity.style.display = 'flex';
+
     // Show modal
     addProductModal.style.display = 'flex';
-    document.getElementById('updateProductBtn').style.display = 'none';
-
     // Auto-focus on product name field
     setTimeout(() => {
         const productNameInput = document.getElementById('productName');
