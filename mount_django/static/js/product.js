@@ -434,11 +434,11 @@ async function reduceStock(reduceStockModal) {
 }
 
 // Product edit/delete functions
-export function editProduct(productId) {
+export async function editProduct(productId) {
     const product = window.products.find(p => p.id === productId);
+    const addProductModal = document.getElementById('addProductModal');
+    addProductModal.dataset.id = productId
     if (product) {
-        //store id 
-        document.getElementById("productId").value = product.id;
         // Populate form with product data
         
         document.getElementById('productName').value = product.name;
@@ -455,31 +455,22 @@ export function editProduct(productId) {
         quantity.style.display = 'none';
 
         // Show modal
-        const addProductModal = document.getElementById('addProductModal');
+        
         if (addProductModal) {
             addProductModal.style.display = 'flex';
         }
     }
 }
 
-// eventlistener for updateProductBtn
-document.addEventListener('DOMContentLoaded', function() {
-    const updateProductBtn = document.getElementById('updateProductBtn');
-    if(updateProductBtn){
-        updateProductBtn.addEventListener('click', () => updateProduct(addProductModal));
-    };
-});
-
-
+//update the product
 // Save product to database via AJAX
 export async function updateProduct(addProductModal) {
-    const productId = document.getElementById('productId').value;
+    const productId = addProductModal.dataset.id;
     const productName = document.getElementById('productName').value.trim();
     const productCostPrice = document.getElementById('productCostPrice')?.value;
     const productSellingPrice = document.getElementById('productSellingPrice')?.value;
     const productPrice = document.getElementById('productPrice')?.value; // Fallback for old field name
     const productCategory = document.getElementById('productCategory').value.trim();
-    const quantity = document.getElementById('productQuantity').value;
 
     // Client-side validation
     if (!productName) {
@@ -511,13 +502,12 @@ export async function updateProduct(addProductModal) {
             cost_price: productCostPrice ? parseFloat(productCostPrice) : 0,
             selling_price: parseFloat(productSellingPrice || productPrice),
             category: productCategory,
-            quantity: quantity,
         };
         console.log('Updating product:', productData);
         console.log('Updating this data:', productData);
 
         // Send AJAX request to Django
-        const response = await fetch('/dashboard/update-product/', {
+        const response = await fetch(`/dashboard/update-product/${productId}/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -536,7 +526,6 @@ export async function updateProduct(addProductModal) {
                 const index = window.products.findIndex(p  => p.id === result.product.id);
                 
                 if (index !== -1){
-                    console.log("ma quantity 0 ho")
                     window.products[index] = result.product
                 }
                 else{
@@ -581,7 +570,128 @@ export async function updateProduct(addProductModal) {
         updateBtn.innerHTML = originalText;
         updateBtn.disabled = false;
     }
+
 }
+
+// eventlistener for updateProductBtn
+document.addEventListener('DOMContentLoaded', function() {
+    const updateProductBtn = document.getElementById('updateProductBtn');
+    if(updateProductBtn){
+        updateProductBtn.addEventListener('click', () => updateProduct(addProductModal));
+    };
+});
+
+
+// Save product to database via AJAX
+// export async function updateProduct(addProductModal) {
+//     const productName = document.getElementById('productName').value.trim();
+//     const productCostPrice = document.getElementById('productCostPrice')?.value;
+//     const productSellingPrice = document.getElementById('productSellingPrice')?.value;
+//     const productPrice = document.getElementById('productPrice')?.value; // Fallback for old field name
+//     const productCategory = document.getElementById('productCategory').value.trim();
+//     const quantity = document.getElementById('productQuantity').value;
+
+//     // Client-side validation
+//     if (!productName) {
+//         showAlert('Please enter product name', 'error');
+//         document.getElementById('productName').focus();
+//         return;
+//     }
+
+//     const price = productSellingPrice || productPrice;
+//     if (!price || parseFloat(price) <= 0 || isNaN(price)) {
+//         showAlert('Please enter a valid price', 'error');
+//         const priceInput = document.getElementById('productSellingPrice') || document.getElementById('productPrice');
+//         if (priceInput) priceInput.focus();
+//         return;
+//     }
+
+//     // Show loading state
+//     const updateBtn = document.getElementById('updateProductBtn');
+//     const originalText = updateBtn.innerHTML;
+    
+//     updateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
+//     updateBtn.disabled = true;
+
+//     try {
+//         // Prepare data for sending
+//         const productData = {
+//             id: productId,
+//             name: productName,
+//             cost_price: productCostPrice ? parseFloat(productCostPrice) : 0,
+//             selling_price: parseFloat(productSellingPrice || productPrice),
+//             category: productCategory,
+//             quantity: quantity,
+//         };
+//         console.log('Updating product:', productData);
+//         console.log('Updating this data:', productData);
+
+//         // Send AJAX request to Django
+//         const response = await fetch('/dashboard/update-product/', {
+//             method: 'POST',
+//             headers: {
+//                 'Content-Type': 'application/json',
+//                 'X-CSRFToken': window.djangoData.csrfToken,
+//                 'X-Requested-With': 'XMLHttpRequest'
+//             },
+//             body: JSON.stringify(productData)
+//         });
+
+//         const result = await response.json();
+//         console.log('Server response:', result);
+
+//         if (result.success) {
+//             // // Add the new product to the local products array
+//             if (window.products) {
+//                 const index = window.products.findIndex(p  => p.id === result.product.id);
+                
+//                 if (index !== -1){
+//                     console.log("ma quantity 0 ho")
+//                     window.products[index] = result.product
+//                 }
+//                 else{
+//                     window.products.push(result.product);
+//                 }
+                
+//             }
+
+//             // Update UI
+//             if (window.loadProducts) {
+//                 window.loadProducts();
+//             }
+
+//             // Show success message
+//             showAlert(result.message, 'success');
+
+//             // Close modal after short delay
+//             setTimeout(() => {
+//                 const closeProductModalFunc = () => {
+//                     if (addProductModal) {
+//                         addProductModal.style.display = 'none';
+//                     }
+//                 };
+//                 closeProductModalFunc();
+
+//                 // Reset form
+//                 document.getElementById('productName').value = '';
+//                 const priceField = document.getElementById('productSellingPrice') || document.getElementById('productPrice');
+//                 if (priceField) priceField.value = '';
+//                 document.getElementById('productCategory').value = '';
+//             }, 1500);
+
+//         } else {
+//             showAlert('Error: ' + (result.error || 'Failed to save product'), 'error');
+//         }
+
+//     } catch (error) {
+//         console.error('Error saving product:', error);
+//         showAlert('Network error. Please check your connection and try again.', 'error');
+//     } finally {
+//         // Restore button state
+//         updateBtn.innerHTML = originalText;
+//         updateBtn.disabled = false;
+//     }
+// }
 
 export function deleteProduct(productId) {
     if (confirm('Are you sure you want to delete this product?')) {
