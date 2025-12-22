@@ -315,6 +315,9 @@ textarea.form-control {
     border-radius: 5px;
 }
 
+.balance-due{
+    display : none;
+}
 
 /* Page Footer */
 .page-footer {
