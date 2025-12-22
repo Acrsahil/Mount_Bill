@@ -8,6 +8,8 @@ from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
+from django.core.exceptions import ValidationError
+from django.db import transaction
 
 from .models import (
     AdditionalCharges,
@@ -340,6 +342,7 @@ def reduce_stock(request, id):
 @login_required
 @csrf_exempt
 @require_POST
+@transaction.atomic
 def save_invoice(request):
     """Save complete invoice via AJAX - REMOVED REDUNDANT CODE"""
     try:
@@ -470,16 +473,31 @@ def save_invoice(request):
 
         print("this is global_discount-> ", global_discount)
 
-        # Create order summary
-        order_summary = OrderSummary.objects.create(
+          # ---------- CHANGED PART STARTS HERE ----------
+        # Build OrderSummary (not saved yet)
+        order_summary = OrderSummary(
             order=order,
-            total_amount=total_amount,
-            discount=global_discount,
-            tax=global_tax,
-            received_amount=received_amount,
+            total_amount=Decimal(str(total_amount)),
+            discount=Decimal(str(global_discount)),
+            tax=Decimal(str(global_tax)),
+            received_amount=Decimal(str(received_amount)),
             due_amount=remaining_amount,
         )
-        # order_summary.calculate_totals()
+
+        try:
+            order_summary.full_clean()  # validate against max_digits, etc.
+            order_summary.save()
+        except ValidationError as e:
+            transaction.set_rollback(True)
+            return JsonResponse(
+                {
+                    "success": False,
+                    "error": "Validation error",
+                    "field_errors": e.message_dict,
+                },
+                status=400,
+            )
+        # ---------- CHANGED PART ENDS HERE ----------
 
         for charge in charge_name_amount:
             charge_name = charge.get("chargeName")
