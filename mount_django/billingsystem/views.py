@@ -488,6 +488,7 @@ def save_invoice(request):
             order_summary.full_clean()  # validate against max_digits, etc.
             order_summary.save()
         except ValidationError as e:
+            print("Validation errors:", e.message_dict)
             transaction.set_rollback(True)
             return JsonResponse(
                 {

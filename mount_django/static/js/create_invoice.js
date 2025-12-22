@@ -960,11 +960,24 @@ export async function saveInvoice() {
             body: JSON.stringify(invoiceData)
         });
         
+        const result = await response.json();
+
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            if(result.field_errors){
+                if(result.field_errors.total_amount){
+                    showAlert(result.field_errors.total_amount[0], 'error')
+                }
+                else{
+                    showAlert('validation error','error')
+                }
+            }
+            else{
+                showAlert(result.error || 'Something went wrong', 'error');
+            }
+                
         }
         
-        const result = await response.json();
+        
         
         if (result.success) {
             showAlert(result.message, 'success');
