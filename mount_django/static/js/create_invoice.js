@@ -251,6 +251,44 @@ document.addEventListener('DOMContentLoaded', () => {
     window.additionalContainer = document.getElementById('additionalInputsContainer');
     const addChargeBtn = document.getElementById('addChargeBtn');
 
+    // Limit additional charge amount input (dynamic safe)
+window.additionalContainer.addEventListener('keydown', function (e) {
+    const input = e.target;
+
+    if (!input.matches('input[type="number"]')) return;
+
+    const allowedKeys = [
+        'Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'
+    ];
+
+    if (allowedKeys.includes(e.key)) return;
+
+    const value = input.value;
+    const hasDecimal = value.includes('.');
+
+    // Allow digits
+    if (/^\d$/.test(e.key)) {
+        const [intPart] = value.split('.');
+        if (intPart.length >= 8 && !hasDecimal) {
+            e.preventDefault();
+        }
+        return;
+    }
+
+    // Allow one decimal point
+    if (e.key === '.' && !hasDecimal) return;
+
+    e.preventDefault();
+});
+
+// Block paste (simple + safe)
+window.additionalContainer.addEventListener('paste', function (e) {
+    if (e.target.matches('input[type="number"]')) {
+        e.preventDefault();
+    }
+});
+
+
     // Helper: recalc totals
     function recalcTotals() {
         const globalDiscount = Number(document.getElementById('globalDiscount')?.value) || 0;
@@ -285,6 +323,7 @@ document.addEventListener('DOMContentLoaded', () => {
         textInput.type = 'text';
         textInput.classList.add('form-control');
         textInput.placeholder = 'Enter charge name';
+        textInput.required = true;
 
         const numberInput = document.createElement('input');
         numberInput.type = 'number';
@@ -678,7 +717,33 @@ export function renderInvoiceItems(invoiceItems, invoiceItemsBody, setupProductS
     <td class="item-total" data-id="${item.id}">Rs. ${(Number(item.price) * Number(item.quantity) - discountAmount).toFixed(2)}</td>
     <td><button class="remove-item-btn" data-id="${item.id}"><i class="fas fa-trash"></i></button></td>
 `;
-        invoiceItemsBody.appendChild(row);
+     // Limit quantity to max 8 digits (typing + paste)
+invoiceItemsBody.addEventListener('keydown', function (e) {
+    if (!e.target.classList.contains('item-quantity')) return;
+
+    const allowedKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'];
+
+    if (allowedKeys.includes(e.key)) return;
+
+    // Only digits
+    if (!/^\d$/.test(e.key)) {
+        e.preventDefault();
+        return;
+    }
+
+    // Max 8 digits
+    if (e.target.value.length >= 8) {
+        e.preventDefault();
+    }
+});
+
+invoiceItemsBody.addEventListener('paste', function (e) {
+    if (e.target.classList.contains('item-quantity')) {
+        e.preventDefault();
+    }
+});
+
+invoiceItemsBody.appendChild(row);
     });
 
     // Add event listeners to the new inputs
@@ -963,19 +1028,23 @@ export async function saveInvoice() {
         const result = await response.json();
 
         if (!response.ok) {
-            if(result.field_errors){
-                if(result.field_errors.total_amount){
-                    showAlert(result.field_errors.total_amount[0], 'error')
-                }
-                else{
-                    showAlert('validation error','error')
-                }
-            }
-            else{
-                showAlert(result.error || 'Something went wrong', 'error');
-            }
-                
-        }
+    if (result.field_errors) {
+        const fe = result.field_errors;
+
+        // Prefer total_amount, but fall back to any field/non-field errors.
+        const candidate =
+            fe.total_amount ??
+            fe.__all__ ??              // model.clean() often uses __all__
+            fe.non_field_errors ??     // sometimes this key is used
+            Object.values(fe)[0];      // fallback: first field
+
+        const msg = Array.isArray(candidate) ? candidate[0] : candidate || result.error || 'Validation error';
+        showAlert(msg, 'error');
+    } else {
+        showAlert(result.error || 'Something went wrong', 'error');
+    }
+    return;
+}
         
         
         

@@ -224,10 +224,10 @@ class OrderSummary(models.Model):
         # Check all relevant monetary field
 
         if self.total_amount is not None and self.total_amount > max_amount:
-            errors["total_amount"] = (
+            errors["total_amount"] = [
                     "Value cannot have more than 8 digits before the decimal "
                     "(maximum allowed is 99,999,999.99)."
-                )
+            ]
 
         # You can also add custom rules for discount/tax if you want:
         # e.g. discount and tax should not be negative, or greater than some limit, etc.
