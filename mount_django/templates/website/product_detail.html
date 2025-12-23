@@ -1,0 +1,190 @@
+{% extends "layout.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/product.css' %}">
+<link rel="stylesheet" href="{% static 'css/bill.css' %}">
+
+{% endblock %}
+
+{% block content %}
+<!-- Add Product Modal - WITH SUGGESTIONS -->
+<div class="modal" id="addProductModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Add New Product</h3>
+            <button class="close-btn" id="closeProductModal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group" style="position: relative;">
+                <label for="productName">Product Name *</label>
+                <input type="text" id="productName" class="form-control ">
+            </div>
+            <div class = "productQuantities">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="productQuantity" class="updateProduct">Product Quantity</label>
+                        <input type="number" id="productQuantity" class="form-control" placeholder="0.00" min="0" step="0.01" required>
+                    </div>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-col">
+                    <div class="form-group">
+                        <label for="productCostPrice">Cost Price ($) *</label>
+                        <input type="number" id="productCostPrice" class="form-control" placeholder="0.00" min="0" step="0.01" required>
+                    </div>
+                </div>
+                <div class="form-col">
+                    <div class="form-group">
+                        <label for="productSellingPrice">Selling Price ($) *</label>
+                        <input type="number" id="productSellingPrice" class="form-control" placeholder="0.00" min="0" step="0.01" required>
+                    </div>
+                </div>
+                <div class="form-col">
+                    <div class="form-group" style="position: relative;">
+                        <label for="productCategory">Category</label>
+                        <input type="text" id="productCategory" class="form-control product-category-search-input" 
+                               placeholder="Type category name (Tab to complete)...">
+                        <div class="search-hint" id="product-category-search-hint" style="display: none; position: absolute; background: white; border: 1px solid #ddd; max-height: 150px; overflow-y: auto; z-index: 1000; width: 100%;">
+                            <!-- Category suggestions will appear here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-light" id="cancelProductBtn">Cancel</button>
+            <button class="btn btn-primary" id="saveProductBtn">Save Product</button>
+            <button class="btn btn-primary" id="updateProductBtn">Update Product</button>
+        </div>
+    </div>
+</div>
+<header class="product-layout-header">
+    <div class="user-info">
+        <div class="user-avatar">{{ request.user.username.0|upper }}</div>
+        <div>
+            <div>{{ request.user.username }}</div>
+            <div class="user-role">Administrator</div>
+        </div>
+    </div>
+</header>
+
+<div class="product-page">
+    <aside class="product-sidebar">
+        <!-- Row 1: Products + Add Product -->
+        <div class="product-header">
+            <h2 class="products">Products(5)</h2>
+            <button class="btn btn-success" id="addNewProductDetailBtn">
+                <i class="fas fa-plus-circle"></i> Add Product
+            </button>
+        </div>
+
+        <!-- Row 2: Search + Sort By -->
+        <div class="search-box-sort">
+            <div class="search-box-product">
+                <i class="fas fa-search"></i>
+                <input type="text" id="productSearchInput" placeholder="Search products...">
+            </div>
+
+            <button class="btn btn-secondary" id="sortProductBtn">
+                <i class="fa-solid fa-sort"></i> Sort By
+            </button>
+        </div>
+
+        <!-- Row 3: Filters -->
+        <div class="filter-row">
+            <button class="btn btn-secondary all-category">All Category</button>
+            <button class="btn btn-secondary all-category">All Stock</button>
+            <button class="btn btn-secondary all-category">All items</button>
+        </div>
+
+        <!-- Product list -->
+        <div class="product-names">
+            <ul class="productList">
+                <!-- products will be dynamically added here -->
+            </ul>
+        </div>
+    </aside>
+ <main class="product-main">
+  <!-- Row: name on left, edit/delete on right -->
+  <div class="product-detail-header">
+    <div class="product-title">Mouse</div>
+
+    <div class="product-actions">
+      <button class="btn edit-product-btn" data-id="${product.id}">
+        <i class="fas fa-edit"></i> Edit Item
+      </button>
+      <button class="btn delete-product-btn" data-id="${product.id}">
+        <i class="fas fa-trash"></i> Delete Item
+      </button>
+    </div>
+  </div>
+
+  <!-- Details table full width -->
+  <section class="productsDetail">
+    <table class="table table-stretch" id="productsDetailTable">
+      <thead>
+        <tr>
+          <th>Stock Quantity</th>
+          <th>Selling Price</th>
+          <th>Purchase Price</th>
+          <th>Stock Value</th>
+        </tr>
+      </thead>
+      <tbody id="productDetailTableBody">
+        <!-- dynamically added -->
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Activity header row: title left, controls right -->
+  <section class="productActivity">
+    <div class="activity-header">
+      <h2 class="activity-title">Activity(1)</h2>
+
+      <div class="activity-actions">
+        <div class="search-box-product">
+          <i class="fas fa-search"></i>
+          <input type="text" id="activitySearchInput" placeholder="Search activity...">
+        </div>
+
+        <button class="btn btn-secondary" id="activitySortBtn">
+          <i class="fa-solid fa-sort"></i> Sort By
+        </button>
+
+        <button class="btn btn-success adjust-stock-btn" data-id="${product.id}">
+          Adjust Stock
+        </button>
+      </div>
+    </div>
+
+    <!-- Activity table full width -->
+    <div class="activityDetail">
+      <table class="table table-stretch" id="productsactivityTable">
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>Date</th>
+            <th>Change</th>
+            <th>Quantity</th>
+            <th>Remarks</th>
+          </tr>
+        </thead>
+        <tbody id="productsactivityTableBody">
+          <!-- dynamically added -->
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+</div>
+
+
+{% endblock %}
+
+{% block extra_js %}
+<script type="module" src="{%static 'js/events.js'%}"></script>
+<script type="module" src="{%static 'js/product.js'%}"></script>
+<script type="module" src="{% static 'js/main.js' %}"></script>
+{%endblock%}
