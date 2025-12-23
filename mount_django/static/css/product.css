@@ -26,3 +26,242 @@
 .popup-btn:hover {
     background: #e0e0e0;
 }
+.thisRows{
+    cursor: pointer;
+}
+
+:root {
+  --border-color: #e5e7eb;
+  --topbar-height: 64px;
+}
+
+/* Top bar (user-info on the right) */
+.product-layout-header {
+  height: var(--topbar-height);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 20px;
+
+  /* horizontal border from end to end */
+  border-bottom: 1px solid var(--border-color);
+  background: #fff;
+}
+
+/* Optional: keep it visible while scrolling */
+.product-layout-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-role {
+  font-size: 17px;
+  color: var(--gray);
+}
+
+/* Body layout: sidebar + main */
+.product-page {
+  display: flex;
+  min-height: calc(100vh - var(--topbar-height));
+}
+
+/* Sidebar with vertical border starting under the topbar */
+.product-sidebar {
+  flex-shrink: 0;
+  width: 500px;             
+  padding: 16px;
+  border-right: 1px solid var(--border-color);
+  background: #fff;
+}
+
+
+/* Row 1: title + button */
+.product-header {
+  margin-top: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.products {
+  margin: 0;
+}
+
+.product-header button,
+.search-box-sort button {
+    font-size: 17px;
+}
+/* Row 2: search + sort */
+.search-box-sort {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 30px;
+}
+
+.search-box-product {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  padding: 10px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+}
+
+.search-box-product input {
+  width: 100%;
+  border: 0;
+  outline: none;
+  background: transparent;
+}
+
+/* Row 3: filters in one row */
+.filter-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.filter-row .all-category {
+  flex: 1;
+  font-size: 17px; 
+}
+
+/* Product list area */
+.product-names {
+  margin-top: 14px;
+}
+
+.productList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.product-main{
+    flex : 1;
+    padding: 16px 16px 16px 20px; 
+}
+/* Top row: Mouse | Edit Delete */
+.product-detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.product-title {
+  font-size: 25px;
+  font-weight: 600;
+}
+
+.product-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.edit-product-btn,
+.delete-product-btn {
+    font-size: 15px !important;
+}
+/* Activity header: Activity(1) | search + sort + adjust */
+.activity-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.activity-title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.activity-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Search box style */
+.search-box-product {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  padding: 10px 12px;
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.search-box-product input {
+  width: 200px; /* adjust */
+  max-width: 40vw;
+  border: 0;
+  outline: none;
+  background: transparent;
+}
+
+/* Tables stretch full width */
+.table-stretch {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed; /* helps keep header aligned nicely */
+}
+
+.table-stretch th,
+.table-stretch td {
+  padding: 12px;
+  border-bottom: 1px solid var(--border-color, #e5e7eb);
+  text-align: left;
+  vertical-align: middle;
+}
+
+.table-stretch thead th {
+  font-size: 16px;
+  font-weight: 600;
+  background: #fafafa;
+}
+
+/* If content is long (Remarks), avoid breaking layout */
+.table-stretch td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Responsive: allow header controls to wrap on small screens */
+@media (max-width: 768px) {
+  .product-detail-header,
+  .activity-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .product-actions,
+  .activity-actions {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .search-box-product input {
+    width: 100%;
+    max-width: none;
+  }
+}

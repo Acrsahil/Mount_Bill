@@ -1,6 +1,46 @@
 // API calls for AJAX/fetch requests
 import { showAlert } from './utils.js';
+import { openAddProductModal,closeProductModalFunc  } from './events.js';
 
+//for csrfToken for js
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let cookie of cookies) {
+            cookie = cookie.trim();
+            if (cookie.startsWith(name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+const csrfToken = getCookie('csrftoken');
+
+//open modal for add product of product-detail page
+document.addEventListener('DOMContentLoaded', () => {
+    const addNewProductDetailBtn = document.getElementById('addNewProductDetailBtn');
+    const addProductModal = document.getElementById('addProductModal');
+    addNewProductDetailBtn.addEventListener('click', () => {
+        openAddProductModal(addProductModal);
+    });
+
+    const closeProductModal = document.getElementById('closeProductModal');
+    closeProductModal.addEventListener('click', () => {
+        closeProductModalFunc(addProductModal)
+    })
+    const cancelProductBtn = document.getElementById('cancelProductBtn');
+    cancelProductBtn.addEventListener('click', () => {
+        closeProductModalFunc(addProductModal)
+    })
+    const saveProductBtn = document.getElementById('saveProductBtn');
+    saveProductBtn.addEventListener('click', () => {
+        saveProduct(addProductModal)
+    })
+});
 // Save product to database via AJAX
 export async function saveProduct(addProductModal) {
     const productName = document.getElementById('productName').value.trim();
@@ -48,7 +88,7 @@ export async function saveProduct(addProductModal) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': window.djangoData.csrfToken,
+                'X-CSRFToken': csrfToken,
                 'X-Requested-With': 'XMLHttpRequest'
             },
             body: JSON.stringify(productData)
@@ -67,7 +107,7 @@ export async function saveProduct(addProductModal) {
             if (window.loadProducts) {
                 window.loadProducts();
             }
-
+          
             // Show success message
             showAlert(result.message, 'success');
 
@@ -115,6 +155,7 @@ export function loadProducts(products,productsTableBody, editProduct, deleteProd
 
     products.forEach((product,index) => {
         const row = document.createElement('tr');
+        row.classList.add("thisRows");
         row.innerHTML = `
         <td>${index+1}</td>
 <td>${product.name}</td>
@@ -125,6 +166,12 @@ export function loadProducts(products,productsTableBody, editProduct, deleteProd
     <td>${String(product.quantity)}</td>
 
 `;
+//product details
+    row.addEventListener('click', () => {
+        console.log("i should be here")
+        window.location.href = '/dashboard/product-detail/';
+    });
+
   productsTableBody.appendChild(row);
     });
 /*<div class="product-actions">
@@ -177,6 +224,8 @@ export function loadProducts(products,productsTableBody, editProduct, deleteProd
         }
         
     })
+
+
 //for add and reduce stock btn
 document.addEventListener('DOMContentLoaded', function () {
     const popup = document.getElementById('addStockPopup');

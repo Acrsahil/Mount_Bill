@@ -647,6 +647,9 @@ def settings(request):
     context = get_serialized_data(request.user, "settings")
     return render(request, "website/bill.html", context)
 
+def product_detail(request):
+    context = get_serialized_data(request.user,"dashboard")
+    return render(request, "website/product_detail.html",context)
 
 @login_required
 def create_invoice_page(request):
