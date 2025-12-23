@@ -85,7 +85,7 @@ const saveProductBtn = document.getElementById('saveProductBtn');
 const saveClientBtn = document.getElementById('saveClientBtn');
 const addItemBtn = document.getElementById('addItemBtn');
 const invoiceItemsBody = document.getElementById('invoiceItemsBody');
-const productList = document.getElementById('productList');
+// const productList = document.getElementById('productList');
 const invoicesTableBody = document.getElementById('invoicesTableBody');
 const clientsTableBody = document.getElementById('clientsTableBody');
 const searchInput = document.getElementById('searchInput');
@@ -110,7 +110,7 @@ function deleteProductWrapper(productId) {
 
 // Make loadProducts available globally
 window.loadProducts = function() {
-    loadProducts(products, productList, editProductWrapper, deleteProductWrapper);
+    loadProducts(products,productsTableBody, editProductWrapper, deleteProductWrapper);
 };
 
 // Initialize the app
@@ -133,10 +133,10 @@ document.addEventListener('DOMContentLoaded', function() {
         console.warn('invoicesTableBody not found, skipping invoice loading');
     }
     
-    if (productList) {
-        loadProducts(products, productList, editProductWrapper, deleteProductWrapper);
+    if (productsTableBody) {
+        loadProducts(products, productsTableBody, editProductWrapper, deleteProductWrapper);
     } else {
-        console.warn('productList not found, skipping product loading');
+        console.warn('productsTableBody not found, skipping product loading');
     }
     
     if (clientsTableBody) {
@@ -169,7 +169,7 @@ document.addEventListener('DOMContentLoaded', function() {
         menuItems,
         tabContents,
         invoiceItemsBody,
-        productList,
+        productsTableBody,
         invoicesTableBody,
         clientsTableBody,
         invoiceNumber,

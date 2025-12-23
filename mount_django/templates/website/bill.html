@@ -236,9 +236,23 @@
                         <input type="text" id="productSearchInput" placeholder="Search products...">
                     </div>
                 </div>
-                <div class="product-list" id="productList">
-                    <!-- Products will be dynamically added here -->
-                </div>
+                {% comment %} <div class="product-list" id="productList"> {% endcomment %}
+                    <table id="productsTable">
+                    <thead>
+                        <tr>
+                            <th>S.N.</th>
+                            <th>Product Name</th>
+                            <th>Category</th>
+                            <th>Purchase Price</th>
+                            <th>Selling Price</th>
+                            <th>Quantity</th>
+                        </tr>
+                    </thead>
+                    <tbody id="productsTableBody">
+                        <!-- products will be dynamically added here -->
+                    </tbody>
+                </table>
+                {% comment %} </div> {% endcomment %}
             </div>
         </div>
 

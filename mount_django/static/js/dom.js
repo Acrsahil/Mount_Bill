@@ -308,52 +308,44 @@ export function filterInvoices(invoices, searchInput, invoicesTableBody) {
 }
 
 // FILTER PRODUCTS
-export function filterProducts(products, productSearchInput, productList, editProduct, deleteProduct) {
+export function filterProducts(products, productSearchInput, productsTableBody, editProduct, deleteProduct) {
     const searchTerm = productSearchInput.value.toLowerCase();
     const filteredProducts = products.filter(product => 
         product.name.toLowerCase().includes(searchTerm) ||
             (product.category && product.category.toLowerCase().includes(searchTerm))
     );
 
-    productList.innerHTML = '';
+    productsTableBody.innerHTML = '';
 
-    filteredProducts.forEach(product => {
-        const productCard = document.createElement('div');
-        productCard.className = 'product-card';
-        productCard.innerHTML = `
-<h4>${product.name}</h4>
-<p>Category: ${product.category || 'N/A'}</p>
-<div class="product-price">
-    <div>Cost: $${product.cost_price}</div>
-    <div>Selling: $${product.selling_price}</div>
-    <div>Product Qty: ${product.quantity}</div>
-</div>
-<div class="product-actions">
-    <button class="btn btn-primary edit-product-btn" data-id="${product.id}">
-        <i class="fas fa-edit"></i> Edit
-    </button>
-    <button class="btn btn-danger delete-product-btn" data-id="${product.id}">
-        <i class="fas fa-trash"></i> Delete
-    </button>
-</div>
+    filteredProducts.forEach((product,index) => {
+            const row = document.createElement('tr');
+        row.innerHTML = `
+        <td>${index+1}</td>
+<td>${product.name}</td>
+<td>${product.category || 'N/A'}</td>
+    <td>$${product.cost_price}</td>
+    <td>$${product.selling_price}</td>
+
+    <td>${String(product.quantity)}</td>
+
 `;
-        productList.appendChild(productCard);
+  productsTableBody.appendChild(row);
     });
 
     // Reattach event listeners
-    document.querySelectorAll('.edit-product-btn').forEach(button => {
-        button.addEventListener('click', function() {
-            const productId = parseInt(this.getAttribute('data-id'));
-            editProduct(productId);
-        });
-    });
+    // document.querySelectorAll('.edit-product-btn').forEach(button => {
+    //     button.addEventListener('click', function() {
+    //         const productId = parseInt(this.getAttribute('data-id'));
+    //         editProduct(productId);
+    //     });
+    // });
 
-    document.querySelectorAll('.delete-product-btn').forEach(button => {
-        button.addEventListener('click', function() {
-            const productId = parseInt(this.getAttribute('data-id'));
-            deleteProduct(productId);
-        });
-    });
+    // document.querySelectorAll('.delete-product-btn').forEach(button => {
+    //     button.addEventListener('click', function() {
+    //         const productId = parseInt(this.getAttribute('data-id'));
+    //         deleteProduct(productId);
+    //     });
+    // });
 }
 
 // Filter clients
