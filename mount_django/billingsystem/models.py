@@ -5,7 +5,7 @@ from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
-
+from decimal import Decimal
 
 class User(AbstractUser):
     phone = models.CharField(max_length=15, blank=True)
@@ -205,39 +205,36 @@ class OrderSummary(models.Model):
     received_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     due_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     calculated_on = models.DateTimeField(auto_now=True)
+    def clean(self):
+        """
+        Custom validation for amount fields.
 
-    # def calculate_totals(self, save=True):
-    #     total = Decimal("0.0")
-    #     total = total + 2
-    #     total /= Decimal("2.0")
+        With max_digits=10 and decimal_places=2, the DB already limits:
+        - 8 integer digits + 2 decimal digits
 
-    #     print(type(total))
-    #     print(total)
+        Here we enforce that same rule with a clear message BEFORE hitting DB.
+        """
+        super().clean()
 
-    #     for bill in self.order.bills.all():
-    #         product_price_decimal = Decimal(str(bill.product_price))
-    #         total += product_price_decimal * bill.quantity
-    #         print(type(total))
+        # Max allowed value: 99,999,999.99 (8 digits before decimal, 2 after)
+        max_amount = Decimal("99999999.99")
 
-    #     discount_decimal = Decimal(str(self.discount))
-    #     tax_decimal = Decimal(str(self.tax))
+        errors = {}
 
-    #     # If discount is meant to be added (unusual but based on your original code)
-    #     total_after_discount = total * (
-    #         Decimal("1.0") + Decimal(str(discount_decimal / Decimal("100.0")))
-    #     )
+        # Check all relevant monetary field
 
-    #     # Calculate tax
-    #     total_after_tax = total_after_discount * (
-    #         Decimal("1.0") + tax_decimal / Decimal("100.0")
-    #     )
+        if self.total_amount is not None and self.total_amount > max_amount:
+            errors["total_amount"] = [
+                    "Value cannot have more than 8 digits before the decimal "
+                    "(maximum allowed is 99,999,999.99)."
+            ]
 
-    #     self.total_amount = total
-    #     self.final_amount = total_after_tax
+        # You can also add custom rules for discount/tax if you want:
+        # e.g. discount and tax should not be negative, or greater than some limit, etc.
 
-    #     if save:
-    #         print("hello i am correct!")
-    #         self.save()
+        if errors:
+            # Raise one ValidationError containing field-specific messages
+            raise ValidationError(errors)
     def __str__(self):
         return f"total amount:{self.total_amount}"
 
