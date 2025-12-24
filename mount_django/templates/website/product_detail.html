@@ -184,6 +184,27 @@
 {% endblock %}
 
 {% block extra_js %}
+<script>
+// Simple and safe data structure
+window.djangoData = {
+    products: {{ product|safe }},
+    product_cat: {{ product_cat|safe }},
+    clients: {{ customer|safe }},
+    invoices: {{ invoices|safe }},
+};
+</script>
+
+<script>
+// SAFETY CHECK - Add this right before loading bill.js
+if (typeof window.djangoData === 'undefined') {
+    window.djangoData = {
+        products: [],
+        product_cat: [],
+        clients: [],
+        invoices: {{ invoices|safe }},
+    };
+}
+</script>
 <script type="module" src="{%static 'js/events.js'%}"></script>
 <script type="module" src="{%static 'js/product.js'%}"></script>
 <script type="module" src="{% static 'js/main.js' %}"></script>

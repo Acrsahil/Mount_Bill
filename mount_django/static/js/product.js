@@ -142,38 +142,52 @@ export async function saveProduct(addProductModal) {
 }
 
 // LOAD PRODUCTS
-export function loadProducts(products,productsTableBody, editProduct, deleteProduct) {
-    if (!productsTableBody) return;
 
+document.addEventListener('DOMContentLoaded', () => {
+  const productsTableBody = document.getElementById('productsTableBody'); 
+  const productList = document.querySelector('.productList');            
+
+  loadProducts(products, productsTableBody, editProduct, deleteProduct, productList);
+});
+
+export function loadProducts(products, productsTableBody, editProduct, deleteProduct, productList) {
+  // Render table 
+  if (productsTableBody) {
     productsTableBody.innerHTML = '';
 
-    // Check if we have products from database
-    if (products.length === 0) {
-        productsTableBody.innerHTML = '<p>No products found in database.</p>';
-        return;
-    }
+    products.forEach((product, index) => {
+      const row = document.createElement('tr');
+      row.classList.add('thisRows');
+      row.innerHTML = `
+        <td>${index + 1}</td>
+        <td>${product.name}</td>
+        <td>${product.category || 'N/A'}</td>
+        <td>$${product.cost_price}</td>
+        <td>$${product.selling_price}</td>
+        <td>${String(product.quantity)}</td>
+      `;
 
-    products.forEach((product,index) => {
-        const row = document.createElement('tr');
-        row.classList.add("thisRows");
-        row.innerHTML = `
-        <td>${index+1}</td>
-<td>${product.name}</td>
-<td>${product.category || 'N/A'}</td>
-    <td>$${product.cost_price}</td>
-    <td>$${product.selling_price}</td>
-
-    <td>${String(product.quantity)}</td>
-
-`;
-//product details
-    row.addEventListener('click', () => {
-        console.log("i should be here")
+      row.addEventListener('click', () => {
         window.location.href = '/dashboard/product-detail/';
-    });
+      });
 
-  productsTableBody.appendChild(row);
+      productsTableBody.appendChild(row);
     });
+  }
+
+  // Render list (only if this page has it)
+
+    if (productList) {
+    productList.innerHTML = '';
+    products.forEach((product) => {
+      const li = document.createElement('li');
+      li.classList.add("productlists");
+      li.textContent = product.name;
+      productList.appendChild(li);
+    });
+  }
+  
+
 /*<div class="product-actions">
     <button class="btn btn-primary edit-product-btn" data-id="${product.id}">
         <i class="fas fa-edit"></i> Edit
