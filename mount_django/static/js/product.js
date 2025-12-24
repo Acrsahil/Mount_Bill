@@ -28,18 +28,18 @@ document.addEventListener('DOMContentLoaded', () => {
         openAddProductModal(addProductModal);
     });
 
-    const closeProductModal = document.getElementById('closeProductModal');
-    closeProductModal.addEventListener('click', () => {
-        closeProductModalFunc(addProductModal)
-    })
-    const cancelProductBtn = document.getElementById('cancelProductBtn');
-    cancelProductBtn.addEventListener('click', () => {
-        closeProductModalFunc(addProductModal)
-    })
-    const saveProductBtn = document.getElementById('saveProductBtn');
-    saveProductBtn.addEventListener('click', () => {
-        saveProduct(addProductModal)
-    })
+    // const closeProductModal = document.getElementById('closeProductModal');
+    // closeProductModal.addEventListener('click', () => {
+    //     closeProductModalFunc(addProductModal)
+    // })
+    // const cancelProductBtn = document.getElementById('cancelProductBtn');
+    // cancelProductBtn.addEventListener('click', () => {
+    //     closeProductModalFunc(addProductModal)
+    // })
+    // const saveProductBtn = document.getElementById('saveProductBtn');
+    // saveProductBtn.addEventListener('click', () => {
+    //     saveProduct(addProductModal)
+    // })
 });
 // Save product to database via AJAX
 export async function saveProduct(addProductModal) {
@@ -95,6 +95,7 @@ export async function saveProduct(addProductModal) {
         });
 
         const result = await response.json();
+        console.log("saveProduct called", Date.now());
         console.log('Server response:', result);
 
         if (result.success) {
@@ -105,7 +106,7 @@ export async function saveProduct(addProductModal) {
 
             // Update UI
             if (window.loadProducts) {
-                window.loadProducts();
+                window.loadProducts(window.products, window.productsTableBody, editProduct, deleteProduct, window.productList);
             }
           
             // Show success message
@@ -144,13 +145,13 @@ export async function saveProduct(addProductModal) {
 // LOAD PRODUCTS
 
 document.addEventListener('DOMContentLoaded', () => {
-  const productsTableBody = document.getElementById('productsTableBody'); 
-  const productList = document.querySelector('.productList');            
+  window.productsTableBody = document.getElementById('productsTableBody'); 
+  window.productList = document.querySelector('.productList');            
 
-  loadProducts(products, productsTableBody, editProduct, deleteProduct, productList);
+  loadProducts(products, window.productsTableBody, editProduct, deleteProduct, window.productList);
 });
 
-export function loadProducts(products, productsTableBody, editProduct, deleteProduct, productList) {
+export function loadProducts(products,productsTableBody, editProduct, deleteProduct, productList) {
   // Render table 
   if (productsTableBody) {
     productsTableBody.innerHTML = '';

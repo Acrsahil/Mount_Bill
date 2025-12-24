@@ -114,7 +114,6 @@ def dashboard(request):
 
 
 @login_required
-@csrf_exempt
 @require_POST
 def save_product(request):
     """Save new product via AJAX - COMPATIBLE VERSION"""
