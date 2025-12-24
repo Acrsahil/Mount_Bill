@@ -42,48 +42,40 @@ document.addEventListener('DOMContentLoaded', () => {
     // })
 });
 // Save product to database via AJAX
+// Save product to database via AJAX
 export async function saveProduct(addProductModal) {
     const productName = document.getElementById('productName').value.trim();
     const productCostPrice = document.getElementById('productCostPrice')?.value;
     const productSellingPrice = document.getElementById('productSellingPrice')?.value;
-    const productPrice = document.getElementById('productPrice')?.value; // Fallback for old field name
+    const productPrice = document.getElementById('productPrice')?.value;
     const productCategory = document.getElementById('productCategory').value.trim();
     const quantity = document.getElementById('productQuantity').value;
-    // Client-side validation
+
     if (!productName) {
         showAlert('Please enter product name', 'error');
-        document.getElementById('productName').focus();
         return;
     }
 
     const price = productSellingPrice || productPrice;
-    if (!price || parseFloat(price) <= 0 || isNaN(price)) {
-        showAlert('Please enter a valid price', 'error');
-        const priceInput = document.getElementById('productSellingPrice') || document.getElementById('productPrice');
-        if (priceInput) priceInput.focus();
+    if (!price || isNaN(price) || parseFloat(price) <= 0) {
+        showAlert('Please enter valid price', 'error');
         return;
     }
 
-    // Show loading state
     const saveBtn = document.getElementById('saveProductBtn');
     const originalText = saveBtn.innerHTML;
-    
-    saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+    saveBtn.innerHTML = 'Saving...';
     saveBtn.disabled = true;
 
     try {
-        // Prepare data for sending
         const productData = {
             name: productName,
             cost_price: productCostPrice ? parseFloat(productCostPrice) : 0,
-            selling_price: parseFloat(productSellingPrice || productPrice),
+            selling_price: parseFloat(price),
             category: productCategory,
-            quantity: quantity,
+            quantity: quantity
         };
-        console.log('Saving product:', productData);
-        console.log('Sending this data:', productData);
 
-        // Send AJAX request to Django
         const response = await fetch('/dashboard/save-product/', {
             method: 'POST',
             headers: {
@@ -95,98 +87,90 @@ export async function saveProduct(addProductModal) {
         });
 
         const result = await response.json();
-        console.log("saveProduct called", Date.now());
-        console.log('Server response:', result);
 
         if (result.success) {
-            // Add the new product to the local products array
-            if (window.products) {
-                window.products.push(result.product);
-            }
 
-            // Update UI
-            if (window.loadProducts) {
-                window.loadProducts(window.products, window.productsTableBody, editProduct, deleteProduct, window.productList);
-            }
-          
-            // Show success message
-            showAlert(result.message, 'success');
+            // ✅ Save to localStorage for other pages
+            localStorage.setItem('lastAddedProduct', JSON.stringify(result.product));
 
-            // Close modal after short delay
+            // ✅ Update current page instantly
+            if (!window.products) window.products = [];
+            window.products.push(result.product);
+
+            window.dispatchEvent(new Event('product-updated'));
+
+            showAlert('Product added successfully', 'success');
+
             setTimeout(() => {
-                const closeProductModalFunc = () => {
-                    if (addProductModal) {
-                        addProductModal.style.display = 'none';
-                    }
-                };
-                closeProductModalFunc();
-
-                // Reset form
+                addProductModal.style.display = 'none';
                 document.getElementById('productName').value = '';
+                document.getElementById('productCategory').value = '';
                 const priceField = document.getElementById('productSellingPrice') || document.getElementById('productPrice');
                 if (priceField) priceField.value = '';
-                document.getElementById('productCategory').value = '';
-            }, 1500);
+            }, 800);
 
         } else {
-            showAlert('Error: ' + (result.error || 'Failed to save product'), 'error');
+            showAlert(result.error || 'Failed to save product', 'error');
         }
 
-    } catch (error) {
-        console.error('Error saving product:', error);
-        showAlert('Network error. Please check your connection and try again.', 'error');
+    } catch (err) {
+        console.error(err);
+        showAlert('Network error', 'error');
     } finally {
-        // Restore button state
         saveBtn.innerHTML = originalText;
         saveBtn.disabled = false;
     }
 }
 
+
 // LOAD PRODUCTS
-
 document.addEventListener('DOMContentLoaded', () => {
-  window.productsTableBody = document.getElementById('productsTableBody'); 
-  window.productList = document.querySelector('.productList');            
+    window.productsTableBody = document.getElementById('productsTableBody');
+    window.productList = document.querySelector('.productList');
 
-  loadProducts(products, window.productsTableBody, editProduct, deleteProduct, window.productList);
+    if (window.products) {
+        loadProducts(
+            window.products,
+            window.productsTableBody,
+            editProduct,
+            deleteProduct,
+            window.productList
+        );
+    }
 });
 
-export function loadProducts(products,productsTableBody, editProduct, deleteProduct, productList) {
-  // Render table 
-  if (productsTableBody) {
-    productsTableBody.innerHTML = '';
+export function loadProducts(products, productsTableBody, editProduct, deleteProduct, productList) {
 
-    products.forEach((product, index) => {
-      const row = document.createElement('tr');
-      row.classList.add('thisRows');
-      row.innerHTML = `
-        <td>${index + 1}</td>
-        <td>${product.name}</td>
-        <td>${product.category || 'N/A'}</td>
-        <td>$${product.cost_price}</td>
-        <td>$${product.selling_price}</td>
-        <td>${String(product.quantity)}</td>
-      `;
+    // TABLE
+    if (productsTableBody) {
+        productsTableBody.innerHTML = '';
 
-      row.addEventListener('click', () => {
-        window.location.href = '/dashboard/product-detail/';
-      });
+        products.forEach((product, index) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${index + 1}</td>
+                <td>${product.name}</td>
+                <td>${product.category || 'N/A'}</td>
+                <td>${product.cost_price}</td>
+                <td>${product.selling_price}</td>
+                <td>${product.quantity}</td>
+            `;
+            productsTableBody.appendChild(row);
+        });
+    }
 
-      productsTableBody.appendChild(row);
-    });
-  }
-
-  // Render list (only if this page has it)
-
+    // LIST
     if (productList) {
-    productList.innerHTML = '';
-    products.forEach((product) => {
-      const li = document.createElement('li');
-      li.classList.add("productlists");
-      li.textContent = product.name;
-      productList.appendChild(li);
-    });
-  }
+        productList.innerHTML = '';
+
+        products.forEach(product => {
+            const li = document.createElement('li');
+            li.textContent = product.name;
+            productList.appendChild(li);
+        });
+    }
+}
+
   
 
 /*<div class="product-actions">
@@ -217,7 +201,7 @@ export function loadProducts(products,productsTableBody, editProduct, deleteProd
     // });
 
    
-}
+// }
   document.addEventListener('click', function(e) {
         const addStock = e.target.id === 'addStock';
         if(addStock){
@@ -694,3 +678,31 @@ function closeModalFunc1(reduceStockModal){
     reduceStockModal.style.display = 'none';
 }
 
+// Update UI on same page
+window.addEventListener('product-updated', () => {
+    loadProducts(
+        window.products || [],
+        window.productsTableBody,
+        editProduct,
+        deleteProduct,
+        window.productList
+    );
+});
+
+// Update UI across different pages
+window.addEventListener('storage', (event) => {
+    if (event.key === 'lastAddedProduct') {
+        const newProduct = JSON.parse(event.newValue);
+
+        if (!window.products) window.products = [];
+        window.products.push(newProduct);
+
+        loadProducts(
+            window.products,
+            window.productsTableBody,
+            editProduct,
+            deleteProduct,
+            window.productList
+        );
+    }
+});
