@@ -2,7 +2,7 @@
 import { formatDate } from './utils.js';
 // RENDER INVOICE ITEMS
 import { editProduct,deleteProduct } from './product.js';
-
+import { openModal} from './bill_layout.js';
 // Show product suggestions
 export function showProductSuggestions(itemId, products, searchTerm = '', selectProductFromHint) {
     const hintContainer = document.getElementById(`search-hint-${itemId}`);
@@ -247,6 +247,7 @@ export function loadInvoices(invoices, invoicesTableBody, csrfToken = '') {
         const amount = invoice.amount || 0;
         
         const row = document.createElement('tr');
+        row.classList.add("invoicesList");
         row.innerHTML = `
 <td>${invoice.number || `INV-${invoice.id}`}</td>
 <td>${invoice.client || 'Unknown Client'}</td>
@@ -254,9 +255,6 @@ export function loadInvoices(invoices, invoicesTableBody, csrfToken = '') {
 <td>$${parseFloat(amount).toFixed(2)}</td>
 <td><span class="status status-${invoice.status || 'pending'}">${(invoice.status || 'pending').charAt(0).toUpperCase() + (invoice.status || 'pending').slice(1)}</span></td>
 <td class="action-cell">
-    <div class="action-btn action-view">
-        <i class="fas fa-eye"></i>
-    </div>
     <div class="action-btn action-edit">
         <i class="fas fa-edit"></i>
     </div>
@@ -265,7 +263,11 @@ export function loadInvoices(invoices, invoicesTableBody, csrfToken = '') {
     </div>
 </td>
 `;
-        console.log(`Invoice ${invoice.id} - Amount: ${amount}`);
+    // Add click event to view buttons using event delegation
+    row.addEventListener("click", () => {
+            openModal();
+        });
+   
         invoicesTableBody.appendChild(row);
     });
 }
