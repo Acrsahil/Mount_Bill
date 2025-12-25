@@ -41,41 +41,91 @@ document.addEventListener('DOMContentLoaded', () => {
     //     saveProduct(addProductModal)
     // })
 });
-// Save product to database via AJAX
+let productsCache = []; // store products locally
+
+// Fetch products from backend
+async function fetchProducts() {
+  const res = await fetch('/dashboard/products-json/', {
+    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+    cache: 'no-store',
+  });
+  if (!res.ok) throw new Error(`Failed to fetch products: ${res.status}`);
+  const data = await res.json();
+  productsCache = data.products; // store in cache
+  return productsCache;
+}
+
+// Render products in table and list
+function renderProducts() {
+  const productsTableBody = document.getElementById('productsTableBody');
+  const productList = document.querySelector('.productList');
+
+  loadProducts(productsCache, productsTableBody, editProduct, deleteProduct, productList);
+}
+
+// Refresh products from server if necessary
+async function refreshProducts(force = false) {
+  // Only fetch if cache is empty or forced
+  if (force || productsCache.length === 0) {
+    try {
+      await fetchProducts();
+    } catch (err) {
+      console.error('Failed to refresh products:', err);
+    }
+  }
+  renderProducts();
+}
+
+// On page load
+document.addEventListener('DOMContentLoaded', () => {
+  refreshProducts().catch(console.error);
+});
+
+// Handle BFCache (back/forward navigation)
+window.addEventListener('pageshow', (event) => {
+  if (event.persisted) {
+    refreshProducts(true).catch(console.error); // force fetch only if page restored from BFCache
+  }
+});
 // Save product to database via AJAX
 export async function saveProduct(addProductModal) {
     const productName = document.getElementById('productName').value.trim();
     const productCostPrice = document.getElementById('productCostPrice')?.value;
     const productSellingPrice = document.getElementById('productSellingPrice')?.value;
-    const productPrice = document.getElementById('productPrice')?.value;
+    const productPrice = document.getElementById('productPrice')?.value; // Fallback for old field name
     const productCategory = document.getElementById('productCategory').value.trim();
     const quantity = document.getElementById('productQuantity').value;
-
+    // Client-side validation
     if (!productName) {
         showAlert('Please enter product name', 'error');
+        document.getElementById('productName').focus();
         return;
     }
-
     const price = productSellingPrice || productPrice;
-    if (!price || isNaN(price) || parseFloat(price) <= 0) {
-        showAlert('Please enter valid price', 'error');
+    if (!price || parseFloat(price) <= 0 || isNaN(price)) {
+        showAlert('Please enter a valid price', 'error');
+        const priceInput = document.getElementById('productSellingPrice') || document.getElementById('productPrice');
+        if (priceInput) priceInput.focus();
         return;
     }
-
+    // Show loading state
     const saveBtn = document.getElementById('saveProductBtn');
     const originalText = saveBtn.innerHTML;
-    saveBtn.innerHTML = 'Saving...';
+    
+    saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
     saveBtn.disabled = true;
-
     try {
+        // Prepare data for sending
         const productData = {
             name: productName,
             cost_price: productCostPrice ? parseFloat(productCostPrice) : 0,
-            selling_price: parseFloat(price),
+            selling_price: parseFloat(productSellingPrice || productPrice),
             category: productCategory,
-            quantity: quantity
+            quantity: quantity,
         };
-
+        console.log('Saving product:', productData);
+        console.log('Sending this data:', productData);
+        // Send AJAX request to Django
         const response = await fetch('/dashboard/save-product/', {
             method: 'POST',
             headers: {
@@ -85,61 +135,48 @@ export async function saveProduct(addProductModal) {
             },
             body: JSON.stringify(productData)
         });
-
         const result = await response.json();
-
+        console.log('Server response:', result);
         if (result.success) {
-
-            // ✅ Save to localStorage for other pages
-            localStorage.setItem('lastAddedProduct', JSON.stringify(result.product));
-
-            // ✅ Update current page instantly
-            if (!window.products) window.products = [];
-            window.products.push(result.product);
-
-            window.dispatchEvent(new Event('product-updated'));
-
-            showAlert('Product added successfully', 'success');
-
+           // Add product to local cache and render table/list
+            productsCache.push(result.product);
+            renderProducts(); // rebuild table/list from DB
+          
+            // Show success message
+            showAlert(result.message, 'success');
+            // Close modal after short delay
             setTimeout(() => {
-                addProductModal.style.display = 'none';
+                const closeProductModalFunc = () => {
+                    if (addProductModal) {
+                        addProductModal.style.display = 'none';
+                    }
+                };
+                closeProductModalFunc();
+                // Reset form
                 document.getElementById('productName').value = '';
-                document.getElementById('productCategory').value = '';
                 const priceField = document.getElementById('productSellingPrice') || document.getElementById('productPrice');
                 if (priceField) priceField.value = '';
-            }, 800);
-
+                document.getElementById('productCategory').value = '';
+            }, 1500);
         } else {
-            showAlert(result.error || 'Failed to save product', 'error');
+            showAlert('Error: ' + (result.error || 'Failed to save product'), 'error');
         }
-
-    } catch (err) {
-        console.error(err);
-        showAlert('Network error', 'error');
+    } catch (error) {
+        console.error('Error saving product:', error);
+        showAlert('Network error. Please check your connection and try again.', 'error');
     } finally {
+        // Restore button state
         saveBtn.innerHTML = originalText;
         saveBtn.disabled = false;
     }
 }
 
-
-// LOAD PRODUCTS
-document.addEventListener('DOMContentLoaded', () => {
-  const productsTableBody = document.getElementById('productsTableBody'); 
-  const productList = document.querySelector('.productList');            
-  loadProducts(products, productsTableBody, editProduct, deleteProduct, productList);
-});
-
-export function loadProducts(products, productsTableBody, editProduct, deleteProduct, productList) {
-  // Render table 
-  if (productsTableBody) {
-    productsTableBody.innerHTML = '';
-
-    products.forEach((product, index) => {
+export function addProductToTable(product,productsTableBody,index){
+    if (!productsTableBody) return;
       const row = document.createElement('tr');
       row.classList.add('thisRows');
       row.innerHTML = `
-        <td>${index + 1}</td>
+        <td>${index+1}</td>
         <td>${product.name}</td>
         <td>${product.category || 'N/A'}</td>
         <td>$${product.cost_price}</td>
@@ -152,18 +189,36 @@ export function loadProducts(products, productsTableBody, editProduct, deletePro
       });
 
       productsTableBody.appendChild(row);
-    });
+  }
+
+export function addProductToList(product, productList) {
+  if (!productList) return;
+
+  const li = document.createElement('li');
+  li.classList.add('productlists');
+  li.textContent = product.name;
+  productList.appendChild(li);
+}
+
+// LOAD PRODUCTS
+// document.addEventListener('DOMContentLoaded', () => {
+//   const productsTableBody = document.getElementById('productsTableBody'); 
+//   const productList = document.querySelector('.productList');            
+//   loadProducts(products, productsTableBody, editProduct, deleteProduct, productList);
+// });
+
+export function loadProducts(products, productsTableBody, editProduct, deleteProduct, productList) {
+  // Render table 
+  if (productsTableBody) {
+    productsTableBody.innerHTML = '';
+
+    products.forEach((product, index) => addProductToTable(product,productsTableBody,index));
   }
   // Render list (only if this page has it)
 
     if (productList) {
     productList.innerHTML = '';
-    products.forEach((product) => {
-      const li = document.createElement('li');
-      li.classList.add("productlists");
-      li.textContent = product.name;
-      productList.appendChild(li);
-    });
+    products.forEach((product) => addProductToList(product, productList));
     };
     
   
