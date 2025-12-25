@@ -51,8 +51,18 @@ async function fetchProducts() {
   });
   if (!res.ok) throw new Error(`Failed to fetch products: ${res.status}`);
   const data = await res.json();
+  
   productsCache = data.products; // store in cache
+  updateProductCounts(data.count); // update counts
   return productsCache;
+}
+
+function updateProductCounts(count) {
+    const productCount = document.getElementById('productCount');
+    if (productCount) productCount.textContent = `All Products(${count})`;
+
+    const itemNum = document.getElementById('itemNum');
+    if (itemNum) itemNum.textContent = `Products(${count})`;
 }
 
 // Render products in table and list
@@ -73,6 +83,7 @@ async function refreshProducts(force = false) {
       console.error('Failed to refresh products:', err);
     }
   }
+  updateProductCounts(productsCache.length);
   renderProducts();
 }
 
@@ -141,7 +152,8 @@ export async function saveProduct(addProductModal) {
            // Add product to local cache and render table/list
             productsCache.push(result.product);
             renderProducts(); // rebuild table/list from DB
-          
+            updateProductCounts(productsCache.length);
+
             // Show success message
             showAlert(result.message, 'success');
             // Close modal after short delay

@@ -32,7 +32,7 @@ def products_json(request):
     company = user.owned_company or user.active_company
 
     if not company:
-        return JsonResponse({"products": []})
+        return JsonResponse({"products": [], "count": 0})
 
     products = Product.objects.filter(company=company).select_related("category")
 
@@ -48,15 +48,12 @@ def products_json(request):
         for p in products
     ]
 
-    return JsonResponse({"products": products_data})
+    return JsonResponse({"products": products_data,"count": products.count()})
 
 def get_serialized_data(user, active_tab="dashboard"):
     """Helper function to get serialized data for template"""
     company = None
-    if user.owned_company:
-        company = user.owned_company
-    if user.active_company:
-        company = user.active_company
+    company = user.owned_company or user.active_company
     products = Product.objects.select_related("category").filter(company=company)
     customers = Customer.objects.filter(company=company)
     categories = ProductCategory.objects.filter(company=company)
@@ -105,6 +102,7 @@ def get_serialized_data(user, active_tab="dashboard"):
 
     return {
         "product": json.dumps(products_data),
+        "product_count": len(products_data),
         "customer": json.dumps(customers_data),
         "product_cat": json.dumps(categories_data),
         "invoices": json.dumps(invoice_data),
@@ -156,10 +154,7 @@ def save_product(request):
         user = request.user
 
         company = None
-        if user.owned_company:
-            company = user.owned_company
-        elif user.active_company:
-            company = user.active_company
+        company = user.owned_company or user.active_company
 
         if not company:
             return JsonResponse({"success": False, "error": "No company for the user"})
@@ -250,6 +245,7 @@ def save_product(request):
                     "category": product.category.name if product.category else "",
                     "quantity": product.product_quantity,
                 },
+                
             }
         )
 
@@ -393,11 +389,7 @@ def save_invoice(request):
 
         # print(f"total amount ko value:{total_amount}")
         company = None
-        if user.owned_company:
-            company = user.owned_company
-
-        if user.active_company:
-            company = user.active_company
+        company = user.owned_company or user.active_company
 
         if not company:
             print("hello")
@@ -602,11 +594,7 @@ def save_client(request):
         user = request.user
 
         company = None
-        if user.owned_company:
-            company = user.owned_company
-
-        elif user.active_company:
-            company = user.active_company
+        company = user.owned_company or user.active_company
 
         if company:
             client = Customer.objects.create(
@@ -666,6 +654,7 @@ def reports(request):
 
 def products(request):
     context = get_serialized_data(request.user, "products")
+    # context["product_number"] = context["product_count"]
     return render(request, "website/bill.html", context)
 
 
@@ -675,6 +664,7 @@ def settings(request):
 
 def product_detail(request):
     context = get_serialized_data(request.user,"dashboard")
+    # context["item_num"]=context["product_count"]
     return render(request, "website/product_detail.html",context)
 
 @login_required
