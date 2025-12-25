@@ -1,11 +1,12 @@
 # billingsystem/models.py - OPTION A
 import uuid
+from decimal import Decimal
 
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
-from decimal import Decimal
+
 
 class User(AbstractUser):
     phone = models.CharField(max_length=15, blank=True)
@@ -205,6 +206,7 @@ class OrderSummary(models.Model):
     received_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     due_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     calculated_on = models.DateTimeField(auto_now=True)
+
     def clean(self):
         """
         Custom validation for amount fields.
@@ -225,8 +227,8 @@ class OrderSummary(models.Model):
 
         if self.total_amount is not None and self.total_amount > max_amount:
             errors["total_amount"] = [
-                    "Value cannot have more than 8 digits before the decimal "
-                    "(maximum allowed is 99,999,999.99)."
+                "Value cannot have more than 8 digits before the decimal "
+                "(maximum allowed is 99,999,999.99)."
             ]
 
         # You can also add custom rules for discount/tax if you want:
@@ -235,6 +237,7 @@ class OrderSummary(models.Model):
         if errors:
             # Raise one ValidationError containing field-specific messages
             raise ValidationError(errors)
+
     def __str__(self):
         return f"total amount:{self.total_amount}"
 
