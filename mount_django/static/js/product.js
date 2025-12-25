@@ -125,52 +125,47 @@ export async function saveProduct(addProductModal) {
 
 // LOAD PRODUCTS
 document.addEventListener('DOMContentLoaded', () => {
-    window.productsTableBody = document.getElementById('productsTableBody');
-    window.productList = document.querySelector('.productList');
-
-    if (window.products) {
-        loadProducts(
-            window.products,
-            window.productsTableBody,
-            editProduct,
-            deleteProduct,
-            window.productList
-        );
-    }
+  const productsTableBody = document.getElementById('productsTableBody'); 
+  const productList = document.querySelector('.productList');            
+  loadProducts(products, productsTableBody, editProduct, deleteProduct, productList);
 });
 
 export function loadProducts(products, productsTableBody, editProduct, deleteProduct, productList) {
+  // Render table 
+  if (productsTableBody) {
+    productsTableBody.innerHTML = '';
 
-    // TABLE
-    if (productsTableBody) {
-        productsTableBody.innerHTML = '';
+    products.forEach((product, index) => {
+      const row = document.createElement('tr');
+      row.classList.add('thisRows');
+      row.innerHTML = `
+        <td>${index + 1}</td>
+        <td>${product.name}</td>
+        <td>${product.category || 'N/A'}</td>
+        <td>$${product.cost_price}</td>
+        <td>$${product.selling_price}</td>
+        <td>${String(product.quantity)}</td>
+      `;
 
-        products.forEach((product, index) => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${index + 1}</td>
-                <td>${product.name}</td>
-                <td>${product.category || 'N/A'}</td>
-                <td>${product.cost_price}</td>
-                <td>${product.selling_price}</td>
-                <td>${product.quantity}</td>
-            `;
-            productsTableBody.appendChild(row);
-        });
-    }
+      row.addEventListener('click', () => {
+        window.location.href = '/dashboard/product-detail/';
+      });
 
-    // LIST
+      productsTableBody.appendChild(row);
+    });
+  }
+  // Render list (only if this page has it)
+
     if (productList) {
-        productList.innerHTML = '';
-
-        products.forEach(product => {
-            const li = document.createElement('li');
-            li.textContent = product.name;
-            productList.appendChild(li);
-        });
-    }
-}
-
+    productList.innerHTML = '';
+    products.forEach((product) => {
+      const li = document.createElement('li');
+      li.classList.add("productlists");
+      li.textContent = product.name;
+      productList.appendChild(li);
+    });
+    };
+    
   
 
 /*<div class="product-actions">
@@ -201,7 +196,7 @@ export function loadProducts(products, productsTableBody, editProduct, deletePro
     // });
 
    
-// }
+}
   document.addEventListener('click', function(e) {
         const addStock = e.target.id === 'addStock';
         if(addStock){
@@ -677,32 +672,3 @@ function closeModalFunc(addStockModal){
 function closeModalFunc1(reduceStockModal){
     reduceStockModal.style.display = 'none';
 }
-
-// Update UI on same page
-window.addEventListener('product-updated', () => {
-    loadProducts(
-        window.products || [],
-        window.productsTableBody,
-        editProduct,
-        deleteProduct,
-        window.productList
-    );
-});
-
-// Update UI across different pages
-window.addEventListener('storage', (event) => {
-    if (event.key === 'lastAddedProduct') {
-        const newProduct = JSON.parse(event.newValue);
-
-        if (!window.products) window.products = [];
-        window.products.push(newProduct);
-
-        loadProducts(
-            window.products,
-            window.productsTableBody,
-            editProduct,
-            deleteProduct,
-            window.productList
-        );
-    }
-});
