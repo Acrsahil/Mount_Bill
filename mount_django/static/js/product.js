@@ -28,18 +28,75 @@ document.addEventListener('DOMContentLoaded', () => {
         openAddProductModal(addProductModal);
     });
 
-    const closeProductModal = document.getElementById('closeProductModal');
-    closeProductModal.addEventListener('click', () => {
-        closeProductModalFunc(addProductModal)
-    })
-    const cancelProductBtn = document.getElementById('cancelProductBtn');
-    cancelProductBtn.addEventListener('click', () => {
-        closeProductModalFunc(addProductModal)
-    })
-    const saveProductBtn = document.getElementById('saveProductBtn');
-    saveProductBtn.addEventListener('click', () => {
-        saveProduct(addProductModal)
-    })
+    // const closeProductModal = document.getElementById('closeProductModal');
+    // closeProductModal.addEventListener('click', () => {
+    //     closeProductModalFunc(addProductModal)
+    // })
+    // const cancelProductBtn = document.getElementById('cancelProductBtn');
+    // cancelProductBtn.addEventListener('click', () => {
+    //     closeProductModalFunc(addProductModal)
+    // })
+    // const saveProductBtn = document.getElementById('saveProductBtn');
+    // saveProductBtn.addEventListener('click', () => {
+    //     saveProduct(addProductModal)
+    // })
+});
+let productsCache = []; // store products locally
+
+// Fetch products from backend
+async function fetchProducts() {
+  const res = await fetch('/dashboard/products-json/', {
+    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+    cache: 'no-store',
+  });
+  if (!res.ok) throw new Error(`Failed to fetch products: ${res.status}`);
+  const data = await res.json();
+  
+  productsCache = data.products; // store in cache
+  updateProductCounts(data.count); // update counts
+  return productsCache;
+}
+
+function updateProductCounts(count) {
+    const productCount = document.getElementById('productCount');
+    if (productCount) productCount.textContent = `All Products(${count})`;
+
+    const itemNum = document.getElementById('itemNum');
+    if (itemNum) itemNum.textContent = `Products(${count})`;
+}
+
+// Render products in table and list
+function renderProducts() {
+  const productsTableBody = document.getElementById('productsTableBody');
+  const productList = document.querySelector('.productList');
+
+  loadProducts(productsCache, productsTableBody, editProduct, deleteProduct, productList);
+}
+
+// Refresh products from server if necessary
+async function refreshProducts(force = false) {
+  // Only fetch if cache is empty or forced
+  if (force || productsCache.length === 0) {
+    try {
+      await fetchProducts();
+    } catch (err) {
+      console.error('Failed to refresh products:', err);
+    }
+  }
+  updateProductCounts(productsCache.length);
+  renderProducts();
+}
+
+// On page load
+document.addEventListener('DOMContentLoaded', () => {
+  refreshProducts().catch(console.error);
+});
+
+// Handle BFCache (back/forward navigation)
+window.addEventListener('pageshow', (event) => {
+  if (event.persisted) {
+    refreshProducts(true).catch(console.error); // force fetch only if page restored from BFCache
+  }
 });
 // Save product to database via AJAX
 export async function saveProduct(addProductModal) {
@@ -55,7 +112,6 @@ export async function saveProduct(addProductModal) {
         document.getElementById('productName').focus();
         return;
     }
-
     const price = productSellingPrice || productPrice;
     if (!price || parseFloat(price) <= 0 || isNaN(price)) {
         showAlert('Please enter a valid price', 'error');
@@ -63,14 +119,12 @@ export async function saveProduct(addProductModal) {
         if (priceInput) priceInput.focus();
         return;
     }
-
     // Show loading state
     const saveBtn = document.getElementById('saveProductBtn');
     const originalText = saveBtn.innerHTML;
     
     saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
     saveBtn.disabled = true;
-
     try {
         // Prepare data for sending
         const productData = {
@@ -82,7 +136,6 @@ export async function saveProduct(addProductModal) {
         };
         console.log('Saving product:', productData);
         console.log('Sending this data:', productData);
-
         // Send AJAX request to Django
         const response = await fetch('/dashboard/save-product/', {
             method: 'POST',
@@ -93,24 +146,16 @@ export async function saveProduct(addProductModal) {
             },
             body: JSON.stringify(productData)
         });
-
         const result = await response.json();
         console.log('Server response:', result);
-
         if (result.success) {
-            // Add the new product to the local products array
-            if (window.products) {
-                window.products.push(result.product);
-            }
+           // Add product to local cache and render table/list
+            productsCache.push(result.product);
+            renderProducts(); // rebuild table/list from DB
+            updateProductCounts(productsCache.length);
 
-            // Update UI
-            if (window.loadProducts) {
-                window.loadProducts();
-            }
-          
             // Show success message
             showAlert(result.message, 'success');
-
             // Close modal after short delay
             setTimeout(() => {
                 const closeProductModalFunc = () => {
@@ -119,18 +164,15 @@ export async function saveProduct(addProductModal) {
                     }
                 };
                 closeProductModalFunc();
-
                 // Reset form
                 document.getElementById('productName').value = '';
                 const priceField = document.getElementById('productSellingPrice') || document.getElementById('productPrice');
                 if (priceField) priceField.value = '';
                 document.getElementById('productCategory').value = '';
             }, 1500);
-
         } else {
             showAlert('Error: ' + (result.error || 'Failed to save product'), 'error');
         }
-
     } catch (error) {
         console.error('Error saving product:', error);
         showAlert('Network error. Please check your connection and try again.', 'error');
@@ -141,39 +183,58 @@ export async function saveProduct(addProductModal) {
     }
 }
 
-// LOAD PRODUCTS
-export function loadProducts(products,productsTableBody, editProduct, deleteProduct) {
+export function addProductToTable(product,productsTableBody,index){
     if (!productsTableBody) return;
+      const row = document.createElement('tr');
+      row.classList.add('thisRows');
+      row.innerHTML = `
+        <td>${index+1}</td>
+        <td>${product.name}</td>
+        <td>${product.category || 'N/A'}</td>
+        <td>$${product.cost_price}</td>
+        <td>$${product.selling_price}</td>
+        <td>${String(product.quantity)}</td>
+      `;
 
+      row.addEventListener('click', () => {
+        window.location.href = '/dashboard/product-detail/';
+      });
+
+      productsTableBody.appendChild(row);
+  }
+
+export function addProductToList(product, productList) {
+  if (!productList) return;
+
+  const li = document.createElement('li');
+  li.classList.add('productlists');
+  li.textContent = product.name;
+  productList.appendChild(li);
+}
+
+// LOAD PRODUCTS
+// document.addEventListener('DOMContentLoaded', () => {
+//   const productsTableBody = document.getElementById('productsTableBody'); 
+//   const productList = document.querySelector('.productList');            
+//   loadProducts(products, productsTableBody, editProduct, deleteProduct, productList);
+// });
+
+export function loadProducts(products, productsTableBody, editProduct, deleteProduct, productList) {
+  // Render table 
+  if (productsTableBody) {
     productsTableBody.innerHTML = '';
 
-    // Check if we have products from database
-    if (products.length === 0) {
-        productsTableBody.innerHTML = '<p>No products found in database.</p>';
-        return;
-    }
+    products.forEach((product, index) => addProductToTable(product,productsTableBody,index));
+  }
+  // Render list (only if this page has it)
 
-    products.forEach((product,index) => {
-        const row = document.createElement('tr');
-        row.classList.add("thisRows");
-        row.innerHTML = `
-        <td>${index+1}</td>
-<td>${product.name}</td>
-<td>${product.category || 'N/A'}</td>
-    <td>$${product.cost_price}</td>
-    <td>$${product.selling_price}</td>
+    if (productList) {
+    productList.innerHTML = '';
+    products.forEach((product) => addProductToList(product, productList));
+    };
+    
+  
 
-    <td>${String(product.quantity)}</td>
-
-`;
-//product details
-    row.addEventListener('click', () => {
-        console.log("i should be here")
-        window.location.href = '/dashboard/product-detail/';
-    });
-
-  productsTableBody.appendChild(row);
-    });
 /*<div class="product-actions">
     <button class="btn btn-primary edit-product-btn" data-id="${product.id}">
         <i class="fas fa-edit"></i> Edit
@@ -678,4 +739,3 @@ function closeModalFunc(addStockModal){
 function closeModalFunc1(reduceStockModal){
     reduceStockModal.style.display = 'none';
 }
-

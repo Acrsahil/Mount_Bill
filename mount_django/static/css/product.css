@@ -29,6 +29,9 @@
 .thisRows{
     cursor: pointer;
 }
+.thisRows:hover{
+    background-color:rgb(243, 241, 241) ;
+}
 
 :root {
   --border-color: #e5e7eb;
@@ -245,7 +248,14 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-
+.productlists{
+  cursor: pointer;
+  padding:25px;
+  font-size: 20px;
+}
+.productlists:hover{
+  background-color:rgb(243, 241, 241) ;
+}
 /* Responsive: allow header controls to wrap on small screens */
 @media (max-width: 768px) {
   .product-detail-header,

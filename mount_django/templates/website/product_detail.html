@@ -74,7 +74,7 @@
     <aside class="product-sidebar">
         <!-- Row 1: Products + Add Product -->
         <div class="product-header">
-            <h2 class="products">Products(5)</h2>
+            <h2 class="products" id="itemNum">Products({{item_num}})</h2>
             <button class="btn btn-success" id="addNewProductDetailBtn">
                 <i class="fas fa-plus-circle"></i> Add Product
             </button>
@@ -184,6 +184,27 @@
 {% endblock %}
 
 {% block extra_js %}
+<script>
+// Simple and safe data structure
+window.djangoData = {
+    products: {{ product|safe }},
+    product_cat: {{ product_cat|safe }},
+    clients: {{ customer|safe }},
+    invoices: {{ invoices|safe }},
+};
+</script>
+
+<script>
+// SAFETY CHECK - Add this right before loading bill.js
+if (typeof window.djangoData === 'undefined') {
+    window.djangoData = {
+        products: [],
+        product_cat: [],
+        clients: [],
+        invoices: {{ invoices|safe }},
+    };
+}
+</script>
 <script type="module" src="{%static 'js/events.js'%}"></script>
 <script type="module" src="{%static 'js/product.js'%}"></script>
 <script type="module" src="{% static 'js/main.js' %}"></script>

@@ -10,6 +10,11 @@ from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
+from django.core.exceptions import ValidationError
+from django.db import transaction
+from django.views.decorators.http import require_GET
+from django.views.decorators.cache import never_cache
+from django.db.models import F
 
 from .models import (
     AdditionalCharges,
@@ -23,13 +28,35 @@ from .models import (
 )
 
 
+@require_GET
+@never_cache
+def products_json(request):
+    user = request.user
+    company = user.owned_company or user.active_company
+
+    if not company:
+        return JsonResponse({"products": [], "count": 0})
+
+    products = Product.objects.filter(company=company).select_related("category")
+
+    products_data = [
+        {
+            "id": p.id,
+            "name": p.name,
+            "category": p.category.name if p.category else "N/A",
+            "cost_price": float(p.cost_price),
+            "selling_price": float(p.selling_price),
+            "quantity": p.product_quantity,
+        }
+        for p in products
+    ]
+
+    return JsonResponse({"products": products_data,"count": products.count()})
+
 def get_serialized_data(user, active_tab="dashboard"):
     """Helper function to get serialized data for template"""
     company = None
-    if user.owned_company:
-        company = user.owned_company
-    if user.active_company:
-        company = user.active_company
+    company = user.owned_company or user.active_company
     products = Product.objects.select_related("category").filter(company=company)
     customers = Customer.objects.filter(company=company)
     categories = ProductCategory.objects.filter(company=company)
@@ -78,6 +105,7 @@ def get_serialized_data(user, active_tab="dashboard"):
 
     return {
         "product": json.dumps(products_data),
+        "product_count": len(products_data),
         "customer": json.dumps(customers_data),
         "product_cat": json.dumps(categories_data),
         "invoices": json.dumps(invoice_data),
@@ -114,7 +142,6 @@ def dashboard(request):
 
 
 @login_required
-@csrf_exempt
 @require_POST
 def save_product(request):
     """Save new product via AJAX - COMPATIBLE VERSION"""
@@ -130,10 +157,7 @@ def save_product(request):
         user = request.user
 
         company = None
-        if user.owned_company:
-            company = user.owned_company
-        elif user.active_company:
-            company = user.active_company
+        company = user.owned_company or user.active_company
 
         if not company:
             return JsonResponse({"success": False, "error": "No company for the user"})
@@ -224,6 +248,7 @@ def save_product(request):
                     "category": product.category.name if product.category else "",
                     "quantity": product.product_quantity,
                 },
+                
             }
         )
 
@@ -367,11 +392,7 @@ def save_invoice(request):
 
         # print(f"total amount ko value:{total_amount}")
         company = None
-        if user.owned_company:
-            company = user.owned_company
-
-        if user.active_company:
-            company = user.active_company
+        company = user.owned_company or user.active_company
 
         if not company:
             print("hello")
@@ -576,11 +597,7 @@ def save_client(request):
         user = request.user
 
         company = None
-        if user.owned_company:
-            company = user.owned_company
-
-        elif user.active_company:
-            company = user.active_company
+        company = user.owned_company or user.active_company
 
         if company:
             client = Customer.objects.create(
@@ -677,10 +694,10 @@ def invoice_layout(request, id):
                 "website/bill_layout.html",
                 {
                     "order_id" : order_id,
-                    "context": bill_info,
+               
                     "customer": customer_name,
                     "total_amount": total_amount,
-                    "address": customer_address,
+                    "address": customer_address,     "context": bill_info,
                     "pan_id": customer_Pan_id,
                     "invoice_date": invoice_date,
                     "company_name": company_name,
@@ -709,6 +726,7 @@ def reports(request):
 
 def products(request):
     context = get_serialized_data(request.user, "products")
+    # context["product_number"] = context["product_count"]
     return render(request, "website/bill.html", context)
 
 
@@ -718,9 +736,9 @@ def settings(request):
 
 
 def product_detail(request):
-    context = get_serialized_data(request.user, "dashboard")
-    return render(request, "website/product_detail.html", context)
-
+    context = get_serialized_data(request.user,"dashboard")
+    # context["item_num"]=context["product_count"]
+    return render(request, "website/product_detail.html",context)
 
 @login_required
 def create_invoice_page(request):

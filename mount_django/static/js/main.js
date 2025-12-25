@@ -88,6 +88,7 @@ const invoiceItemsBody = document.getElementById('invoiceItemsBody');
 // const productList = document.getElementById('productList');
 const invoicesTableBody = document.getElementById('invoicesTableBody');
 const clientsTableBody = document.getElementById('clientsTableBody');
+const productsTableBody = document.getElementById('productsTableBody');
 const searchInput = document.getElementById('searchInput');
 const productSearchInput = document.getElementById('productSearchInput');
 const clientSearchInput = document.getElementById('clientSearchInput');
