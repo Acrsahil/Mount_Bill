@@ -3,6 +3,8 @@ from datetime import datetime
 from decimal import Decimal
 
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ValidationError
+from django.db import transaction
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
@@ -13,6 +15,7 @@ from django.db import transaction
 from django.views.decorators.http import require_GET
 from django.views.decorators.cache import never_cache
 from django.db.models import F
+
 from .models import (
     AdditionalCharges,
     Bill,
@@ -491,7 +494,7 @@ def save_invoice(request):
 
         print("this is global_discount-> ", global_discount)
 
-          # ---------- CHANGED PART STARTS HERE ----------
+        # ---------- CHANGED PART STARTS HERE ----------
         # Build OrderSummary (not saved yet)
         order_summary = OrderSummary(
             order=order,
@@ -637,6 +640,75 @@ def delete_invoice(request, id):
             return JsonResponse({"success": False, "error": "Not found"})
 
 
+@login_required
+@csrf_exempt
+def invoice_layout(request, id):
+    if request.method == "GET":
+        try:
+            order_list = OrderList.objects.get(id=id)
+            bill_info = Bill.objects.filter(order=order_list)
+            ordersum_info = OrderSummary.objects.filter(order=order_list)
+            additionalcharge_info = AdditionalCharges.objects.filter(
+                additional_charges=order_list
+            )
+            summary_info = OrderSummary.objects.filter(order=order_list)
+            customer_name = order_list.customer.name
+            customer_address = order_list.customer.address
+            customer_Pan_id = order_list.customer.pan_id
+            invoice_date = order_list.order_date
+            company_phone = order_list.company.phone
+            customer_phone = order_list.customer.phone
+            company_name = order_list.company.name
+            order_id = order_list.id
+
+            total_amount = 0
+            for data in summary_info:
+                total_amount = data.total_amount
+
+            for bill in bill_info:
+                print(bill)
+                print("Order-> ", bill.order)
+                print("Product -> ", bill.product)
+                print("Qty-> ", bill.quantity)
+                print("Price", bill.product_price)
+            print()
+
+            for data in ordersum_info:
+                print("Order-> ", data.order)
+                print("Total Amount-> ", data.total_amount)
+                print("Discount % -> ", data.discount)
+                print("Tax Amount", data.tax)
+                print("Final Amount", data.final_amount)
+                print("Received Amount-> ", data.received_amount)
+                print("Due Amount-> ", data.due_amount)
+            print()
+
+            for data in additionalcharge_info:
+                print("Charge Name -> ", data.additional_charges)
+                print("Charge Name -> ", data.charge_name)
+                print("Total Amount-> ", data.additional_amount)
+
+            # return JsonResponse({"success": True, "Bill_Data": bill_info})
+            return render(
+                request,
+                "website/bill_layout.html",
+                {
+                    "order_id" : order_id,
+               
+                    "customer": customer_name,
+                    "total_amount": total_amount,
+                    "address": customer_address,     "context": bill_info,
+                    "pan_id": customer_Pan_id,
+                    "invoice_date": invoice_date,
+                    "company_name": company_name,
+                    "company_phone": company_phone,
+                    "customer_phone": customer_phone
+                },
+            )
+        except OrderList.DoesNotExist:
+            return JsonResponse({"success": False, "error": "Not found"})
+
+
 def invoices(request):
     context = get_serialized_data(request.user, "invoices")
     return render(request, "website/bill.html", context)
@@ -661,6 +733,7 @@ def products(request):
 def settings(request):
     context = get_serialized_data(request.user, "settings")
     return render(request, "website/bill.html", context)
+
 
 def product_detail(request):
     context = get_serialized_data(request.user,"dashboard")

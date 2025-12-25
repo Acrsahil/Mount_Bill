@@ -6,10 +6,11 @@ urlpatterns = [
     path("", views.dashboard, name="dashboard"),
     path("product-detail/",views.product_detail,name="product_detail"),
     path("products-json/", views.products_json, name="products_json"),
+    path("product-detail/", views.product_detail, name="product_detail"),
     path("save-product/", views.save_product, name="save_product"),
-    path("update-product/<int:id>/",views.update_product,name="update_product"),
-    path("add-stock/<int:id>/",views.add_stock,name="add-stock"),
-    path("reduce-stock/<int:id>/",views.reduce_stock,name="reduce-stock"),
+    path("update-product/<int:id>/", views.update_product, name="update_product"),
+    path("add-stock/<int:id>/", views.add_stock, name="add-stock"),
+    path("reduce-stock/<int:id>/", views.reduce_stock, name="reduce-stock"),
     path(
         "sahilpage/<int:pro_id>/<int:second_id>/",
         views.product_details,
@@ -18,6 +19,7 @@ urlpatterns = [
     path("sahilpage/", views.sahilpage, name="sahilpage"),
     path("save-invoice/", views.save_invoice, name="save_invoice"),
     path("delete_invoice/<int:id>/", views.delete_invoice, name="delete_invoice"),
+    path("invoice-layout/<int:id>/", views.invoice_layout, name="invoice_layout"),
     path("invoices/", views.invoices, name="invoices"),
     path(
         "products/", views.products, name="products"

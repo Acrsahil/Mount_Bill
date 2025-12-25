@@ -16,27 +16,32 @@
         <span class="close">&times;</span>
         <div class="bill-container">
             <div class="bill-header">
-                <h1>Mount Care International Pvt.Ltd.</h1>
+                        <h1>{{ company_name }}</h1>
                 <p>Gokarneshwor-4, Kathmandu</p>
-                <p>Ph. No: 9800000000, 981200000</p>
+                        <p>{{ company_phone }}</p>
             </div>
             <div class="bill-body">
                 <div class="invoice-date">
-                    <span class="label">Invoice Date :</span>
-                    <span class="value">2025/09/25</span>
+                    <span class="label">Invoice Date : </span>
+                            <span class="value"> {{ invoice_date |date:" Y M d" }}</span>
                 </div>
                 <div class="customer-info">
                     <div class="info-row">
-                        <span class="label">VAT No.:</span>
-                        <span class="value">123456789</span>
+                        <span class="label">BILL No.:</span>
+                                <span class="value">{{ order_id }}</span>
                     </div>
                     <div class="info-row">
                         <span class="label">Buyer's Name:</span>
-                        <span class="value_underline">Akash Das</span>
+                                <span class="value_underline">{{ customer }}</span>
                     </div>
                     <div class="info-row">
                         <span class="label">Address:</span>
-                        <span class="value_underline">India, India</span>
+                                <span class="value_underline">{{ address }}</span>
+                    </div>
+
+                    <div class="info-row">
+                        <span class="label">Phone No:</span>
+                                <span class="value_underline">{{ customer_phone }}</span>
                     </div>
                 </div>
                 <div class="info-table">
@@ -50,41 +55,19 @@
                             </tr>
                         </thead>
                         <tbody class="bill-item-body">
+                                {% for data in context %}
                             <tr>
-                                <td>Black Shampoo</td>
-                                <td>1</td>
-                                <td>320</td>
-                                <td>320</td>
+                                        <!-- <td>{{ data.order.customer.name }}</td> -->
+                                        <td>{{ data.product.name }}</td>
+                                        <td>{{ data.quantity }}</td>
+                                        <td>{{ data.product_price }}</td>
                             </tr>
+                                {% endfor %}
                             <tr>
-                                <td>Black oil</td>
-                                <td>3</td>
-                                <td>300</td>
-                                <td>900</td>
-                            </tr>
-                            <tr>
-                                <td>Soap</td>
-                                <td>50</td>
-                                <td>80</td>
-                                <td>4000</td>
-                            </tr>
-                            <tr>
-                                <td>Paste</td>
-                                <td>60</td>
-                                <td>100</td>
-                                <td>6000</td>
-                            </tr>
-                            <tr>
-                                <td>Gastric Chuna</td>
-                                <td>2</td>
-                                <td>85</td>
-                                <td>170</td>
-                            </tr>
-                            <tr>
-                                <td>Total</td>
+                                <td>Sub Total</td>
                                 <td></td>
                                 <td></td>
-                                <td>11390</td>
+                                        <td>{{ total_amount }}</td>
                             </tr>
                             <tr>
                                 <td>Amount in words</td>
