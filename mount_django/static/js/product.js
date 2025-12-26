@@ -195,9 +195,9 @@ export function addProductToTable(product,productsTableBody,index){
         <td>$${product.selling_price}</td>
         <td>${String(product.quantity)}</td>
       `;
-
       row.addEventListener('click', () => {
-        window.location.href = '/dashboard/product-detail/';
+        sessionStorage.setItem('selectedProductId', product.id);
+        window.location.href = `/dashboard/product-detail/${product.id}`;
       });
 
       productsTableBody.appendChild(row);
@@ -211,13 +211,6 @@ export function addProductToList(product, productList) {
   li.textContent = product.name;
   productList.appendChild(li);
 }
-
-// LOAD PRODUCTS
-// document.addEventListener('DOMContentLoaded', () => {
-//   const productsTableBody = document.getElementById('productsTableBody'); 
-//   const productList = document.querySelector('.productList');            
-//   loadProducts(products, productsTableBody, editProduct, deleteProduct, productList);
-// });
 
 export function loadProducts(products, productsTableBody, editProduct, deleteProduct, productList) {
   // Render table 
@@ -254,13 +247,16 @@ export function loadProducts(products, productsTableBody, editProduct, deletePro
     //         editProduct(productId);
     //     });
     // });
-
-    // document.querySelectorAll('.delete-product-btn').forEach(button => {
-    //     button.addEventListener('click', function() {
-    //         const productId = parseInt(this.getAttribute('data-id'));
-    //         deleteProduct(productId);
-    //     });
-    // });
+   // Get the stored product ID from sessionStorage
+const selectedProductId = parseInt(sessionStorage.getItem('selectedProductId'));
+console.log("Selected product ID:", selectedProductId); // should print 164
+    const deleteBtn = document.querySelector('.delete-product-btn'); 
+        deleteBtn.addEventListener('click', function() {
+            console.log("productdeletegarne",selectedProductId);
+            deleteProduct(selectedProductId);
+            sessionStorage.removeItem('selectedProductId');
+        });
+   
 
    
 }
@@ -691,15 +687,41 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 export function deleteProduct(productId) {
+    if (!productId) return;
+
     if (confirm('Are you sure you want to delete this product?')) {
-        window.products = window.products.filter(p => p.id !== productId);
-        const productList = document.getElementById('productList');
-        if (productList && window.loadProducts) {
-            window.loadProducts();
-        }
-        alert('Product deleted successfully!');
+        fetch(`/dashboard/delete-product/${productId}/`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': csrfToken, 
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(res => {
+            if (!res.ok) throw new Error('Failed to delete product');
+            return res.json();
+        })
+        .then(data => {
+            alert('Product deleted successfully!');
+            
+            // Remove from frontend cache
+            productsCache = productsCache.filter(p => p.id !== productId);
+
+            // Re-render table/list from updated cache
+            const productsTableBody = document.getElementById('productsTableBody');
+            const productList = document.querySelector('.productList');
+            loadProducts(productsCache, productsTableBody, null, deleteProduct, productList);
+
+            // Update counts
+            updateProductCounts(productsCache.length);
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Error deleting product. Check console.');
+        });
     }
 }
+
 // AddStock modal section
 
 const stockdate = document.getElementById('stockDate');
