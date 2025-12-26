@@ -203,7 +203,10 @@ export function addProductToTable(product,productsTableBody,index){
 
       productsTableBody.appendChild(row);
   }
+
+ // getting product id from session storage 
 const selectedProductId = parseInt(sessionStorage.getItem('selectedProductId'));
+
 export function addProductToList(product, productList) {
   if (!productList) return;
 
@@ -213,11 +216,14 @@ export function addProductToList(product, productList) {
   productList.appendChild(li);
 }
 
+//select product details by matching their id
 function getSelectedProduct(products) {
     if (!selectedProductId) return null;
     return products.find(p => p.id === selectedProductId);
 }
 
+
+// ajax to show the product details in page
 function renderDetails(products) {
     const productDetailTableBody = document.getElementById('productDetailTableBody');
     const productTitle = document.getElementById('productTitle');
@@ -235,11 +241,14 @@ function renderDetails(products) {
         `;
         return;
     }
+    //this for product name on top left
     productTitle.textContent= selectedProduct.name;
+
+    //add details of the selected product in productdetail table 
     addDetailToTable(selectedProduct, productDetailTableBody);
 }
 
-
+//add product detail on table
 export function addDetailToTable(product,productDetailTableBody){
     if (!productDetailTableBody) return;
       const rows = document.createElement('tr');
@@ -276,7 +285,6 @@ export function loadProducts(products, productsTableBody, editProduct, deletePro
     products.forEach((product) => addProductToList(product, productList));
     };
     
-  
 
 /*<div class="product-actions">
     <button class="btn btn-primary edit-product-btn" data-id="${product.id}">
@@ -298,18 +306,21 @@ export function loadProducts(products, productsTableBody, editProduct, deletePro
     //     });
     // });
    // Get the stored product ID from sessionStorage
+   
+}
 
-console.log("Selected product ID:", selectedProductId); // should print 164
+///deleting inside product-detail page
+document.addEventListener('DOMContentLoaded', () => {
+console.log("Selected product ID:", selectedProductId); 
     const deleteBtn = document.querySelector('.delete-product-btn'); 
     deleteBtn.addEventListener('click', function() {
             console.log("productdeletegarne",selectedProductId);
             deleteProduct(selectedProductId);
             sessionStorage.removeItem('selectedProductId');
         });
-   
+    });
 
-   
-}
+
   document.addEventListener('click', function(e) {
         const addStock = e.target.id === 'addStock';
         if(addStock){
