@@ -73,6 +73,7 @@ function renderProducts() {
   loadProducts(productsCache, productsTableBody, editProduct, deleteProduct, productList);
 }
 
+
 // Refresh products from server if necessary
 async function refreshProducts(force = false) {
   // Only fetch if cache is empty or forced
@@ -202,7 +203,7 @@ export function addProductToTable(product,productsTableBody,index){
 
       productsTableBody.appendChild(row);
   }
-
+const selectedProductId = parseInt(sessionStorage.getItem('selectedProductId'));
 export function addProductToList(product, productList) {
   if (!productList) return;
 
@@ -211,6 +212,55 @@ export function addProductToList(product, productList) {
   li.textContent = product.name;
   productList.appendChild(li);
 }
+
+function getSelectedProduct(products) {
+    if (!selectedProductId) return null;
+    return products.find(p => p.id === selectedProductId);
+}
+
+function renderDetails(products) {
+    const productDetailTableBody = document.getElementById('productDetailTableBody');
+    const productTitle = document.getElementById('productTitle');
+    if (!productDetailTableBody) return;
+
+    productDetailTableBody.innerHTML = '';
+
+    const selectedProduct = getSelectedProduct(products);
+
+    if (!selectedProduct) {
+        productDetailTableBody.innerHTML = `
+            <tr>
+                <td colspan="4">Product not found</td>
+            </tr>
+        `;
+        return;
+    }
+    productTitle.textContent= selectedProduct.name;
+    addDetailToTable(selectedProduct, productDetailTableBody);
+}
+
+
+export function addDetailToTable(product,productDetailTableBody){
+    if (!productDetailTableBody) return;
+      const rows = document.createElement('tr');
+      rows.classList.add('thisDetailRows');
+      rows.innerHTML = `
+      <td>${String(product.quantity)}</td>
+       <td>$${product.selling_price}</td>
+        <td>$${product.cost_price}</td>
+        <td>$${product.cost_price*product.quantity}</td> 
+      `;
+
+      productDetailTableBody.appendChild(rows);
+  }
+
+document.addEventListener('DOMContentLoaded', async () => {
+    if (productsCache.length === 0) {
+        await fetchProducts();
+    }
+
+    renderDetails(productsCache);
+});
 
 export function loadProducts(products, productsTableBody, editProduct, deleteProduct, productList) {
   // Render table 
@@ -248,10 +298,10 @@ export function loadProducts(products, productsTableBody, editProduct, deletePro
     //     });
     // });
    // Get the stored product ID from sessionStorage
-const selectedProductId = parseInt(sessionStorage.getItem('selectedProductId'));
+
 console.log("Selected product ID:", selectedProductId); // should print 164
     const deleteBtn = document.querySelector('.delete-product-btn'); 
-        deleteBtn.addEventListener('click', function() {
+    deleteBtn.addEventListener('click', function() {
             console.log("productdeletegarne",selectedProductId);
             deleteProduct(selectedProductId);
             sessionStorage.removeItem('selectedProductId');
