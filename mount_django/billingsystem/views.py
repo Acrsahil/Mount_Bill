@@ -8,13 +8,9 @@ from django.db import transaction
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
-from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_POST
-from django.core.exceptions import ValidationError
-from django.db import transaction
-from django.views.decorators.http import require_GET
 from django.views.decorators.cache import never_cache
-from django.db.models import F
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_GET, require_POST
 
 from .models import (
     AdditionalCharges,
@@ -51,7 +47,8 @@ def products_json(request):
         for p in products
     ]
 
-    return JsonResponse({"products": products_data,"count": products.count()})
+    return JsonResponse({"products": products_data, "count": products.count()})
+
 
 def get_serialized_data(user, active_tab="dashboard"):
     """Helper function to get serialized data for template"""
@@ -248,7 +245,6 @@ def save_product(request):
                     "category": product.category.name if product.category else "",
                     "quantity": product.product_quantity,
                 },
-                
             }
         )
 
@@ -485,12 +481,25 @@ def save_invoice(request):
             )
 
         # grand total amount
-        total_amount = (
-            (total_amount - global_discount) + global_tax + additional_charges
-        )
+        final_amount = total_amount - (global_discount / 100) * total_amount
+
+        final_amount += global_discount / 100 * final_amount
+        final_amount += additional_charges
+
+        for charge in charge_name_amount:
+            charge_name = charge.get("chargeName")
+            charge_amount = charge.get("chargeAmount")
+            # creating additional entry
+            AdditionalCharges.objects.create(
+                additional_charges=order,
+                charge_name=charge_name,
+                additional_amount=charge_amount,
+            )
+
+        print(total_amount)
 
         remaining_amount = 0
-        remaining_amount = Decimal(str(total_amount)) - Decimal(str(received_amount))
+        remaining_amount = Decimal(str(final_amount)) - Decimal(str(received_amount))
 
         print("this is global_discount-> ", global_discount)
 
@@ -499,6 +508,7 @@ def save_invoice(request):
         order_summary = OrderSummary(
             order=order,
             total_amount=Decimal(str(total_amount)),
+            final_amount=Decimal(str(final_amount)),
             discount=Decimal(str(global_discount)),
             tax=Decimal(str(global_tax)),
             received_amount=Decimal(str(received_amount)),
@@ -520,16 +530,6 @@ def save_invoice(request):
                 status=400,
             )
         # ---------- CHANGED PART ENDS HERE ----------
-
-        for charge in charge_name_amount:
-            charge_name = charge.get("chargeName")
-            charge_amount = charge.get("chargeAmount")
-            # creating additional entry
-            AdditionalCharges.objects.create(
-                additional_charges=order,
-                charge_name=charge_name,
-                additional_amount=charge_amount,
-            )
 
         # calculating remaining amount
 
@@ -662,8 +662,23 @@ def invoice_layout(request, id):
             order_id = order_list.id
 
             total_amount = 0
+            global_tax = 0
+            global_discount = 0
+            final_amount = 0
+            received_amount = 0
+            amount_due = 0
+
             for data in summary_info:
                 total_amount = data.total_amount
+                global_tax = data.tax
+                global_discount = data.discount
+                received_amount = data.received_amount
+                amount_due = data.due_amount
+                final_amount = data.final_amount
+                print("this is global->dis-> ",global_discount)
+                print("this is global->dis-> ", global_discount)
+            dis_amount  = global_discount / 100 *total_amount 
+            tax_amount = global_tax / 100 * (total_amount - dis_amount)
 
             for bill in bill_info:
                 print(bill)
@@ -693,16 +708,23 @@ def invoice_layout(request, id):
                 request,
                 "website/bill_layout.html",
                 {
-                    "order_id" : order_id,
-               
+                    "order_id": order_id,
                     "customer": customer_name,
                     "total_amount": total_amount,
-                    "address": customer_address,     "context": bill_info,
+                    "address": customer_address,
+                    "context": bill_info,
                     "pan_id": customer_Pan_id,
                     "invoice_date": invoice_date,
                     "company_name": company_name,
                     "company_phone": company_phone,
-                    "customer_phone": customer_phone
+                    "customer_phone": customer_phone,
+                    "global_tax": global_tax,
+                    "global_tax_amount": tax_amount,
+                    "global_discount": global_discount,
+                    "global_discount_amount": dis_amount,
+                    "amount_due": amount_due,
+                    "received_amount": received_amount,
+                    "final_amount" : final_amount
                 },
             )
         except OrderList.DoesNotExist:
@@ -736,9 +758,10 @@ def settings(request):
 
 
 def product_detail(request):
-    context = get_serialized_data(request.user,"dashboard")
+    context = get_serialized_data(request.user, "dashboard")
     # context["item_num"]=context["product_count"]
-    return render(request, "website/product_detail.html",context)
+    return render(request, "website/product_detail.html", context)
+
 
 @login_required
 def create_invoice_page(request):
