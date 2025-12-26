@@ -178,11 +178,6 @@ class Bill(models.Model):
 
     bill_date = models.DateTimeField(default=timezone.now)
 
-    @property
-    def line_total(self):
-        """Calculate line total: quantity × price"""
-        return Decimal(str(self.quantity)) * Decimal(str(self.product_price))
-
     def clean(self):
         """Validate data integrity"""
         # For detailed invoices (has product), check company match
