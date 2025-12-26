@@ -47,7 +47,7 @@
 
       <div class="info-line">
         <span class="label">PAN No:</span>
-        <span class="value">pan no</span>
+                    <span class="value">{{ pan_id }}</span>
       </div>
 
       <div class="info-line">
@@ -97,7 +97,7 @@
                 <td class="p-quantity"><p class="text-nowrap">{{ data.quantity }} </p></td>
                 <td class="rate">Rs. {{ data.product_price }}</td>
                     <td class= "dicount-amount">Rs. 80  
-                         <span class="discount-percent">(4%)</span></td>
+                      <span class="discount-percent">({{ global_discount }}%)</span></td>
                          <td class="amount">Rs. 1,920</td>
                         </tr>
                         {%endfor%}
@@ -116,30 +116,30 @@
     <ul class="bill-amounts">
         <li>
             <span class="label">Sub Total:</span>
-            <span class="value">{{ total_amount }}</span>
+                  <span class="value">Rs . {{ total_amount }}</span>
         </li>
         <li>
-            <span class="label">Discount (5%):</span>
-            <span class="value">Rs. 100.85</span>
+            <span class="label">Discount ({{ global_discount }}%):</span>
+                  <span class="value">Rs. -- </span>
         </li>
         <li>
-            <span class="label">Tax (13%):</span>
-            <span class="value">Rs. 249.1</span>
+            <span class="label">Tax ({{ global_tax }}%):</span>
+            <span class="value">Rs. -- </span>
         </li>
         <ul class="additional-charge-here">
         <!-- Dynamic charges can be inserted here -->
         </ul>
         <li>
             <span class="label">Total Amount:</span>
-            <span class="value">Rs. 2,277.25</span>
+                  <span class="value">Rs. {{ final_amount }}</span>
         </li>
         <li>
             <span class="label">Received Amount:</span>
-            <span class="value">Rs. 2,000</span>
+                  <span class="value">Rs. {{ received_amount }}</span>
         </li>
         <li class="bordered">
             <strong class="labelAmount">Amount Due:</strong>
-            <strong class="valueAmount">Rs. 277.25</strong>
+                  <strong class="valueAmount">Rs. {{ amount_due }}</strong>
         </li>
     </ul>
 </div>
