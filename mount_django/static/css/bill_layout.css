@@ -1,5 +1,4 @@
 .bill-container{
-    border:2px solid black;
     width: 100%;
     height:100%;
 }
@@ -17,51 +16,64 @@
     margin: 2px 0;
 }
 .bill-body{
-    border:1px solid black;
     margin:10px;
     padding-top:10px;
 }
-.invoice-date {
-    display: flex;
-    justify-content: flex-end;
-    font-weight: 600;
-    padding:12px;
-} 
 
-.customer-info{
-    display:grid;
-    grid-template-columns: max-content 1fr;
-    gap:6px 20px;
-    padding:5px;
+/* TOP ROW */
+.top-row {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    align-items: flex-start;
 }
-.top-row{
-    display:flex;
-    justify-content: flex-end;
+
+/* LEFT COLUMN */
+.left-info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
-.info-row{
-    display:contents;
+
+/* RIGHT COLUMN — pushed to right, text normal */
+.right-info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-left: auto;     /* THIS pushes it to the right end */
 }
-.label{
-    font-weight: 600;
+
+/* EACH LINE */
+.info-line {
+    display: flex;
+    gap: 8px;
 }
-.value_underline{
-    display: block;       
-    width: 100%;          
-    padding-bottom: 2px; 
-    border-bottom: 2px solid;
+
+/* LABEL */
+.label {
+    min-width: 120px;
+    font-weight: 500;
+    color:rgb(82, 78, 78);
+    font-size: 20px;
 }
+.value{
+    font-weight: 500;
+    font-size: 20px;
+}
+
+
 
 /* Table Container */
-.info-table {
-    padding: 20px;
-    margin-top: 20px;
-}
 
 /* Table styling */
 .items-table {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate; /* Allows border-radius to work */
+    border-spacing: 0;         /* Remove gaps between cells */
     font-family: Arial, sans-serif;
+    border: 1px solid #b3afaf; /* Outer border */
+    border-radius: 5px;         /* Rounds table corners */
+    overflow: hidden;           /* Clips cells to rounded corners */
 }
 
 /* Header row */
@@ -69,31 +81,71 @@
     background-color: #f2f2f2;
 }
 
+/* Header corner rounding */
+.items-table thead tr:first-child th:first-child {
+    border-top-left-radius: 5px;
+}
+.items-table thead tr:first-child th:last-child {
+    border-top-right-radius: 5px;
+}
+
+/* Footer row (if any) corner rounding */
+.items-table tfoot tr:last-child td:first-child {
+    border-bottom-left-radius: 5px;
+}
+.items-table tfoot tr:last-child td:last-child {
+    border-bottom-right-radius: 5px;
+}
+
 /* Table cells */
 .items-table th,
 .items-table td {
-    border: 1px solid #999;
+    border-bottom: 1px solid #e0dcdc; /* only horizontal borders */
     padding: 8px 12px;
 }
 
 /* Bold header */
-.items-table thead td {
+.items-table thead th {
     font-weight: 600;
 }
 
-.items-table tbody td:first-child{
-    text-align: left;
+
+
+.bill-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start; /* top-align both columns */
+    padding: 20px 0;
+    border-top: 1px solid #ccc; /* optional */
 }
 
-.items-table tbody td{
-    text-align: right;
+.bill-remarks {
+    width: 40%; /* left column width */
 }
 
-/* Highlight the total row */
-.items-table tbody tr:last-child,
-.items-table tbody tr:nth-last-child(2) {
-    font-weight: 600;
-    background-color: #f9f9f9;
+
+.bill-remarks h3 {
+    margin: 0;
+    font-weight: normal;
+}
+
+.bill-amounts {
+    width: 40%; /* right column width */
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.bill-amounts li {
+    display: flex;
+    justify-content: space-between; /* label left, value right */
+    margin-bottom: 5px;
+}
+
+.bill-amounts li.bordered {
+    border-top: 1px dotted #aaa;
+    border-bottom: 1px dotted #aaa;
+    padding: 5px 0;
 }
 
 .bill-footer{
@@ -101,7 +153,56 @@
     justify-content: flex-end;
     padding: 20px;
 }
+.labelAmount,
+.valueAmount{
+    font-size: 20px;
+}
 
+.delete-btn {
+    background: rgb(247, 243, 243);
+    border: 2px solid rgb(170, 161, 161);
+    cursor: pointer;
+    padding: 10px;
+ 
+  
+}
+.edit-btn{
+    background: rgb(247, 243, 243);
+    border: 2px solid rgb(170, 161, 161);
+    cursor: pointer;
+    padding: 10px;
+}
+.print-btn{
+    background: rgb(247, 243, 243);
+    border: 2px solid rgb(170, 161, 161);
+    cursor: pointer;
+    padding: 10px;
+}
+:root {
+    --primary: #4361ee;
+    --secondary: #3a0ca3;
+}
+.download-btn{
+    background: linear-gradient(180deg, var(--primary), var(--secondary));
+    border: 2px solid rgb(170, 161, 161);
+    cursor: pointer;
+    padding: 10px;
+    color:white;
+
+   
+}
+
+.bill-footer button {
+    margin-right: 5px; /* gap between buttons */
+    padding: 10px 15px;
+    font-size: 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px; 
+}
 /* Modal overlay - FIXED: Removed duplicate display property */
 .modal {
     display: flex; /* Only this display property */
@@ -120,15 +221,37 @@
 
 /* Modal content */
 .modal-content {
+    display: flex;
+    flex-direction: column;
     background-color: #fff;
     padding: 20px;
     border-radius: 10px;
-    width: 70%;
-    max-width: 800px;
+    width: 90%;
+    max-width: 1200px;
     max-height: 90vh;
-    overflow-y: auto;
-    position: relative;
     box-sizing: border-box;
+    position: relative;
+}
+/* Header stays fixed inside modal-content */
+.modal-header {
+    flex-shrink: 0; /* prevents shrinking */
+}
+
+/* Scrollable content */
+.modal-scrollable {
+    overflow-y: auto;
+    flex-grow: 1; /* takes remaining height between header and footer */
+    padding: 10px 0;
+}
+
+/* Sticky footer */
+.bill-footer {
+    flex-shrink: 0; /* prevent shrinking */
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #ccc;
 }
 
 /* Close button */

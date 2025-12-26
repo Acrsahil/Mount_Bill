@@ -1,91 +1,160 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Invoices</title>
-    <link rel="stylesheet" href="{% static 'css/bill_layout.css' %}">
-</head>
-<body>
+    <link rel="stylesheet" href="{% static 'css/bill_layout.css' %}" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
 
-
-<!-- Invoice Modal -->
-<div id="invoiceModal" class="modal">
-    <div class="modal-content">
-        <span class="close">&times;</span>
-        <div class="bill-container">
-            <div class="bill-header">
-                        <h1>{{ company_name }}</h1>
-                <p>Gokarneshwor-4, Kathmandu</p>
-                        <p>{{ company_phone }}</p>
-            </div>
-            <div class="bill-body">
-                <div class="invoice-date">
-                    <span class="label">Invoice Date : </span>
-                            <span class="value"> {{ invoice_date |date:" Y M d" }}</span>
-                </div>
-                <div class="customer-info">
-                    <div class="info-row">
-                        <span class="label">BILL No.:</span>
-                                <span class="value">{{ order_id }}</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="label">Buyer's Name:</span>
-                                <span class="value_underline">{{ customer }}</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="label">Address:</span>
-                                <span class="value_underline">{{ address }}</span>
-                    </div>
-
-                    <div class="info-row">
-                        <span class="label">Phone No:</span>
-                                <span class="value_underline">{{ customer_phone }}</span>
-                    </div>
-                </div>
-                <div class="info-table">
-                    <table class="items-table" border="1">
-                        <thead>
-                            <tr>
-                                <td>Products</td>
-                                <td>Qty</td>
-                                <td>Price</td>
-                                <td>Total</td>
-                            </tr>
-                        </thead>
-                        <tbody class="bill-item-body">
-                                {% for data in context %}
-                            <tr>
-                                        <!-- <td>{{ data.order.customer.name }}</td> -->
-                                        <td>{{ data.product.name }}</td>
-                                        <td>{{ data.quantity }}</td>
-                                        <td>{{ data.product_price }}</td>
-                            </tr>
-                                {% endfor %}
-                            <tr>
-                                <td>Sub Total</td>
-                                <td></td>
-                                <td></td>
-                                        <td>{{ total_amount }}</td>
-                            </tr>
-                            <tr>
-                                <td>Amount in words</td>
-                                <td colspan="3">Eleven Thousand Three Hundred Ninety Only</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            <div class="bill-footer">
-                <div class="signature-container">
-                    <div class="signature-line">...................</div>
-                    <div class="signature">Signature</div>
-                </div>
-            </div>
-        </div>
+  </head>
+  <body>
+    <!-- Invoice Modal -->
+    <div id="invoiceModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+      <h2>Invoice No. {{ order_id }}</h2>
+      <span class="close">&times;</span>
     </div>
+        <div class="modal-scrollable">
+        <div class="bill-container">
+          <div class="bill-header">
+            <h1>{{ company_name }}</h1>
+            <p>Gokarneshwor-4, Kathmandu</p>
+            <p>{{ company_phone }}</p>
+          </div>
+        <div class="bill-body">
+
+  <div class="top-row">
+
+    <!-- LEFT SIDE -->
+    <div class="left-info">
+      <div class="info-line">
+        <span class="label">Buyer’s Name:</span>
+        <span class="value">{{ customer }}</span>
+      </div>
+
+      <div class="info-line">
+        <span class="label">Address:</span>
+        <span class="value">{{ address }}</span>
+      </div>
+
+      <div class="info-line">
+        <span class="label">Phone No:</span>
+        <span class="value">{{ customer_phone }}</span>
+      </div>
+
+      <div class="info-line">
+        <span class="label">PAN No:</span>
+        <span class="value">pan no</span>
+      </div>
+
+      <div class="info-line">
+        <span class="label">Balance:</span>
+        <span class="value">Rs. 600 (To Give)</span>
+      </div>
+    </div>
+
+    <!-- RIGHT SIDE -->
+    <div class="right-info">
+      <div class="info-line">
+        <span class="label">Invoice No:</span>
+        <span class="value">{{ order_id }}</span>
+      </div>
+
+      <div class="info-line">
+        <span class="label">Invoice Date:</span>
+        <span class="value">{{ invoice_date|date:"Y M d" }}</span>
+      </div>
+
+      <div class="info-line">
+        <span class="label">Payment Mode:</span>
+        <span class="value">Cash</span>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+<div class="info-table">
+    <table class="items-table" border="1">
+        <thead>
+            <tr>
+                <th>S.N.</th>
+                <th>Name</th>
+                <th>Quantity</th>
+                <th>Rate</th>
+                <th>Discount</th>
+                <th>Amount</th>
+            </tr>
+        </thead>
+        <tbody class="bill-item-body">
+            {% for data in context %}
+            <tr class="table-for-bill">
+                <td class="sn">1</td>
+                <td class="name">{{ data.product.name }}</td>
+                <td class="p-quantity"><p class="text-nowrap">{{ data.quantity }} </p></td>
+                <td class="rate">Rs. {{ data.product_price }}</td>
+                    <td class= "dicount-amount">Rs. 80  
+                         <span class="discount-percent">(4%)</span></td>
+                         <td class="amount">Rs. 1,920</td>
+                        </tr>
+                        {%endfor%}
+                            </tbody>
+                        </table>
+                    </div>
+
+            <div class="bill-bottom">
+    <!-- Left Column -->
+    <div class="bill-remarks">
+        <h2>Remarks</h2>
+        <h3>i did this</h3>
+    </div>
+
+    <!-- Right Column -->
+    <ul class="bill-amounts">
+        <li>
+            <span class="label">Sub Total:</span>
+            <span class="value">{{ total_amount }}</span>
+        </li>
+        <li>
+            <span class="label">Discount (5%):</span>
+            <span class="value">Rs. 100.85</span>
+        </li>
+        <li>
+            <span class="label">Tax (13%):</span>
+            <span class="value">Rs. 249.1</span>
+        </li>
+        <ul class="additional-charge-here">
+        <!-- Dynamic charges can be inserted here -->
+        </ul>
+        <li>
+            <span class="label">Total Amount:</span>
+            <span class="value">Rs. 2,277.25</span>
+        </li>
+        <li>
+            <span class="label">Received Amount:</span>
+            <span class="value">Rs. 2,000</span>
+        </li>
+        <li class="bordered">
+            <strong class="labelAmount">Amount Due:</strong>
+            <strong class="valueAmount">Rs. 277.25</strong>
+        </li>
+    </ul>
 </div>
 
-</body>
+          </div>
+        </div>
+          <div class="bill-footer">
+           <button class="delete-btn"><i class="fa fa-trash"></i></button>
+           <button class="edit-btn"><i class="fa fa-edit"></i></button>
+           <button class="print-btn"><i class="fa fa-print"></i>Print PDF</button>
+           <button class="download-btn"><i class="fa fa-download"></i>Download PDF</button>
+
+          </div>
+        </div>
+      </div>
+    
+  </body>
 </html>
