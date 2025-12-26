@@ -1,7 +1,7 @@
 import json
 from datetime import datetime
 from decimal import Decimal
-from django.views.decorators.http import require_http_methods
+
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.db import transaction
@@ -10,7 +10,7 @@ from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_GET, require_POST
+from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
 from .models import (
     AdditionalCharges,
@@ -638,12 +638,14 @@ def delete_invoice(request, id):
             return JsonResponse({"success": True})
         except OrderList.DoesNotExist:
             return JsonResponse({"success": False, "error": "Not found"})
-        
+
+
 @require_http_methods(["DELETE"])
 def delete_product(request, id):
     product = get_object_or_404(Product, id=id)
     product.delete()
-    return JsonResponse({'success': True})
+    return JsonResponse({"success": True})
+
 
 @login_required
 @csrf_exempt
@@ -680,9 +682,9 @@ def invoice_layout(request, id):
                 received_amount = data.received_amount
                 amount_due = data.due_amount
                 final_amount = data.final_amount
-                print("this is global->dis-> ",global_discount)
                 print("this is global->dis-> ", global_discount)
-            dis_amount  = global_discount / 100 *total_amount 
+                print("this is global->dis-> ", global_discount)
+            dis_amount = global_discount / 100 * total_amount
             tax_amount = global_tax / 100 * (total_amount - dis_amount)
 
             for bill in bill_info:
@@ -729,7 +731,7 @@ def invoice_layout(request, id):
                     "global_discount_amount": dis_amount,
                     "amount_due": amount_due,
                     "received_amount": received_amount,
-                    "final_amount" : final_amount
+                    "final_amount": final_amount,
                 },
             )
         except OrderList.DoesNotExist:
@@ -762,7 +764,7 @@ def settings(request):
     return render(request, "website/bill.html", context)
 
 
-def product_detail(request):
+def product_detail(request, id):
     context = get_serialized_data(request.user, "dashboard")
     # context["item_num"]=context["product_count"]
     return render(request, "website/product_detail.html", context)
