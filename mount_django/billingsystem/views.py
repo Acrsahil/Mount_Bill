@@ -675,6 +675,10 @@ def invoice_layout(request, id):
                 received_amount = data.received_amount
                 amount_due = data.due_amount
                 final_amount = data.final_amount
+                print("this is global->dis-> ",global_discount)
+                print("this is global->dis-> ", global_discount)
+            dis_amount  = global_discount / 100 *total_amount 
+            tax_amount = global_tax / 100 * (total_amount - dis_amount)
 
             for bill in bill_info:
                 print(bill)
@@ -714,8 +718,10 @@ def invoice_layout(request, id):
                     "company_name": company_name,
                     "company_phone": company_phone,
                     "customer_phone": customer_phone,
-                    "gobal_tax": global_tax,
-                    "gobal_discount": global_discount,
+                    "global_tax": global_tax,
+                    "global_tax_amount": tax_amount,
+                    "global_discount": global_discount,
+                    "global_discount_amount": dis_amount,
                     "amount_due": amount_due,
                     "received_amount": received_amount,
                     "final_amount" : final_amount
