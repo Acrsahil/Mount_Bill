@@ -1,7 +1,7 @@
 import json
 from datetime import datetime
 from decimal import Decimal
-
+from django.views.decorators.http import require_http_methods
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.db import transaction
@@ -638,7 +638,12 @@ def delete_invoice(request, id):
             return JsonResponse({"success": True})
         except OrderList.DoesNotExist:
             return JsonResponse({"success": False, "error": "Not found"})
-
+        
+@require_http_methods(["DELETE"])
+def delete_product(request, id):
+    product = get_object_or_404(Product, id=id)
+    product.delete()
+    return JsonResponse({'success': True})
 
 @login_required
 @csrf_exempt

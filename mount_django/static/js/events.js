@@ -66,7 +66,9 @@ export function setupEventListeners(
              window.location.href = '/dashboard/create-invoice/';
         });
     }
-    if (addProductBtn) addProductBtn.addEventListener('click', () => openAddProductModal(addProductModal));
+    if (addProductBtn) addProductBtn.addEventListener('click', () =>{ 
+        console.log("am i getting clicked??")
+        openAddProductModal(addProductModal)});
     if (addNewProductBtn) addNewProductBtn.addEventListener('click', () => openAddProductModal(addProductModal));
     if (addClientBtn) addClientBtn.addEventListener('click', () => openClientModal(addClientModal));
     if (closeInvoiceModal) closeInvoiceModal.addEventListener('click', () => closeInvoiceModalFunc(createInvoiceModal));
