@@ -151,8 +151,10 @@ export async function saveProduct(addProductModal) {
         console.log('Server response:', result);
         if (result.success) {
            // Add product to local cache and render table/list
-            productsCache.push(result.product);
+            productsCache.unshift(result.product);
+
             renderProducts(); // rebuild table/list from DB
+        
             updateProductCounts(productsCache.length);
 
             // Show success message

@@ -240,6 +240,7 @@ def save_product(request):
                 "message": "Product saved successfully!",
                 "product": {
                     "id": product.id,
+                    "uid" : str(product.uid),
                     "name": product.name,
                     "cost_price": float(product.cost_price),
                     "selling_price": float(product.selling_price),
