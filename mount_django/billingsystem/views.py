@@ -642,6 +642,7 @@ def delete_invoice(request, id):
 
 @require_http_methods(["DELETE"])
 def delete_product(request, id):
+    print("this is id-> ", id)
     product = get_object_or_404(Product, id=id)
     product.delete()
     return JsonResponse({"success": True})

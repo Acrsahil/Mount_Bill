@@ -8,8 +8,8 @@ urlpatterns = [
     path("products-json/", views.products_json, name="products_json"),
     path("product-detail/<int:id>/", views.product_detail, name="product_detail"),
     path("save-product/", views.save_product, name="save_product"),
-    path("delete-product/<int:id>/",views.delete_product,name="delete_product"),
     path("update-product/<int:id>/", views.update_product, name="update_product"),
+    path("delete-product/<int:id>/",views.delete_product,name="delete_product"),
     path("add-stock/<int:id>/", views.add_stock, name="add-stock"),
     path("reduce-stock/<int:id>/", views.reduce_stock, name="reduce-stock"),
     path(

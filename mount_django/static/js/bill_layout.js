@@ -24,7 +24,8 @@ document.addEventListener("keydown", function(event) {
     });
 
 export function openModal() {
-    modal.style.display = "flex";
+    modal.style.display = "none";
+    console.log("helloworld i am pressed!!!!!!!!!!!!!!")
     }
 
 function closeModal() {
