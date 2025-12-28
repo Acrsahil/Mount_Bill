@@ -7,100 +7,88 @@
     <title>Invoices</title>
     <link rel="stylesheet" href="{% static 'css/bill_layout.css' %}" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
-
   </head>
   <body>
     <!-- Invoice Modal -->
     <div id="invoiceModal" class="modal">
       <div class="modal-content">
         <div class="modal-header">
-      <h2>Invoice No. {{ order_id }}</h2>
-      <span class="close">&times;</span>
-    </div>
+          <h2 id="invoiceTitle">Invoice Details</h2>
+          <span class="close">&times;</span>
+        </div>
+        
         <div class="modal-scrollable">
-        <div class="bill-container">
-          <div class="bill-header">
-            <h1>{{ company_name }}</h1>
-            <p>Gokarneshwor-4, Kathmandu</p>
-            <p>{{ company_phone }}</p>
-          </div>
-        <div class="bill-body">
+          <div class="bill-container">
+            <div class="bill-header">
+              <h1 id="companyName">Loading...</h1>
+              <p>Gokarneshwor-4, Kathmandu</p>
+              <p id="companyPhone">Loading...</p>
+            </div>
+            
+            <div class="bill-body">
+              <div class="top-row">
+                <!-- LEFT SIDE -->
+                <div class="left-info">
+                  <div class="info-line">
+                    <span class="label">Buyer’s Name:</span>
+                    <span class="value" id="customerName">Loading...</span>
+                  </div>
 
-  <div class="top-row">
+                  <div class="info-line">
+                    <span class="label">Address:</span>
+                    <span class="value" id="customerAddress">Loading...</span>
+                  </div>
 
-    <!-- LEFT SIDE -->
-    <div class="left-info">
-      <div class="info-line">
-        <span class="label">Buyer’s Name:</span>
-        <span class="value">{{ customer }}</span>
-      </div>
+                  <div class="info-line">
+                    <span class="label">Phone No:</span>
+                    <span class="value" id="customerPhone">Loading...</span>
+                  </div>
 
-      <div class="info-line">
-        <span class="label">Address:</span>
-        <span class="value">{{ address }}</span>
-      </div>
+                  <div class="info-line">
+                    <span class="label">PAN No:</span>
+                    <span class="value" id="customerPAN">Loading...</span>
+                  </div>
 
-      <div class="info-line">
-        <span class="label">Phone No:</span>
-        <span class="value">{{ customer_phone }}</span>
-      </div>
+                  <div class="info-line">
+                    <span class="label">Balance:</span>
+                    <span class="value" id="customerBalance">Loading...</span>
+                  </div>
+                </div>
 
-      <div class="info-line">
-        <span class="label">PAN No:</span>
-                    <span class="value">{{ pan_id }}</span>
-      </div>
+                <!-- RIGHT SIDE -->
+                <div class="right-info">
+                  <div class="info-line">
+                    <span class="label">Invoice No:</span>
+                    <span class="value" id="invoiceNumber">Loading...</span>
+                  </div>
 
-      <div class="info-line">
-        <span class="label">Balance:</span>
-        <span class="value">Rs. 600 (To Give)</span>
-      </div>
-    </div>
+                  <div class="info-line">
+                    <span class="label">Invoice Date:</span>
+                    <span class="value" id="invoiceDate">Loading...</span>
+                  </div>
 
-    <!-- RIGHT SIDE -->
-    <div class="right-info">
-      <div class="info-line">
-        <span class="label">Invoice No:</span>
-        <span class="value">{{ order_id }}</span>
-      </div>
-
-      <div class="info-line">
-        <span class="label">Invoice Date:</span>
-        <span class="value">{{ invoice_date|date:"Y M d" }}</span>
-      </div>
-
-      <div class="info-line">
-        <span class="label">Payment Mode:</span>
-        <span class="value">Cash</span>
-      </div>
-    </div>
-
-  </div>
-
-</div>
-<div class="info-table">
-    <table class="items-table" border="1">
-        <thead>
-            <tr>
-                <th>S.N.</th>
-                <th>Name</th>
-                <th>Quantity</th>
-                <th>Rate</th>
-                <th>Discount</th>
-                <th>Amount</th>
-            </tr>
-        </thead>
-        <tbody class="bill-item-body">
-                  {% for data in context %}
-                  <tr class="table-for-bill">
-                    <td class="sn">1</td>
-                    <td class="name">{{ data.product.name }}</td>
-                    <td class="p-quantity"><p class="text-nowrap">{{ data.quantity }} </p></td>
-                    <td class="rate">Rs. {{ data.product_price }}</td>
-                    <td class= "dicount-amount">Rs. --  
-                      <span class="discount-percent">( -- %)</span></td>
-                    <td class="amount"> {{ data.line_total }}  </td>
+                  <div class="info-line">
+                    <span class="label">Payment Mode:</span>
+                    <span class="value" id="paymentMode">Loading...</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="info-table">
+              <table class="items-table" border="1">
+                <thead>
+                  <tr>
+                    <th>S.N.</th>
+                    <th>Name</th>
+                    <th>Quantity</th>
+                    <th>Rate</th>
+                    <th>Discount</th>
+                    <th>Amount</th>
                   </tr>
-                  {%endfor%}
+                </thead>
+                <tbody id="itemsBody" class="bill-item-body">
+                  <!-- Items will be populated by JavaScript -->
                 </tbody>
               </table>
             </div>
@@ -109,49 +97,22 @@
               <!-- Left Column -->
               <div class="bill-remarks">
                 <h2>Remarks</h2>
-                <h3>i did this</h3>
+                <div id="remarksContent">Loading...</div>
               </div>
 
               <!-- Right Column -->
-              <ul class="bill-amounts">
-                <li>
-                  <span class="label">Sub Total:</span>
-                  <span class="value">Rs . {{ total_amount }} </span>
-                </li>
-                <li>
-                  <span class="label">Discount ({{ global_discount|floatformat:1 }}%):</span>
-                  <span class="value">Rs. {{ global_discount_amount|floatformat:2 }} </span>
-                </li>
-                <li>
-                  <span class="label">Tax ({{ global_tax|floatformat:1 }}%):</span>
-                  <span class="value">Rs. {{ global_tax_amount|floatformat:2  }} </span>
-                </li>
-                <ul class="additional-charge-here">
-                  <!-- Dynamic charges can be inserted here -->
-                </ul>
-                <li>
-                  <span class="label">Total Amount:</span>
-                  <span class="value">Rs. {{ final_amount }}</span>
-                </li>
-                <li>
-                  <span class="label">Received Amount:</span>
-                  <span class="value">Rs. {{ received_amount }}</span>
-                </li>
-                <li class="bordered">
-                  <strong class="labelAmount">Amount Due:</strong>
-                  <strong class="valueAmount">Rs. {{ amount_due }}</strong>
-                </li>
+              <ul id="amountsList" class="bill-amounts">
+                <!-- Amounts will be populated by JavaScript -->
               </ul>
             </div>
-
           </div>
         </div>
+        
         <div class="bill-footer">
-          <button class="delete-btn"><i class="fa fa-trash"></i></button>
-          <button class="edit-btn"><i class="fa fa-edit"></i></button>
-          <button class="print-btn"><i class="fa fa-print"></i>Print PDF</button>
-          <button class="download-btn"><i class="fa fa-download"></i>Download PDF</button>
-
+          <button class="delete-btn"><i class="fa fa-trash"></i> Delete</button>
+          <button class="edit-btn"><i class="fa fa-edit"></i> Edit</button>
+          <button id="printBtn" class="print-btn"><i class="fa fa-print"></i> Print PDF</button>
+          <button id="downloadBtn" class="download-btn"><i class="fa fa-download"></i> Download PDF</button>
         </div>
       </div>
     </div>
