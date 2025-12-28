@@ -198,7 +198,7 @@ export function addProductToTable(product,productsTableBody,index){
       `;
       row.addEventListener('click', () => {
         
-        window.location.href = `/dashboard/product-detail/${product.id}`;
+        window.location.href = `/dashboard/product-detail/${product.uid}`;
       });
 
       productsTableBody.appendChild(row);
@@ -214,7 +214,7 @@ export function addProductToList(product, productList) {
 
    li.addEventListener('click', () => {
     
-        history.pushState({}, '', `/dashboard/product-detail/${product.id}`);
+        history.pushState({}, '', `/dashboard/product-detail/${product.uid}`);
         document.querySelectorAll('.productlists').forEach(item =>
         {
             item.classList.remove('selected');
@@ -237,7 +237,7 @@ function getSelectedProduct(products) {
     if (!selectedId) return null;
 
     // assuming product.id is numeric or string matching URL
-    return products.find(p => String(p.id) === selectedId);
+    return products.find(p => String(p.uid) === selectedId);
 }
 
 
