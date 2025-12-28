@@ -225,7 +225,10 @@ export function addProductToList(product, productList) {
         renderDetails(productsCache);
       });
 }
-
+window.addEventListener('popstate',() =>
+{
+    renderDetails(productsCache);
+})
 
 //function to get the selected product from URL
 function getSelectedProduct(products) {
