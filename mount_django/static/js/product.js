@@ -215,7 +215,12 @@ export function addProductToList(product, productList) {
    li.addEventListener('click', () => {
     
         history.pushState({}, '', `/dashboard/product-detail/${product.id}`);
-
+        document.querySelectorAll('.productlists').forEach(item =>
+        {
+            item.classList.remove('selected');
+        }
+        )
+        li.classList.add('selected')
         //immediately update the table
         renderDetails(productsCache);
       });

@@ -13,6 +13,10 @@
 
     width: max-content;       /* JUST FIT BUTTONS */
 }
+.productlists.selected {
+    background-color: rgb(243, 241, 241); /* light blue highlight */
+    font-weight: bold;
+}
 .productlists.active-product {
   background-color: #eef4ff;
   font-weight: 600;
