@@ -197,15 +197,12 @@ export function addProductToTable(product,productsTableBody,index){
         <td>${String(product.quantity)}</td>
       `;
       row.addEventListener('click', () => {
-        sessionStorage.setItem('selectedProductId', product.id);
+        
         window.location.href = `/dashboard/product-detail/${product.id}`;
       });
 
       productsTableBody.appendChild(row);
   }
-
- // getting product id from session storage 
-const selectedProductId = parseInt(sessionStorage.getItem('selectedProductId'));
 
 export function addProductToList(product, productList) {
   if (!productList) return;
@@ -214,12 +211,25 @@ export function addProductToList(product, productList) {
   li.classList.add('productlists');
   li.textContent = product.name;
   productList.appendChild(li);
+
+   li.addEventListener('click', () => {
+    
+        history.pushState({}, '', `/dashboard/product-detail/${product.id}`);
+
+        //immediately update the table
+        renderDetails(productsCache);
+      });
 }
 
-//select product details by matching their id
+
+//function to get the selected product from URL
 function getSelectedProduct(products) {
-    if (!selectedProductId) return null;
-    return products.find(p => p.id === selectedProductId);
+    const parts = window.location.pathname.split('/').filter(Boolean);
+    const selectedId = parts[parts.length - 1]; // last part of URL
+    if (!selectedId) return null;
+
+    // assuming product.id is numeric or string matching URL
+    return products.find(p => String(p.id) === selectedId);
 }
 
 
