@@ -151,8 +151,10 @@ export async function saveProduct(addProductModal) {
         console.log('Server response:', result);
         if (result.success) {
            // Add product to local cache and render table/list
-            productsCache.push(result.product);
+            productsCache.unshift(result.product);
+
             renderProducts(); // rebuild table/list from DB
+        
             updateProductCounts(productsCache.length);
 
             // Show success message
@@ -197,15 +199,12 @@ export function addProductToTable(product,productsTableBody,index){
         <td>${String(product.quantity)}</td>
       `;
       row.addEventListener('click', () => {
-        sessionStorage.setItem('selectedProductId', product.id);
-        window.location.href = `/dashboard/product-detail/${product.id}`;
+        
+        window.location.href = `/dashboard/product-detail/${product.uid}`;
       });
 
       productsTableBody.appendChild(row);
   }
-
- // getting product id from session storage 
-const selectedProductId = parseInt(sessionStorage.getItem('selectedProductId'));
 
 export function addProductToList(product, productList) {
   if (!productList) return;
@@ -214,12 +213,33 @@ export function addProductToList(product, productList) {
   li.classList.add('productlists');
   li.textContent = product.name;
   productList.appendChild(li);
-}
 
-//select product details by matching their id
+   li.addEventListener('click', () => {
+    
+        history.pushState({}, '', `/dashboard/product-detail/${product.uid}`);
+        document.querySelectorAll('.productlists').forEach(item =>
+        {
+            item.classList.remove('selected');
+        }
+        )
+        li.classList.add('selected')
+        //immediately update the table
+        renderDetails(productsCache);
+      });
+}
+window.addEventListener('popstate',() =>
+{
+    renderDetails(productsCache);
+})
+
+//function to get the selected product from URL
 function getSelectedProduct(products) {
-    if (!selectedProductId) return null;
-    return products.find(p => p.id === selectedProductId);
+    const parts = window.location.pathname.split('/').filter(Boolean);
+    const selectedId = parts[parts.length - 1]; // last part of URL
+    if (!selectedId) return null;
+
+    // assuming product.id is numeric or string matching URL
+    return products.find(p => String(p.uid) === selectedId);
 }
 
 

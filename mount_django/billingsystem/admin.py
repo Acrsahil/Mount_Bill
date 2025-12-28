@@ -155,6 +155,7 @@ class ProductCategoryAdmin(admin.ModelAdmin):
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     list_display = (
+        "uid",
         "name",
         "cost_price",
         "selling_price",

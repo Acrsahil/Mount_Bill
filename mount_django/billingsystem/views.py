@@ -1,7 +1,7 @@
 import json
 from datetime import datetime
 from decimal import Decimal
-
+from uuid import UUID
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.db import transaction
@@ -38,6 +38,7 @@ def products_json(request):
     products_data = [
         {
             "id": p.id,
+            "uid":str(p.uid),
             "name": p.name,
             "category": p.category.name if p.category else "N/A",
             "cost_price": float(p.cost_price),
@@ -239,6 +240,7 @@ def save_product(request):
                 "message": "Product saved successfully!",
                 "product": {
                     "id": product.id,
+                    "uid" : str(product.uid),
                     "name": product.name,
                     "cost_price": float(product.cost_price),
                     "selling_price": float(product.selling_price),
@@ -882,9 +884,11 @@ def settings(request):
     return render(request, "website/bill.html", context)
 
 
-def product_detail(request, id):
+def product_detail(request, id:UUID):
+    product=get_object_or_404(Product,uid=id)
     context = get_serialized_data(request.user, "dashboard")
     # context["item_num"]=context["product_count"]
+    context["product"] = product
     return render(request, "website/product_detail.html", context)
 
 

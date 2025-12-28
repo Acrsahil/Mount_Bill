@@ -96,6 +96,7 @@ class Product(models.Model):
     company = models.ForeignKey(
         Company, on_delete=models.CASCADE, related_name="products"
     )
+    uid = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=100)
     cost_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     selling_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
