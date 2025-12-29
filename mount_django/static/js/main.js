@@ -85,7 +85,6 @@ const saveProductBtn = document.getElementById('saveProductBtn');
 const saveClientBtn = document.getElementById('saveClientBtn');
 const addItemBtn = document.getElementById('addItemBtn');
 const invoiceItemsBody = document.getElementById('invoiceItemsBody');
-// const productList = document.getElementById('productList');
 const invoicesTableBody = document.getElementById('invoicesTableBody');
 const clientsTableBody = document.getElementById('clientsTableBody');
 const productsTableBody = document.getElementById('productsTableBody');

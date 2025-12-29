@@ -108,6 +108,7 @@
     </aside>
  <main class="product-main">
   <!-- Row: name on left, edit/delete on right -->
+  <div class = "product-selected">
   <div class="product-detail-header">
     <div class="product-title" id="productTitle">{{product_name}}</div>
 
@@ -177,6 +178,27 @@
       </table>
     </div>
   </section>
+</div>
+<div class="empty-state">
+  <div class="illustration">
+    <div class="box"></div>
+    <div class="line"></div>
+    <div class="line short"></div>
+  </div>
+
+  <h2>No items found</h2>
+<p>Click any product to see their transactions</p>
+</div>
+<div class="not-found">
+  <div class="content">
+    <div class="icon">🤖</div>
+</div>
+    <h1>Not Found</h1>
+    <p>Oops! Page not Found!</p>
+    <p>The page you're looking for doesn't exist anymore or has been moved or archived.</p>
+  </div>
+</div>
+
 </main>
 </div>
 
@@ -205,6 +227,7 @@ if (typeof window.djangoData === 'undefined') {
     };
 }
 </script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script type="module" src="{%static 'js/events.js'%}"></script>
 <script type="module" src="{%static 'js/product.js'%}"></script>
 <script type="module" src="{% static 'js/main.js' %}"></script>

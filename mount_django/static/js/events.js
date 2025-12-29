@@ -52,7 +52,6 @@ export function setupEventListeners(
     menuItems,
     tabContents,
     invoiceItemsBody,
-    productList,
     invoicesTableBody,
     clientsTableBody,
     invoiceNumber,
@@ -82,7 +81,7 @@ export function setupEventListeners(
     if (saveClientBtn) saveClientBtn.addEventListener('click', () => saveClient(addClientModal, clientsTableBody));
     if (addItemBtn) addItemBtn.addEventListener('click', () => addInvoiceItem(invoiceItemsBody));
     if (searchInput) searchInput.addEventListener('input', () => filterInvoices(window.invoices, searchInput, invoicesTableBody));
-    if (productSearchInput) productSearchInput.addEventListener('input', () => filterProducts(window.products, productSearchInput, productList, editProduct, deleteProduct));
+    if (productSearchInput) productSearchInput.addEventListener('input', () => filterProducts(window.products, productSearchInput, productsTableBody, editProduct, deleteProduct));
     if (clientSearchInput) clientSearchInput.addEventListener('input', () => filterClients(window.clients, clientSearchInput, clientsTableBody));
 
     // Global discount and tax listeners

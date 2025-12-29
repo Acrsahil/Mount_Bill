@@ -314,8 +314,7 @@ export function filterInvoices(invoices, searchInput, invoicesTableBody) {
 export function filterProducts(products, productSearchInput, productsTableBody, editProduct, deleteProduct) {
     const searchTerm = productSearchInput.value.toLowerCase();
     const filteredProducts = products.filter(product => 
-        product.name.toLowerCase().includes(searchTerm) ||
-            (product.category && product.category.toLowerCase().includes(searchTerm))
+        product.name.toLowerCase().includes(searchTerm)
     );
 
     productsTableBody.innerHTML = '';
@@ -334,21 +333,6 @@ export function filterProducts(products, productSearchInput, productsTableBody, 
 `;
   productsTableBody.appendChild(row);
     });
-
-    // Reattach event listeners
-    // document.querySelectorAll('.edit-product-btn').forEach(button => {
-    //     button.addEventListener('click', function() {
-    //         const productId = parseInt(this.getAttribute('data-id'));
-    //         editProduct(productId);
-    //     });
-    // });
-
-    // document.querySelectorAll('.delete-product-btn').forEach(button => {
-    //     button.addEventListener('click', function() {
-    //         const productId = parseInt(this.getAttribute('data-id'));
-    //         deleteProduct(productId);
-    //     });
-    // });
 }
 
 // Filter clients

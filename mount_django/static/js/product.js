@@ -150,14 +150,25 @@ export async function saveProduct(addProductModal) {
         const result = await response.json();
         console.log('Server response:', result);
         if (result.success) {
+            if (!result.product.uid) {
+        console.error("Saved product missing UID:", result.product);
+        showAlert("Product saved but UID missing. Please refresh.", "error");
+        return;
+    }
            // Add product to local cache and render table/list
             productsCache.unshift(result.product);
 
+            //the uid of newly added product
+            history.pushState({}, '', `/dashboard/product-detail/${result.product.uid}`);
+
             renderProducts(); // rebuild table/list from DB
-        
+            
+            renderDetails(productsCache)
+
             updateProductCounts(productsCache.length);
 
             // Show success message
+
             showAlert(result.message, 'success');
             // Close modal after short delay
             setTimeout(() => {
@@ -212,10 +223,32 @@ export function addProductToList(product, productList) {
   const li = document.createElement('li');
   li.classList.add('productlists');
   li.textContent = product.name;
+  li.dataset.id = product.id;
+  li.dataset.uid = product.uid;
   productList.appendChild(li);
 
+ // Auto-select based on URL
+  const uidInUrl = selectedIdFromUrl();
+  if (uidInUrl && String(uidInUrl) === String(product.uid)) {
+    document.querySelectorAll('.productlists').forEach(item =>
+      item.classList.remove('selected')
+    );
+
+    li.classList.add('selected');
+      const deleteBtn = document.querySelector('.delete-product-btn');
+      if (deleteBtn) deleteBtn.dataset.productId = product.id;
+      const editBtn = document.querySelector('.edit-product-btn');
+      if (editBtn) editBtn.dataset.productId = product.id;
+  }
+
    li.addEventListener('click', () => {
-    
+        //for deleting the product,we need product id
+        const deleteBtn = document.querySelector('.delete-product-btn');
+        const editBtn = document.querySelector('.edit-product-btn'); 
+        deleteBtn.dataset.productId = product.id;
+        editBtn.dataset.productId = product.id;
+        console.log("yo id ho haii",editBtn.dataset.productId)
+
         history.pushState({}, '', `/dashboard/product-detail/${product.uid}`);
         document.querySelectorAll('.productlists').forEach(item =>
         {
@@ -230,49 +263,78 @@ export function addProductToList(product, productList) {
 window.addEventListener('popstate',() =>
 {
     renderDetails(productsCache);
+
+    // Highlight li again
+    const uidInUrl = selectedIdFromUrl();
+    document.querySelectorAll('.productlists').forEach(li => {
+        if (String(li.dataset.uid) === String(uidInUrl)) {
+            li.classList.add('selected');
+        } else {
+            li.classList.remove('selected');
+        }
+    });
 })
 
+
+function selectedIdFromUrl() {
+  const parts = window.location.pathname.split('/').filter(Boolean);
+
+  const idx = parts.indexOf('product-detail');
+  if (idx === -1) return null;
+
+  // "/dashboard/product-detail/" => no uid
+  if (idx === parts.length - 1) return null;
+
+  return parts[idx + 1]; // uid
+}
+    
 //function to get the selected product from URL
 function getSelectedProduct(products) {
-    const parts = window.location.pathname.split('/').filter(Boolean);
-    const selectedId = parts[parts.length - 1]; // last part of URL
-    if (!selectedId) return null;
+  const uid = selectedIdFromUrl();
+  if (!uid) return null;
 
-    // assuming product.id is numeric or string matching URL
-    return products.find(p => String(p.uid) === selectedId);
+  return products.find(p => String(p.uid) === String(uid)) || null;
 }
 
 
 // ajax to show the product details in page
 function renderDetails(products) {
-    const productDetailTableBody = document.getElementById('productDetailTableBody');
-    const productTitle = document.getElementById('productTitle');
-    if (!productDetailTableBody) return;
+  const productDetailTableBody = document.getElementById('productDetailTableBody');
+  const productTitle = document.getElementById('productTitle');
+  if (!productDetailTableBody) return;
 
-    productDetailTableBody.innerHTML = '';
+  const uid = selectedIdFromUrl();
+  const selectedProduct = getSelectedProduct(products);
 
-    const selectedProduct = getSelectedProduct(products);
+  // always clear current UI first
+  productDetailTableBody.innerHTML = '';
+  if (productTitle) productTitle.textContent = '';
 
-    if (!selectedProduct) {
-        productDetailTableBody.innerHTML = `
-            <tr>
-                <td colspan="4">Product not found</td>
-            </tr>
-        `;
-        return;
-    }
-    //this for product name on top left
-    productTitle.textContent= selectedProduct.name;
+  // 1) No uid in URL => empty state
+  if (!uid) {
+    showEmptyState();
+    return;
+  }
 
-    //add details of the selected product in productdetail table 
-    addDetailToTable(selectedProduct, productDetailTableBody);
+  // 2) uid present but product missing => not found
+  if (!selectedProduct) {
+    showNotFound();
+    return;
+  }
+
+  // 3) product exists => show details
+  showProductDetail();
+
+  if (productTitle) productTitle.textContent = selectedProduct.name;
+  addDetailToTable(selectedProduct, productDetailTableBody);
 }
 
 //add product detail on table
 export function addDetailToTable(product,productDetailTableBody){
     if (!productDetailTableBody) return;
       const rows = document.createElement('tr');
-      rows.classList.add('thisDetailRows');
+    //   rows.classList.add('thisDetailRows');
+      rows.dataset.id = product.id;
       rows.innerHTML = `
       <td>${String(product.quantity)}</td>
        <td>$${product.selling_price}</td>
@@ -331,14 +393,23 @@ export function loadProducts(products, productsTableBody, editProduct, deletePro
 
 ///deleting inside product-detail page
 document.addEventListener('DOMContentLoaded', () => {
-console.log("Selected product ID:", selectedProductId); 
-    const deleteBtn = document.querySelector('.delete-product-btn'); 
+    const deleteBtn = document.querySelector('.delete-product-btn');
+    const editBtn = document.querySelector('.edit-product-btn'); 
     deleteBtn.addEventListener('click', function() {
-            console.log("productdeletegarne",selectedProductId);
-            deleteProduct(selectedProductId);
-            sessionStorage.removeItem('selectedProductId');
+        const id = deleteBtn.dataset.productId;
+        console.log("Deleting product", id);
+        deleteProduct(id);
         });
+    editBtn.addEventListener('click',function(){
+        const id = editBtn.dataset.productId;
+        console.log("udpating the product",id);
+        editProduct(id);
+    })
+    
     });
+
+    
+
 
 
   document.addEventListener('click', function(e) {
@@ -621,7 +692,7 @@ async function reduceStock(reduceStockModal) {
 
 // Product edit/delete functions
 export async function editProduct(productId) {
-    const product = window.products.find(p => p.id === productId);
+    const product = window.products.find(p => String(p.id) === String(productId));
     const addProductModal = document.getElementById('addProductModal');
     addProductModal.dataset.id = productId
     if (product) {
@@ -724,7 +795,35 @@ export async function updateProduct(addProductModal) {
             if (window.loadProducts) {
                 window.loadProducts();
             }
+            
 
+            // UPDATE PRODUCT NAME IN LIST 
+            const productLi = document.querySelector(
+                `.productlists[data-id="${result.product.id}"]`
+            );
+            if (productLi) {
+                productLi.textContent = result.product.name;
+            }
+
+            // Update details title
+            const productTitle = document.getElementById('productTitle');
+            productTitle.innerHTML = result.product.name;
+
+              // Update the single row directly
+            const productDetailTableBody = document.getElementById('productDetailTableBody');
+            if (productDetailTableBody) {
+                let row = productDetailTableBody.querySelector('tr');
+                if (!row) {
+                    row = document.createElement('tr');
+                    productDetailTableBody.appendChild(row);
+                }
+                row.innerHTML = `
+                    <td>${String(result.product.quantity || 0)}</td>
+                    <td>$${result.product.selling_price}</td>
+                    <td>$${result.product.cost_price}</td>
+                    <td>$${(result.product.cost_price * (result.product.quantity || 0)).toFixed(2)}</td>
+                `;
+            }
             // Show success message
             showAlert(result.message, 'success');
 
@@ -767,10 +866,37 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 });
 
+function showEmptyState() {
+  document.querySelector('.empty-state')?.classList.add('active');
+  document.querySelector('.not-found')?.classList.add('hidden');
+  document.querySelector('.product-selected')?.classList.add('deactivate');
+}
+
+function showNotFound() {
+  document.querySelector('.empty-state')?.classList.remove('active');
+  document.querySelector('.not-found')?.classList.remove('hidden');
+  document.querySelector('.product-selected')?.classList.add('deactivate');
+}
+
+function showProductDetail() {
+  document.querySelector('.empty-state')?.classList.remove('active');
+  document.querySelector('.not-found')?.classList.add('hidden');
+  document.querySelector('.product-selected')?.classList.remove('deactivate');
+}
+
 export function deleteProduct(productId) {
     if (!productId) return;
 
-    if (confirm('Are you sure you want to delete this product?')) {
+        Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to undo this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, delete it!'
+    }).then((result) => {
+        if (result.isConfirmed) {
         fetch(`/dashboard/delete-product/${productId}/`, {
             method: 'DELETE',
             headers: {
@@ -783,24 +909,38 @@ export function deleteProduct(productId) {
             return res.json();
         })
         .then(data => {
-            alert('Product deleted successfully!');
+            Swal.fire({
+            title: 'Deleted!',
+            text: 'Product has been deleted.',
+            icon: 'success',
+            timer: 1500,  // disappears after 1.5 seconds
+            showConfirmButton: false
+        });
             
             // Remove from frontend cache
-            productsCache = productsCache.filter(p => p.id !== productId);
+            productsCache = productsCache.filter(p => String(p.id) !== String(productId));
 
-            // Re-render table/list from updated cache
-            const productsTableBody = document.getElementById('productsTableBody');
-            const productList = document.querySelector('.productList');
-            loadProducts(productsCache, productsTableBody, null, deleteProduct, productList);
+            //remove from url 
+           history.replaceState({}, '', `/dashboard/product-detail/`);
+            renderDetails(productsCache);
+            // Remove from DOM immediately
+            const li = document.querySelector(`.productlists[data-id="${productId}"]`);
+            if (li) li.remove();
 
+            const row = document.querySelector(`#productsTableBody-${productId}`);
+            if (row) row.remove();
+
+            // const detailRow = document.querySelector(`.thisDetailRows[data-id="${productId}"]`);
+            // if (detailRow) detailRow.remove();
             // Update counts
             updateProductCounts(productsCache.length);
-        })
+            })
         .catch(err => {
             console.error(err);
             alert('Error deleting product. Check console.');
         });
     }
+});
 }
 
 // AddStock modal section
