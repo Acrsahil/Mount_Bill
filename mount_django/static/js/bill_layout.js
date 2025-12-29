@@ -74,23 +74,23 @@ export function openModal() {
                 tr.appendChild(sn)
 
                 let product_name = document.createElement("td")
-                product_name.innerHTML = data.invoice.items[1].product_name
+                product_name.innerHTML = data.invoice.items[i].product_name
                 tr.appendChild(product_name)
 
                 let qty = document.createElement("td")
-                qty.innerHTML = i+1
+                qty.innerHTML = data.invoice.items[i].quantity
                 tr.appendChild(qty)
 
                 let price = document.createElement("td")
-                price.innerHTML = i+1
+                price.innerHTML = data.invoice.items[i].product_price
                 tr.appendChild(price)
 
                 let discount = document.createElement("td")
-                discount.innerHTML = i+1
+                discount.innerHTML = data.invoice.items[i].discount_amount
                 tr.appendChild(discount)
 
                 let amount = document.createElement("td")
-                amount.innerHTML = i+1
+                amount.innerHTML =data.invoice.items[i].line_total 
                 tr.appendChild(amount)
 
             }
@@ -104,6 +104,7 @@ export function openModal() {
         });
 }
 function closeModal() {
+    const tablebody = document.getElementById("itemsBody").innerText = "";
     modal.style.display = "none";
 }
 
