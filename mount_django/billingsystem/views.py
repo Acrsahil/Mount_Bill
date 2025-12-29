@@ -765,16 +765,12 @@ def settings(request):
     context = get_serialized_data(request.user, "settings")
     return render(request, "website/bill.html", context)
 
-def product_detail(request):
-    context = get_serialized_data(request.user, "dashboard")
-    # context["item_num"]=context["product_count"]
-    return render(request, "website/product_detail.html", context)
 
-def product_detail(request, id:UUID):
-    product=get_object_or_404(Product,uid=id)
+def product_detail(request, id:UUID=None):
     context = get_serialized_data(request.user, "dashboard")
-    # context["item_num"]=context["product_count"]
-    context["product"] = product
+    if id:
+        product=get_object_or_404(Product,uid=id)
+        context["product"] = product
     return render(request, "website/product_detail.html", context)
 
 
