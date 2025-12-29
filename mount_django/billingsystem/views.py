@@ -2,6 +2,7 @@ import json
 from datetime import datetime
 from decimal import Decimal
 from uuid import UUID
+
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.db import transaction
@@ -38,7 +39,7 @@ def products_json(request):
     products_data = [
         {
             "id": p.id,
-            "uid":str(p.uid),
+            "uid": str(p.uid),
             "name": p.name,
             "category": p.category.name if p.category else "N/A",
             "cost_price": float(p.cost_price),
@@ -240,7 +241,7 @@ def save_product(request):
                 "message": "Product saved successfully!",
                 "product": {
                     "id": product.id,
-                    "uid" : str(product.uid),
+                    "uid": str(product.uid),
                     "name": product.name,
                     "cost_price": float(product.cost_price),
                     "selling_price": float(product.selling_price),
@@ -673,6 +674,7 @@ def invoice_layout(request, id):
             additionalcharge_info = AdditionalCharges.objects.filter(
                 additional_charges=order_list
             )
+            note = order_list.notes
 
             # Get basic order information with null checks
             customer_name = order_list.customer.name if order_list.customer else "N/A"
@@ -814,7 +816,7 @@ def invoice_layout(request, id):
                     },
                     "items": items,
                     "additional_charges": additional_charges,
-                    "remarks": "No remarks",
+                    "remarks": note,
                 },
             }
 
@@ -884,12 +886,12 @@ def settings(request):
     return render(request, "website/bill.html", context)
 
 
-def product_detail(request, id:UUID=None):
+def product_detail(request, id: UUID = None):
     context = get_serialized_data(request.user, "dashboard")
     if id:
-        product=get_object_or_404(Product,uid=id)
+        product = get_object_or_404(Product, uid=id)
         # separate key for separate product
-        context["product_detail"] = product 
+        context["product_detail"] = product
     return render(request, "website/product_detail.html", context)
 
 

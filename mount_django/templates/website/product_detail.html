@@ -8,12 +8,21 @@
 {% endblock %}
 
 {% block content %}
+  <script>
+        // DEFINE FUNCTION FIRST in head or before body
+        function closemodal() {
+            console.log("i am clicked closeProductModal..");
+            document.getElementById("addProductModal").style.display = "none";
+        }
+    </script>
+
+
 <!-- Add Product Modal - WITH SUGGESTIONS -->
 <div class="modal" id="addProductModal">
     <div class="modal-content">
         <div class="modal-header">
             <h3>Add New Product</h3>
-            <button class="close-btn" id="closeProductModal">&times;</button>
+            <button class="close-btn" onClick="closemodal()" id="closeProductModal">&times;</button>
         </div>
         <div class="modal-body">
             <div class="form-group" style="position: relative;">
@@ -54,7 +63,7 @@
             </div>
         </div>
         <div class="modal-footer">
-            <button class="btn btn-light" id="cancelProductBtn">Cancel</button>
+            <button class="btn btn-light" onClick="closemodal()" id="cancelProductBtn">Cancel</button>
             <button class="btn btn-primary" id="saveProductBtn">Save Product</button>
             <button class="btn btn-primary" id="updateProductBtn">Update Product</button>
         </div>

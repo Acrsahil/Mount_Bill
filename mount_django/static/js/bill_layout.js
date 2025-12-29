@@ -49,14 +49,37 @@ export function openModal() {
             console.log("Total:", data.invoice.amounts.total_amount);
 
 
+            document.getElementById("invoiceNumbers").innerText = data.invoice.order_id
+
             document.getElementById("companyName").innerText = data.invoice.company_name
             document.getElementById("companyPhone").innerText = data.invoice.company_phone
             document.getElementById("customerName").innerText = data.invoice.customer.name
-            document.getElementById("customerAddress").innerText = data.invoice.customer.address
+            if(data.invoice.customer.address != ""){
+                document.getElementById("customerAddress").innerText = data.invoice.customer.address
+            }else{
+                document.getElementById("customer_add").style.display = "none"
+            }
             document.getElementById("customerPhone").innerText = data.invoice.customer.phone
-            document.getElementById("customerPAN").innerText = data.invoice.customer.pan_id
+
+
+            if(data.invoice.customer.pan_id != "N/A"){
+                document.getElementById("customerPAN").innerText = data.invoice.customer.pan_id
+            }else{
+                document.getElementById("Panid").style.display = "none"
+            }
             document.getElementById("invoiceNumber").innerText = data.invoice.invoice_number
             document.getElementById("invoiceDate").innerText = data.invoice.dates.invoice_date_formatted
+
+            if(data.invoice.remarks != ""){
+                document.getElementById("remarksText").innerText = data.invoice.remarks
+            }else{
+                document.getElementById("rem").style.display = "none"
+                document.getElementById("remarksText").style.display = "none"
+            }
+
+            
+
+
 
             const tablebody = document.getElementById("itemsBody");
 
@@ -100,23 +123,37 @@ export function openModal() {
 
 
             document.getElementById("subTotal").innerHTML = "Rs. " + data.invoice.amounts.subtotal
-            document.getElementById("discountLabel").innerHTML = `Discount (${data.invoice.amounts.global_discount_percent}%):`
-            document.getElementById("discount").innerHTML ="Rs. " + data.invoice.amounts.global_discount_amount
 
-            document.getElementById("taxLabel").innerHTML = `Tax (${data.invoice.amounts.global_tax_percent}%):`
-            document.getElementById("tax").innerHTML ="Rs. " + data.invoice.amounts.global_tax_amount
+
+            if(data.invoice.amounts.global_discount_percent != '0'){
+                document.getElementById("discountLabel").innerHTML = `Discount (${data.invoice.amounts.global_discount_percent}%):`
+                document.getElementById("discount").innerHTML ="Rs. " + data.invoice.amounts.global_discount_amount
+            }else{
+                document.getElementById("dislabel").style.display = "none"
+            }
+
+            if(data.invoice.amounts.global_tax_percent != '0'){
+                document.getElementById("taxLabel").innerHTML = `Tax (${data.invoice.amounts.global_tax_percent}%):`
+                document.getElementById("tax").innerHTML ="Rs. " + data.invoice.amounts.global_tax_amount
+            }else{
+                document.getElementById("taxlabel").style.display = "none"
+            }
+
+
+
 
             document.getElementById("totalAmount").innerHTML = "Rs. " + data.invoice.amounts.total_amount
 
             document.getElementById("receivedAmount").innerHTML = "Rs. " + data.invoice.amounts.received_amount
-            document.getElementById("amountDue").innerHTML = "Rs. " + data.invoice.amounts.amount_due
-            
 
-            // document.getElementById("subTotal").innerHTML = "Rs. " + data.invoice.amounts.subtotal
-            // document.getElementById("subTotal").innerHTML = "Rs. " + data.invoice.amounts.subtotal
-            // document.getElementById("subTotal").innerHTML = "Rs. " + data.invoice.amounts.subtotal
-            // document.getElementById("subTotal").innerHTML = "Rs. " + data.invoice.amounts.subtotal
-            // document.getElementById("subTotal").innerHTML = "Rs. " + data.invoice.amounts.subtotal
+
+            if(data.invoice.amounts.amount_due != '0'){
+            document.getElementById("amountDue").innerHTML = "Rs. " + data.invoice.amounts.amount_due
+            }else{
+                document.getElementById("dueam").style.display = "none"
+            }
+
+
 
 
 
@@ -128,5 +165,12 @@ export function openModal() {
 function closeModal() {
     const tablebody = document.getElementById("itemsBody").innerText = "";
     modal.style.display = "none";
+    document.getElementById("Panid").style.display = "flex"
+    document.getElementById("customer_add").style.display = "flex"
+    document.getElementById("dislabel").style.display = "flex"
+    document.getElementById("taxlabel").style.display = "flex"
+    document.getElementById("dueam").style.display = "flex"
+    document.getElementById("rem").style.display = "block"
+    document.getElementById("remarksText").style.display = "block"
 }
 

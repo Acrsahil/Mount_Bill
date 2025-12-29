@@ -43,7 +43,7 @@
                 <span class="value" id="customerName"></span>
               </div>
 
-              <div class="info-line">
+              <div id="customer_add" class="info-line">
                 <span class="label">Address:</span>
                 <span class="value" id="customerAddress"></span>
               </div>
@@ -53,7 +53,7 @@
                 <span class="value" id="customerPhone"></span>
               </div>
 
-              <div class="info-line">
+              <div id= "Panid" class="info-line">
                 <span class="label">PAN No:</span>
                 <span class="value" id="customerPAN"></span>
               </div>
@@ -63,7 +63,7 @@
             <div class="right-info">
               <div class="info-line">
                 <span class="label">Invoice No:</span>
-                <span class="value" id="invoiceNumber"></span>
+                <span class="value" id="invoiceNumbers"></span>
               </div>
 
               <div class="info-line">
@@ -104,7 +104,7 @@
 
           <!-- REMARKS -->
           <div class="bill-remarks">
-            <h2>Remarks</h2>
+            <h2 id = "rem" >Remarks</h2>
             <h3 id="remarksText"></h3>
           </div>
 
@@ -114,11 +114,13 @@
               <span class="label">Sub Total:</span>
               <span class="value" id="subTotal">Rs.</span>
             </li>
-            <li>
+
+            <li id="dislabel">
               <span class="label" id="discountLabel"></span>
               <span class="value" id="discount">Rs.</span>
             </li>
-            <li>
+
+            <li id="taxlabel">
               <span class="label" id="taxLabel">Tax:</span>
               <span class="value" id="tax">Rs.</span>
             </li>
@@ -130,7 +132,7 @@
               <span class="label">Received Amount:</span>
               <span class="value" id="receivedAmount">Rs.</span>
             </li>
-            <li class="bordered">
+            <li class="bordered" id="dueam">
               <strong class="labelAmount">Amount Due:</strong>
               <strong class="valueAmount" id="amountDue">Rs.</strong>
             </li>

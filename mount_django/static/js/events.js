@@ -263,7 +263,10 @@ export function openAddProductModal(addProductModal) {
         quantity.style.display = 'flex';
 
     // Show modal
+    if(addProductModal){
+
     addProductModal.style.display = 'flex';
+    }
     // Auto-focus on product name field
     setTimeout(() => {
         const productNameInput = document.getElementById('productName');
@@ -274,7 +277,7 @@ export function openAddProductModal(addProductModal) {
 }
 
 export function closeProductModalFunc(addProductModal) {
-    addProductModal.style.display = 'none';
+    // addProductModal.style.display = 'none';
     hideSearchHints();
 }
 

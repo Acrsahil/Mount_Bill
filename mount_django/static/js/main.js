@@ -108,6 +108,14 @@ function deleteProductWrapper(productId) {
     deleteProduct(productId);
 }
 
+
+document.getElementById("addNewProductBtn").addEventListener("click",function(){
+    console.log("i am clicked dashboard/product-detail..")
+    // window.location.href="/product-detail/"
+    // document.getElementById("addProductModal").style.display = "flex"
+
+})
+
 // Make loadProducts available globally
 window.loadProducts = function() {
     loadProducts(products,productsTableBody, editProductWrapper, deleteProductWrapper);
