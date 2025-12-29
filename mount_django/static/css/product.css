@@ -13,6 +13,100 @@
 
     width: max-content;       /* JUST FIT BUTTONS */
 }
+.not-found {
+  display: flex;
+  justify-content: center;      /* horizontal center */
+  align-items: center;          /* vertical center */
+  height: 100%;                 /* fill parent container */
+  width: 100%;
+  text-align: center;
+  flex-direction: column;       /* stack icon + text vertically */
+  padding: 20px;
+  box-sizing: border-box;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.not-found.hidden {
+  display: none;                /* hide when not active */
+}
+
+.not-found .icon {
+  font-size: 60px;              /* size of the symbol */
+  color: #ff4d4f;               /* red for alert/attention */
+  margin-bottom: 15px;
+}
+
+.not-found h1 {
+  font-size: 32px;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.not-found p {
+  font-size: 16px;
+  color: #666;
+  margin: 5px 0;
+  line-height: 1.5;
+}
+
+
+.product-selected.deactivate{
+  display:none;
+}
+
+.empty-state {
+  display: none;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 300px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #f8fafc;
+  text-align: center;
+}
+
+.empty-state.active {
+  display:flex;
+} 
+.illustration {
+  width: 140px;
+  height: 120px;
+  margin-bottom: 16px;
+}
+
+.box {
+  width: 100%;
+  height: 70px;
+  border-radius: 12px;
+  background: #e5e7eb;
+}
+
+.line {
+  margin-top: 10px;
+  height: 10px;
+  border-radius: 6px;
+  background: #e5e7eb;
+}
+
+.line.short {
+  width: 60%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.empty-state h2 {
+  font-size: 18px;
+  color: #374151;
+}
+
+.empty-state p {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+
 .productlists.selected {
     background-color: rgb(243, 241, 241); /* light blue highlight */
     font-weight: bold;

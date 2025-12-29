@@ -219,13 +219,22 @@ export function addProductToList(product, productList) {
   li.classList.add('productlists');
   li.textContent = product.name;
   li.dataset.id = product.id;
+  li.dataset.uid = product.uid;
   productList.appendChild(li);
+
+ // Auto-select based on URL
+  const uidInUrl = selectedIdFromUrl();
+  if (uidInUrl && String(uidInUrl) === String(product.uid)) {
+      li.classList.add('selected');
+      const deleteBtn = document.querySelector('.delete-product-btn');
+      if (deleteBtn) deleteBtn.dataset.productId = product.id;
+  }
 
    li.addEventListener('click', () => {
         //for deleting the product,we need product id
         const deleteBtn = document.querySelector('.delete-product-btn'); 
         deleteBtn.dataset.productId = product.id;
-        console.log("yo id ho haii",product.uid)
+        console.log("yo id ho haii",deleteBtn.dataset.productId)
 
         history.pushState({}, '', `/dashboard/product-detail/${product.uid}`);
         document.querySelectorAll('.productlists').forEach(item =>
@@ -241,47 +250,70 @@ export function addProductToList(product, productList) {
 window.addEventListener('popstate',() =>
 {
     renderDetails(productsCache);
+
+    // Highlight li again
+    const uidInUrl = selectedIdFromUrl();
+    document.querySelectorAll('.productlists').forEach(li => {
+        if (String(li.dataset.uid) === String(uidInUrl)) {
+            li.classList.add('selected');
+        } else {
+            li.classList.remove('selected');
+        }
+    });
 })
 
 
-function selectedIdFromUrl(){
-    const parts = window.location.pathname.split('/').filter(Boolean);
-    return parts[parts.length - 1] || null; // last part of URL
+function selectedIdFromUrl() {
+  const parts = window.location.pathname.split('/').filter(Boolean);
+
+  const idx = parts.indexOf('product-detail');
+  if (idx === -1) return null;
+
+  // "/dashboard/product-detail/" => no uid
+  if (idx === parts.length - 1) return null;
+
+  return parts[idx + 1]; // uid
 }
     
 //function to get the selected product from URL
 function getSelectedProduct(products) {
-    const id = selectedIdFromUrl()
-    if (!id) return null;
+  const uid = selectedIdFromUrl();
+  if (!uid) return null;
 
-    // assuming product.id is numeric or string matching URL
-    return products.find(p => String(p.uid) === id);
+  return products.find(p => String(p.uid) === String(uid)) || null;
 }
 
 
 // ajax to show the product details in page
 function renderDetails(products) {
-    const productDetailTableBody = document.getElementById('productDetailTableBody');
-    const productTitle = document.getElementById('productTitle');
-    if (!productDetailTableBody) return;
+  const productDetailTableBody = document.getElementById('productDetailTableBody');
+  const productTitle = document.getElementById('productTitle');
+  if (!productDetailTableBody) return;
 
-    productDetailTableBody.innerHTML = '';
+  const uid = selectedIdFromUrl();
+  const selectedProduct = getSelectedProduct(products);
 
-    const selectedProduct = getSelectedProduct(products);
+  // always clear current UI first
+  productDetailTableBody.innerHTML = '';
+  if (productTitle) productTitle.textContent = '';
 
-    if (!selectedProduct) {
-        productDetailTableBody.innerHTML = `
-            <tr>
-                <td colspan="4">Product not found</td>
-            </tr>
-        `;
-        return;
-    }
-    //this for product name on top left
-    productTitle.textContent= selectedProduct.name;
+  // 1) No uid in URL => empty state
+  if (!uid) {
+    showEmptyState();
+    return;
+  }
 
-    //add details of the selected product in productdetail table 
-    addDetailToTable(selectedProduct, productDetailTableBody);
+  // 2) uid present but product missing => not found
+  if (!selectedProduct) {
+    showNotFound();
+    return;
+  }
+
+  // 3) product exists => show details
+  showProductDetail();
+
+  if (productTitle) productTitle.textContent = selectedProduct.name;
+  addDetailToTable(selectedProduct, productDetailTableBody);
 }
 
 //add product detail on table
@@ -350,8 +382,7 @@ export function loadProducts(products, productsTableBody, editProduct, deletePro
 document.addEventListener('DOMContentLoaded', () => {
     const deleteBtn = document.querySelector('.delete-product-btn'); 
     deleteBtn.addEventListener('click', function() {
-        const selectedLi = document.querySelector('.productlists.selected');
-        const id = selectedLi.dataset.id;
+        const id = deleteBtn.dataset.productId;
         console.log("Deleting product", id);
         deleteProduct(id);
         });
@@ -784,10 +815,37 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 });
 
+function showEmptyState() {
+  document.querySelector('.empty-state')?.classList.add('active');
+  document.querySelector('.not-found')?.classList.add('hidden');
+  document.querySelector('.product-selected')?.classList.add('deactivate');
+}
+
+function showNotFound() {
+  document.querySelector('.empty-state')?.classList.remove('active');
+  document.querySelector('.not-found')?.classList.remove('hidden');
+  document.querySelector('.product-selected')?.classList.add('deactivate');
+}
+
+function showProductDetail() {
+  document.querySelector('.empty-state')?.classList.remove('active');
+  document.querySelector('.not-found')?.classList.add('hidden');
+  document.querySelector('.product-selected')?.classList.remove('deactivate');
+}
+
 export function deleteProduct(productId) {
     if (!productId) return;
 
-    if (confirm('Are you sure you want to delete this product?')) {
+        Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to undo this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, delete it!'
+    }).then((result) => {
+        if (result.isConfirmed) {
         fetch(`/dashboard/delete-product/${productId}/`, {
             method: 'DELETE',
             headers: {
@@ -800,11 +858,20 @@ export function deleteProduct(productId) {
             return res.json();
         })
         .then(data => {
-            alert('Product deleted successfully!');
+            Swal.fire({
+            title: 'Deleted!',
+            text: 'Product has been deleted.',
+            icon: 'success',
+            timer: 1500,  // disappears after 1.5 seconds
+            showConfirmButton: false
+        });
             
             // Remove from frontend cache
-            productsCache = productsCache.filter(p => p.id !== productId);
+            productsCache = productsCache.filter(p => String(p.id) !== String(productId));
 
+            //remove from url 
+           history.replaceState({}, '', `/dashboard/product-detail/`);
+            renderDetails(productsCache);
             // Remove from DOM immediately
             const li = document.querySelector(`.productlists[data-id="${productId}"]`);
             if (li) li.remove();
@@ -822,6 +889,7 @@ export function deleteProduct(productId) {
             alert('Error deleting product. Check console.');
         });
     }
+});
 }
 
 // AddStock modal section
