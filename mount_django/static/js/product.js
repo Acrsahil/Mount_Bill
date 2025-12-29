@@ -228,13 +228,17 @@ export function addProductToList(product, productList) {
       li.classList.add('selected');
       const deleteBtn = document.querySelector('.delete-product-btn');
       if (deleteBtn) deleteBtn.dataset.productId = product.id;
+      const editBtn = document.querySelector('.edit-product-btn');
+      if (editBtn) editBtn.dataset.productId = product.id;
   }
 
    li.addEventListener('click', () => {
         //for deleting the product,we need product id
-        const deleteBtn = document.querySelector('.delete-product-btn'); 
+        const deleteBtn = document.querySelector('.delete-product-btn');
+        const editBtn = document.querySelector('.edit-product-btn'); 
         deleteBtn.dataset.productId = product.id;
-        console.log("yo id ho haii",deleteBtn.dataset.productId)
+        editBtn.dataset.productId = product.id;
+        console.log("yo id ho haii",editBtn.dataset.productId)
 
         history.pushState({}, '', `/dashboard/product-detail/${product.uid}`);
         document.querySelectorAll('.productlists').forEach(item =>
@@ -380,13 +384,23 @@ export function loadProducts(products, productsTableBody, editProduct, deletePro
 
 ///deleting inside product-detail page
 document.addEventListener('DOMContentLoaded', () => {
-    const deleteBtn = document.querySelector('.delete-product-btn'); 
+    const deleteBtn = document.querySelector('.delete-product-btn');
+    const editBtn = document.querySelector('.edit-product-btn'); 
     deleteBtn.addEventListener('click', function() {
         const id = deleteBtn.dataset.productId;
         console.log("Deleting product", id);
         deleteProduct(id);
         });
+    editBtn.addEventListener('click',function(){
+        const id = editBtn.dataset.productId;
+        console.log("udpating the product",id);
+        editProduct(id);
+    })
+    
     });
+
+    
+
 
 
   document.addEventListener('click', function(e) {
@@ -669,7 +683,7 @@ async function reduceStock(reduceStockModal) {
 
 // Product edit/delete functions
 export async function editProduct(productId) {
-    const product = window.products.find(p => p.id === productId);
+    const product = window.products.find(p => String(p.id) === String(productId));
     const addProductModal = document.getElementById('addProductModal');
     addProductModal.dataset.id = productId
     if (product) {
@@ -772,7 +786,35 @@ export async function updateProduct(addProductModal) {
             if (window.loadProducts) {
                 window.loadProducts();
             }
+            
 
+            // UPDATE PRODUCT NAME IN LIST 
+            const productLi = document.querySelector(
+                `.productlists[data-id="${result.product.id}"]`
+            );
+            if (productLi) {
+                productLi.textContent = result.product.name;
+            }
+
+            // Update details title
+            const productTitle = document.getElementById('productTitle');
+            productTitle.innerHTML = result.product.name;
+
+              // Update the single row directly
+            const productDetailTableBody = document.getElementById('productDetailTableBody');
+            if (productDetailTableBody) {
+                let row = productDetailTableBody.querySelector('tr');
+                if (!row) {
+                    row = document.createElement('tr');
+                    productDetailTableBody.appendChild(row);
+                }
+                row.innerHTML = `
+                    <td>${String(result.product.quantity || 0)}</td>
+                    <td>$${result.product.selling_price}</td>
+                    <td>$${result.product.cost_price}</td>
+                    <td>$${(result.product.cost_price * (result.product.quantity || 0)).toFixed(2)}</td>
+                `;
+            }
             // Show success message
             showAlert(result.message, 'success');
 

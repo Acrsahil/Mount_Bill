@@ -888,7 +888,8 @@ def product_detail(request, id:UUID=None):
     context = get_serialized_data(request.user, "dashboard")
     if id:
         product=get_object_or_404(Product,uid=id)
-        context["product"] = product
+        # separate key for separate product
+        context["product_detail"] = product 
     return render(request, "website/product_detail.html", context)
 
 
