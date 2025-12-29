@@ -1,121 +1,156 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Invoices</title>
-    <link rel="stylesheet" href="{% static 'css/bill_layout.css' %}" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
-  </head>
-  <body>
-    <!-- Invoice Modal -->
-    <div id="invoiceModal" class="modal">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2 id="invoiceTitle">Invoice Details</h2>
-          <span class="close">&times;</span>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Invoice</title>
+
+  <link rel="stylesheet" href="{% static 'css/bill_layout.css' %}" />
+  <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+</head>
+
+<body>
+
+<div id="invoiceModal" class="modal">
+  <div class="modal-content">
+
+    <!-- HEADER -->
+    <div class="modal-header">
+      <h2>Invoice No. <span id="invoiceNumber"></span></h2>
+      <span class="close">&times;</span>
+    </div>
+
+    <div class="modal-scrollable">
+      <div class="bill-container">
+
+        <!-- COMPANY HEADER -->
+        <div class="bill-header">
+          <h1 id="companyName"></h1>
+          <p id="companyAddress"></p>
+          <p id="companyPhone"></p>
         </div>
-        
-        <div class="modal-scrollable">
-          <div class="bill-container">
-            <div class="bill-header">
-              <h1 id="companyName">Loading...</h1>
-              <p>Gokarneshwor-4, Kathmandu</p>
-              <p id="companyPhone">Loading...</p>
-            </div>
-            
-            <div class="bill-body">
-              <div class="top-row">
-                <!-- LEFT SIDE -->
-                <div class="left-info">
-                  <div class="info-line">
-                    <span class="label">Buyer’s Name:</span>
-                    <span class="value" id="customerName">Loading...</span>
-                  </div>
 
-                  <div class="info-line">
-                    <span class="label">Address:</span>
-                    <span class="value" id="customerAddress">Loading...</span>
-                  </div>
+        <!-- BODY -->
+        <div class="bill-body">
+          <div class="top-row">
 
-                  <div class="info-line">
-                    <span class="label">Phone No:</span>
-                    <span class="value" id="customerPhone">Loading...</span>
-                  </div>
-
-                  <div class="info-line">
-                    <span class="label">PAN No:</span>
-                    <span class="value" id="customerPAN">Loading...</span>
-                  </div>
-
-                  <div class="info-line">
-                    <span class="label">Balance:</span>
-                    <span class="value" id="customerBalance">Loading...</span>
-                  </div>
-                </div>
-
-                <!-- RIGHT SIDE -->
-                <div class="right-info">
-                  <div class="info-line">
-                    <span class="label">Invoice No:</span>
-                    <span class="value" id="invoiceNumber">Loading...</span>
-                  </div>
-
-                  <div class="info-line">
-                    <span class="label">Invoice Date:</span>
-                    <span class="value" id="invoiceDate">Loading...</span>
-                  </div>
-
-                  <div class="info-line">
-                    <span class="label">Payment Mode:</span>
-                    <span class="value" id="paymentMode">Loading...</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div class="info-table">
-              <table class="items-table" border="1">
-                <thead>
-                  <tr>
-                    <th>S.N.</th>
-                    <th>Name</th>
-                    <th>Quantity</th>
-                    <th>Rate</th>
-                    <th>Discount</th>
-                    <th>Amount</th>
-                  </tr>
-                </thead>
-                <tbody id="itemsBody" class="bill-item-body">
-                  <!-- Items will be populated by JavaScript -->
-                </tbody>
-              </table>
-            </div>
-
-            <div class="bill-bottom">
-              <!-- Left Column -->
-              <div class="bill-remarks">
-                <h2>Remarks</h2>
-                <div id="remarksContent">Loading...</div>
+            <!-- LEFT : CUSTOMER -->
+            <div class="left-info">
+              <div class="info-line">
+                <span class="label">Buyer’s Name:</span>
+                <span class="value" id="customerName"></span>
               </div>
 
-              <!-- Right Column -->
-              <ul id="amountsList" class="bill-amounts">
-                <!-- Amounts will be populated by JavaScript -->
-              </ul>
+              <div class="info-line">
+                <span class="label">Address:</span>
+                <span class="value" id="customerAddress"></span>
+              </div>
+
+              <div class="info-line">
+                <span class="label">Phone No:</span>
+                <span class="value" id="customerPhone"></span>
+              </div>
+
+              <div class="info-line">
+                <span class="label">PAN No:</span>
+                <span class="value" id="customerPAN"></span>
+              </div>
             </div>
+
+            <!-- RIGHT : INVOICE META -->
+            <div class="right-info">
+              <div class="info-line">
+                <span class="label">Invoice No:</span>
+                <span class="value" id="invoiceNumber"></span>
+              </div>
+
+              <div class="info-line">
+                <span class="label">Invoice Date:</span>
+                <span class="value" id="invoiceDate"></span>
+              </div>
+
+              <div class="info-line">
+                <span class="label">Payment Mode:</span>
+                <span class="value">Cash</span>
+              </div>
+            </div>
+
           </div>
         </div>
-        
-        <div class="bill-footer">
-          <button class="delete-btn"><i class="fa fa-trash"></i> Delete</button>
-          <button class="edit-btn"><i class="fa fa-edit"></i> Edit</button>
-          <button id="printBtn" class="print-btn"><i class="fa fa-print"></i> Print PDF</button>
-          <button id="downloadBtn" class="download-btn"><i class="fa fa-download"></i> Download PDF</button>
+
+        <!-- ITEMS TABLE -->
+        <div class="info-table">
+          <table class="items-table" border="1">
+            <thead>
+              <tr>
+                <th>S.N.</th>
+                <th>Name</th>
+                <th>Quantity</th>
+                <th>Rate</th>
+                <th>Discount</th>
+                <th>Amount</th>
+              </tr>
+            </thead>
+            <tbody id="itemsBody">
+              <!-- JS will inject rows -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- BOTTOM -->
+        <div class="bill-bottom">
+
+          <!-- REMARKS -->
+          <div class="bill-remarks">
+            <h2>Remarks</h2>
+            <h3 id="remarksText"></h3>
+          </div>
+
+          <!-- AMOUNTS -->
+          <ul class="bill-amounts">
+            <li>
+              <span class="label">Sub Total:</span>
+              <span class="value" id="subTotal">Rs.</span>
+            </li>
+            <li>
+              <span class="label" id="discountLabel"></span>
+              <span class="value" id="discount">Rs.</span>
+            </li>
+            <li>
+              <span class="label" id="taxLabel">Tax:</span>
+              <span class="value" id="tax">Rs.</span>
+            </li>
+            <li>
+              <span class="label">Total Amount:</span>
+              <span class="value" id="totalAmount">Rs.</span>
+            </li>
+            <li>
+              <span class="label">Received Amount:</span>
+              <span class="value" id="receivedAmount">Rs.</span>
+            </li>
+            <li class="bordered">
+              <strong class="labelAmount">Amount Due:</strong>
+              <strong class="valueAmount" id="amountDue">Rs.</strong>
+            </li>
+          </ul>
+
         </div>
       </div>
     </div>
 
-  </body>
+    <!-- FOOTER BUTTONS -->
+    <div class="bill-footer">
+      <button class="delete-btn"><i class="fa fa-trash"></i></button>
+      <button class="edit-btn"><i class="fa fa-edit"></i></button>
+      <button class="print-btn"><i class="fa fa-print"></i> Print PDF</button>
+      <button class="download-btn"><i class="fa fa-download"></i> Download PDF</button>
+    </div>
+
+  </div>
+</div>
+
+</body>
 </html>
+

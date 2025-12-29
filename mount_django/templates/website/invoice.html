@@ -99,7 +99,6 @@
 </div>
 
 <!-- Include the modals (same as your dashboard) -->
-{% include "website/bill_layout.html" %}
 <div class="modal" id="createInvoiceModal">
     <!-- Your existing create invoice modal HTML -->
 </div>
@@ -119,6 +118,5 @@ window.djangoData = {
 </script>
 
 <script type="module" src="{% static 'js/delete.js' %}"></script>
-<script type="module" src="{% static 'js/bill_layout.js' %}"></script>
 <script type="module" src="{% static 'js/main.js' %}"></script>
 {% endblock %}

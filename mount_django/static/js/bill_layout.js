@@ -95,7 +95,29 @@ export function openModal() {
 
             }
 
-            // Append to table
+
+            // Bottom total related data
+
+
+            document.getElementById("subTotal").innerHTML = "Rs. " + data.invoice.amounts.subtotal
+            document.getElementById("discountLabel").innerHTML = `Discount (${data.invoice.amounts.global_discount_percent}%):`
+            document.getElementById("discount").innerHTML ="Rs. " + data.invoice.amounts.global_discount_amount
+
+            document.getElementById("taxLabel").innerHTML = `Tax (${data.invoice.amounts.global_tax_percent}%):`
+            document.getElementById("tax").innerHTML ="Rs. " + data.invoice.amounts.global_tax_amount
+
+            document.getElementById("totalAmount").innerHTML = "Rs. " + data.invoice.amounts.total_amount
+
+            document.getElementById("receivedAmount").innerHTML = "Rs. " + data.invoice.amounts.received_amount
+            document.getElementById("amountDue").innerHTML = "Rs. " + data.invoice.amounts.amount_due
+            
+
+            // document.getElementById("subTotal").innerHTML = "Rs. " + data.invoice.amounts.subtotal
+            // document.getElementById("subTotal").innerHTML = "Rs. " + data.invoice.amounts.subtotal
+            // document.getElementById("subTotal").innerHTML = "Rs. " + data.invoice.amounts.subtotal
+            // document.getElementById("subTotal").innerHTML = "Rs. " + data.invoice.amounts.subtotal
+            // document.getElementById("subTotal").innerHTML = "Rs. " + data.invoice.amounts.subtotal
+
 
 
         }
