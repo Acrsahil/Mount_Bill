@@ -240,7 +240,7 @@ def save_product(request):
                 "message": "Product saved successfully!",
                 "product": {
                     "id": product.id,
-                    "uid": str(product.uid),
+                    "uid" : str(product.uid),
                     "name": product.name,
                     "cost_price": float(product.cost_price),
                     "selling_price": float(product.selling_price),
@@ -644,32 +644,53 @@ def delete_invoice(request, id):
 
 @require_http_methods(["DELETE"])
 def delete_product(request, id):
+    print("this is id-> ", id)
     product = get_object_or_404(Product, id=id)
     product.delete()
     return JsonResponse({"success": True})
 
 
-@login_required
-@csrf_exempt
+# @login_required
+# @csrf_exempt
 def invoice_layout(request, id):
     if request.method == "GET":
         try:
             order_list = OrderList.objects.get(id=id)
+
+            # Check if order_list exists
+            if not order_list:
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "error": "Order not found",
+                        "message": f"No order found with ID: {id}",
+                    },
+                    status=404,
+                )
+
             bill_info = Bill.objects.filter(order=order_list)
             ordersum_info = OrderSummary.objects.filter(order=order_list)
             additionalcharge_info = AdditionalCharges.objects.filter(
                 additional_charges=order_list
             )
-            summary_info = OrderSummary.objects.filter(order=order_list)
-            customer_name = order_list.customer.name
-            customer_address = order_list.customer.address
-            customer_Pan_id = order_list.customer.pan_id
+
+            # Get basic order information with null checks
+            customer_name = order_list.customer.name if order_list.customer else "N/A"
+            customer_address = (
+                order_list.customer.address if order_list.customer else "N/A"
+            )
+            customer_Pan_id = (
+                order_list.customer.pan_id
+                if order_list.customer and order_list.customer.pan_id
+                else "N/A"
+            )
             invoice_date = order_list.order_date
-            company_phone = order_list.company.phone
-            customer_phone = order_list.customer.phone
-            company_name = order_list.company.name
+            company_phone = order_list.company.phone if order_list.company else "N/A"
+            customer_phone = order_list.customer.phone if order_list.customer else "N/A"
+            company_name = order_list.company.name if order_list.company else "N/A"
             order_id = order_list.id
 
+            # Initialize amounts
             total_amount = 0
             global_tax = 0
             global_discount = 0
@@ -677,67 +698,164 @@ def invoice_layout(request, id):
             received_amount = 0
             amount_due = 0
 
-            for data in summary_info:
-                total_amount = data.total_amount
-                global_tax = data.tax
-                global_discount = data.discount
-                received_amount = data.received_amount
-                amount_due = data.due_amount
-                final_amount = data.final_amount
-                print("this is global->dis-> ", global_discount)
-                print("this is global->dis-> ", global_discount)
-            dis_amount = global_discount / 100 * total_amount
-            tax_amount = global_tax / 100 * (total_amount - dis_amount)
+            # Get summary information
+            if ordersum_info.exists():
+                for data in ordersum_info:
+                    total_amount = data.total_amount if data.total_amount else 0
+                    global_tax = data.tax if data.tax else 0
+                    global_discount = data.discount if data.discount else 0
+                    received_amount = (
+                        data.received_amount if data.received_amount else 0
+                    )
+                    amount_due = data.due_amount if data.due_amount else 0
+                    final_amount = data.final_amount if data.final_amount else 0
+                    break  # Assuming there's only one summary per order
 
-            for bill in bill_info:
-                print(bill)
-                print("Order-> ", bill.order)
-                print("Product -> ", bill.product)
-                print("Qty-> ", bill.quantity)
-                print("Price", bill.product_price)
-            print()
+            # Calculate derived amounts
+            dis_amount = (
+                (global_discount / 100) * total_amount if global_discount else 0
+            )
+            tax_amount = (
+                (global_tax / 100) * (total_amount - dis_amount) if global_tax else 0
+            )
 
-            for data in ordersum_info:
-                print("Order-> ", data.order)
-                print("Total Amount-> ", data.total_amount)
-                print("Discount % -> ", data.discount)
-                print("Tax Amount", data.tax)
-                print("Final Amount", data.final_amount)
-                print("Received Amount-> ", data.received_amount)
-                print("Due Amount-> ", data.due_amount)
-            print()
+            # Prepare items list
+            items = []
+            if bill_info.exists():
+                for bill in bill_info:
+                    # Check if product exists
+                    if bill.product:
+                        item = {
+                            "id": bill.id,
+                            "product_id": bill.product.id,
+                            "product_name": bill.product.name
+                            if bill.product.name
+                            else "Unknown Product",
+                            "quantity": bill.quantity if bill.quantity else 0,
+                            "rate": float(bill.product_price)
+                            if bill.product_price
+                            else 0,
+                            "product_price": float(bill.product_price)
+                            if bill.product_price
+                            else 0,
+                            "line_total": float(bill.product_price * bill.quantity)
+                            if bill.product_price and bill.quantity
+                            else 0,
+                            "discount_percent": 0,
+                            "discount_amount": 0,
+                        }
+                    else:
+                        item = {
+                            "id": bill.id,
+                            "product_id": None,
+                            "product_name": "Product not found",
+                            "quantity": bill.quantity if bill.quantity else 0,
+                            "rate": 0,
+                            "product_price": 0,
+                            "line_total": 0,
+                            "discount_percent": 0,
+                            "discount_amount": 0,
+                        }
+                    items.append(item)
 
-            for data in additionalcharge_info:
-                print("Charge Name -> ", data.additional_charges)
-                print("Charge Name -> ", data.charge_name)
-                print("Total Amount-> ", data.additional_amount)
+            # Prepare additional charges
+            additional_charges = []
+            if additionalcharge_info.exists():
+                for charge in additionalcharge_info:
+                    charge_data = {
+                        "charge_name": charge.charge_name
+                        if charge.charge_name
+                        else "Additional Charge",
+                        "charge_amount": float(charge.additional_amount)
+                        if charge.additional_amount
+                        else 0,
+                        "charge_type": getattr(charge, "charge_type", "additional"),
+                    }
+                    additional_charges.append(charge_data)
 
-            # return JsonResponse({"success": True, "Bill_Data": bill_info})
-            return render(
-                request,
-                "website/bill_layout.html",
-                {
+            # Build response data
+            response_data = {
+                "success": True,
+                "invoice": {
                     "order_id": order_id,
-                    "customer": customer_name,
-                    "total_amount": total_amount,
-                    "address": customer_address,
-                    "context": bill_info,
-                    "pan_id": customer_Pan_id,
-                    "invoice_date": invoice_date,
+                    "invoice_number": f"INV-{order_id:03d}",
                     "company_name": company_name,
                     "company_phone": company_phone,
-                    "customer_phone": customer_phone,
-                    "global_tax": global_tax,
-                    "global_tax_amount": tax_amount,
-                    "global_discount": global_discount,
-                    "global_discount_amount": dis_amount,
-                    "amount_due": amount_due,
-                    "received_amount": received_amount,
-                    "final_amount": final_amount,
+                    "company_address": "Gokarneshwor-4, Kathmandu",
+                    "customer": {
+                        "name": customer_name,
+                        "address": customer_address,
+                        "phone": customer_phone,
+                        "pan_id": customer_Pan_id,
+                    },
+                    "dates": {
+                        "invoice_date": invoice_date.strftime("%Y-%m-%d")
+                        if invoice_date
+                        else None,
+                        "invoice_date_formatted": invoice_date.strftime("%Y %b %d")
+                        if invoice_date
+                        else "N/A",
+                    },
+                    "amounts": {
+                        "subtotal": float(total_amount),
+                        "total_amount": float(total_amount),
+                        "global_tax_percent": float(global_tax),
+                        "global_tax_amount": float(tax_amount),
+                        "global_discount_percent": float(global_discount),
+                        "global_discount_amount": float(dis_amount),
+                        "final_amount": float(final_amount),
+                        "received_amount": float(received_amount),
+                        "amount_due": float(amount_due),
+                        "balance": float(amount_due),
+                    },
+                    "payment_info": {
+                        "payment_mode": "Cash",
+                        "status": "Paid" if amount_due == 0 else "Pending",
+                    },
+                    "items": items,
+                    "additional_charges": additional_charges,
+                    "remarks": "No remarks",
                 },
-            )
+            }
+
+            return JsonResponse(response_data, safe=False)
+
         except OrderList.DoesNotExist:
-            return JsonResponse({"success": False, "error": "Not found"})
+            return JsonResponse(
+                {
+                    "success": False,
+                    "error": "Invoice not found",
+                    "message": f"No invoice found with ID: {id}",
+                },
+                status=404,
+            )
+
+        except Exception as e:
+            # Log the full error for debugging
+            import traceback
+
+            error_details = traceback.format_exc()
+            print(f"Error in invoice_layout: {e}")
+            print(f"Traceback: {error_details}")
+
+            return JsonResponse(
+                {
+                    "success": False,
+                    "error": "Server error",
+                    "message": str(e),
+                    "details": "Check if all related objects (customer, company, product) exist in database",
+                },
+                status=500,
+            )
+
+    return JsonResponse(
+        {
+            "success": False,
+            "error": "Method not allowed",
+            "message": "Only GET method is allowed",
+        },
+        status=405,
+    )
 
 
 def invoices(request):

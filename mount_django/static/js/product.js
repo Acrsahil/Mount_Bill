@@ -157,7 +157,9 @@ export async function saveProduct(addProductModal) {
     }
            // Add product to local cache and render table/list
             productsCache.unshift(result.product);
+
             renderProducts(); // rebuild table/list from DB
+        
             updateProductCounts(productsCache.length);
 
             // Show success message
