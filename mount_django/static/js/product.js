@@ -158,8 +158,13 @@ export async function saveProduct(addProductModal) {
            // Add product to local cache and render table/list
             productsCache.unshift(result.product);
 
+            //the uid of newly added product
+            history.pushState({}, '', `/dashboard/product-detail/${result.product.uid}`);
+
             renderProducts(); // rebuild table/list from DB
-        
+            
+            renderDetails(productsCache)
+
             updateProductCounts(productsCache.length);
 
             // Show success message
@@ -225,7 +230,11 @@ export function addProductToList(product, productList) {
  // Auto-select based on URL
   const uidInUrl = selectedIdFromUrl();
   if (uidInUrl && String(uidInUrl) === String(product.uid)) {
-      li.classList.add('selected');
+    document.querySelectorAll('.productlists').forEach(item =>
+      item.classList.remove('selected')
+    );
+
+    li.classList.add('selected');
       const deleteBtn = document.querySelector('.delete-product-btn');
       if (deleteBtn) deleteBtn.dataset.productId = product.id;
       const editBtn = document.querySelector('.edit-product-btn');
