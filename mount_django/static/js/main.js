@@ -85,6 +85,7 @@ const saveProductBtn = document.getElementById('saveProductBtn');
 const saveClientBtn = document.getElementById('saveClientBtn');
 const addItemBtn = document.getElementById('addItemBtn');
 const invoiceItemsBody = document.getElementById('invoiceItemsBody');
+// const productList = document.getElementById('productList');
 const invoicesTableBody = document.getElementById('invoicesTableBody');
 const clientsTableBody = document.getElementById('clientsTableBody');
 const productsTableBody = document.getElementById('productsTableBody');
@@ -107,14 +108,6 @@ function editProductWrapper(productId) {
 function deleteProductWrapper(productId) {
     deleteProduct(productId);
 }
-
-
-document.getElementById("addNewProductBtn").addEventListener("click",function(){
-    console.log("i am clicked dashboard/product-detail..")
-    // window.location.href="/product-detail/"
-    // document.getElementById("addProductModal").style.display = "flex"
-
-})
 
 // Make loadProducts available globally
 window.loadProducts = function() {

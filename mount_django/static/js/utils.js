@@ -92,4 +92,3 @@ export function updateClientStats(clients) {
     if (clientInvoicesEl) clientInvoicesEl.textContent = clientInvoices;
     if (clientRevenueEl) clientRevenueEl.textContent = `$${clientRevenue.toFixed(2)}`;
 }
-

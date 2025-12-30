@@ -173,4 +173,3 @@ function closeModal() {
     document.getElementById("rem").style.display = "block"
     document.getElementById("remarksText").style.display = "block"
 }
-

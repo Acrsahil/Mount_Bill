@@ -28,55 +28,6 @@ let currentSelectedProductHintIndex = -1;
 let currentSelectedProductNameHintIndex = -1;
 let currentSelectedCategoryHintIndex = -1;
 
-const addClientBtn = document.getElementById('addClientBtn');
-const addClientModals = document.getElementById('addClientModals')
-addClientBtn.addEventListener('click', () =>{
-    console.log(addClientModals)
-    // addClientModals.style.display = 'flex';
-    openClientModal();
-}
- 
-
-)
-
-const saveClientBtn = document.getElementById('saveClientBtn');
-saveClientBtn.addEventListener('click', ()=> {
-    saveClient(addClientModals, clientsTableBody);
-})
-
-function closeClientModalFunc(addClientModals) {
-    console.log("print time")
-    console.log(addClientModals)
-    if (addClientModals) {
-        
-        addClientModals.style.display = 'none';
-    }
-}
-
-const closeClientModal = document.getElementById('closeClientModal')
-closeClientModal.addEventListener('click',() => {
-    closeClientModalFunc(addClientModals)
-})
-
-const cancelClientBtn = document.getElementById('cancelClientBtn')
-cancelClientBtn.addEventListener('click',()=>{
-    closeClientModalFunc(addClientModals)
-})
-
-const addNewProductBtn = document.getElementById('addNewProductBtn')
-addNewProductBtn.addEventListener('click',()=>{
-    openAddProductModal(addProductModal);
-})
-
-const cancelProductBtn = document.getElementById('cancelProductBtn')
-cancelProductBtn.addEventListener('click', ()=>{
-    closeProductModalFunc(addProductModal);
-})
-
-const closeProductModal = document.getElementById('closeProductModal')
-closeProductModal.addEventListener('click', ()=>{
-    closeProductModalFunc(addProductModal);
-})
 // Export functions to be used by main.js
 export function setupEventListeners(
     createInvoiceBtn,
@@ -101,13 +52,14 @@ export function setupEventListeners(
     menuItems,
     tabContents,
     invoiceItemsBody,
+    productList,
     invoicesTableBody,
     clientsTableBody,
     invoiceNumber,
     invoiceDate,
     createInvoiceModal,
     addProductModal,
-    addClientModals
+    addClientModal
 ) {
     if (createInvoiceBtn) {
         createInvoiceBtn.addEventListener('click', () => {
@@ -117,18 +69,20 @@ export function setupEventListeners(
     if (addProductBtn) addProductBtn.addEventListener('click', () =>{ 
         console.log("am i getting clicked??")
         openAddProductModal(addProductModal)});
-    // if (addNewProductBtn) addNewProductBtn.addEventListener('click', () => openAddProductModal(addProductModal));
-
+    if (addNewProductBtn) addNewProductBtn.addEventListener('click', () => openAddProductModal(addProductModal));
+    if (addClientBtn) addClientBtn.addEventListener('click', () => openClientModal(addClientModal));
     if (closeInvoiceModal) closeInvoiceModal.addEventListener('click', () => closeInvoiceModalFunc(createInvoiceModal));
-    // if (closeProductModal) closeProductModal.addEventListener('click', () => closeProductModalFunc(addProductModal));
+    if (closeProductModal) closeProductModal.addEventListener('click', () => closeProductModalFunc(addProductModal));
+    if (closeClientModal) closeClientModal.addEventListener('click', () => closeClientModalFunc(addClientModal));
     if (cancelInvoiceBtn) cancelInvoiceBtn.addEventListener('click', () => closeInvoiceModalFunc(createInvoiceModal));
-    // if (cancelProductBtn) cancelProductBtn.addEventListener('click', () => closeProductModalFunc(addProductModal));
-
+    if (cancelProductBtn) cancelProductBtn.addEventListener('click', () => closeProductModalFunc(addProductModal));
+    if (cancelClientBtn) cancelClientBtn.addEventListener('click', () => closeClientModalFunc(addClientModal));
     if (saveInvoiceBtn) saveInvoiceBtn.addEventListener('click', () => saveInvoice(createInvoiceModal, invoiceItemsBody));
     if (saveProductBtn) saveProductBtn.addEventListener('click', () => saveProduct(addProductModal));
+    if (saveClientBtn) saveClientBtn.addEventListener('click', () => saveClient(addClientModal, clientsTableBody));
     if (addItemBtn) addItemBtn.addEventListener('click', () => addInvoiceItem(invoiceItemsBody));
     if (searchInput) searchInput.addEventListener('input', () => filterInvoices(window.invoices, searchInput, invoicesTableBody));
-    if (productSearchInput) productSearchInput.addEventListener('input', () => filterProducts(window.products, productSearchInput, productsTableBody, editProduct, deleteProduct));
+    if (productSearchInput) productSearchInput.addEventListener('input', () => filterProducts(window.products, productSearchInput, productList, editProduct, deleteProduct));
     if (clientSearchInput) clientSearchInput.addEventListener('input', () => filterClients(window.clients, clientSearchInput, clientsTableBody));
 
     // Global discount and tax listeners
@@ -168,12 +122,11 @@ export function setupEventListeners(
 }
 
 
-// // CLIENT MANAGEMENT FUNCTIONS
-export function openClientModal() {
+// CLIENT MANAGEMENT FUNCTIONS
+export function openClientModal(addClientModal) {
     console.log('Opening client modal');
     
-    
-    if (!addClientModals) {
+    if (!addClientModal) {
         console.error('Client modal not found!');
         return;
     }
@@ -183,8 +136,7 @@ export function openClientModal() {
     document.getElementById('clientPhoneInput').value = '';
     
     // Show the modal
-    addClientModals.style.display = 'flex';
-    console.log("is this getting clicked.......",addClientModals)
+    addClientModal.style.display = 'flex';
     
     // Auto-focus on the first input field
     setTimeout(() => {
@@ -195,11 +147,14 @@ export function openClientModal() {
     }, 100);
 }
 
-
+export function closeClientModalFunc(addClientModal) {
+    if (addClientModal) {
+        addClientModal.style.display = 'none';
+    }
+}
 
 // Save client to database via AJAX
-export async function saveClient(addClientModals, clientsTableBody) {
-    console.log("yo k ho",addClientModals);
+export async function saveClient(addClientModal, clientsTableBody) {
     // Only get fields that exist in the simplified modal
     const clientName = document.getElementById('clientNameInput').value.trim();
     const clientPhone = document.getElementById('clientPhoneInput').value.trim();
@@ -273,9 +228,8 @@ export async function saveClient(addClientModals, clientsTableBody) {
             showAlert(result.message, 'success');
             // Close modal after short delay
             setTimeout(() => {
-                
-                closeClientModalFunc(addClientModals);
-            }, 100);
+                closeClientModalFunc(addClientModal);
+            }, 1500);
 
         } else {
             showAlert('Error: ' + (result.error || 'Failed to save client'), 'error');
@@ -310,10 +264,7 @@ export function openAddProductModal(addProductModal) {
         quantity.style.display = 'flex';
 
     // Show modal
-    if(addProductModal){
-
     addProductModal.style.display = 'flex';
-    }
     // Auto-focus on product name field
     setTimeout(() => {
         const productNameInput = document.getElementById('productName');
@@ -324,7 +275,7 @@ export function openAddProductModal(addProductModal) {
 }
 
 export function closeProductModalFunc(addProductModal) {
-    // addProductModal.style.display = 'none';
+    addProductModal.style.display = 'none';
     hideSearchHints();
 }
 
@@ -699,4 +650,3 @@ function handleCategorySearchBlur(e) {
         hideCategorySearchHint();
     }, 200);
 }
-
