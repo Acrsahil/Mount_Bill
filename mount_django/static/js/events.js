@@ -166,20 +166,18 @@ export async function saveClient(addClientModal, clientsTableBody) {
     const clientPhone = clientPhoneInput.value.trim();
     const clientAddress = clientAddressInput.value.trim();
     const clientEmail = clientEmailInput.value.trim();
+    console.log("yo clientEmail k ho",clientEmail)
     const clientPanNo = clientPanNoInput.value.trim();
     if (!clientName || !clientPhone) {
         showAlert('Please fill in all required fields (Name, Phone)', 'error');
         return;
     }
-   const email = clientEmail.value;
-
 // allow empty
-if (email !== '') {
+if (clientEmail !== '') {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    if (!emailRegex.test(email)) {
+    if (!emailRegex.test(clientEmail)) {
         alert('Please enter a valid email address');
-        clientEmailInput.classList.add('is-invalid');
         clientEmailInput.focus(); 
         return; 
     }
