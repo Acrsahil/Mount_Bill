@@ -81,7 +81,7 @@ def get_serialized_data(user, active_tab="dashboard"):
     products_data = [
         {
             "id": p.id,
-            "uid":str(p.uid),
+            "uid": str(p.uid),
             "name": p.name,
             "cost_price": float(p.cost_price),
             "selling_price": float(p.selling_price),
@@ -861,8 +861,10 @@ def invoice_layout(request, id):
     )
 
 
-def invoices(request):
+def invoices(request, id=None):
     context = get_serialized_data(request.user, "invoices")
+    if id:
+        return render(request, "website/create_invoice.html", context)
     return render(request, "website/bill.html", context)
 
 

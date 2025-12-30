@@ -155,6 +155,18 @@ export function openModal() {
 
 
 
+        const invoice_editbtn = document.getElementById('editbtn')
+
+
+            if(invoice_editbtn){
+                invoice_editbtn.addEventListener('click',()=>{
+                    window.location.href = `/dashboard/invoices/${data.invoice.order_id}`;
+
+                    
+
+
+                })
+            }
 
 
         }
@@ -162,6 +174,10 @@ export function openModal() {
             console.error("Error fetching invoice:", error);
         });
 }
+
+
+
+
 function closeModal() {
     const tablebody = document.getElementById("itemsBody").innerText = "";
     modal.style.display = "none";
