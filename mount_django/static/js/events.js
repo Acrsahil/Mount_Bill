@@ -82,7 +82,7 @@ export function setupEventListeners(
     if (saveClientBtn) saveClientBtn.addEventListener('click', () => saveClient(addClientModal, clientsTableBody));
     if (addItemBtn) addItemBtn.addEventListener('click', () => addInvoiceItem(invoiceItemsBody));
     if (searchInput) searchInput.addEventListener('input', () => filterInvoices(window.invoices, searchInput, invoicesTableBody));
-    if (productSearchInput) productSearchInput.addEventListener('input', () => filterProducts(window.products, productSearchInput, productList, editProduct, deleteProduct));
+    if (productSearchInput) productSearchInput.addEventListener('input', () => filterProducts(window.djangoData.products, productSearchInput, productsTableBody, editProduct, deleteProduct));
     if (clientSearchInput) clientSearchInput.addEventListener('input', () => filterClients(window.clients, clientSearchInput, clientsTableBody));
 
     // Global discount and tax listeners
@@ -156,17 +156,34 @@ export function closeClientModalFunc(addClientModal) {
 // Save client to database via AJAX
 export async function saveClient(addClientModal, clientsTableBody) {
     // Only get fields that exist in the simplified modal
-    const clientName = document.getElementById('clientNameInput').value.trim();
-    const clientPhone = document.getElementById('clientPhoneInput').value.trim();
-    const clientAddress = document.getElementById("clientAddressInput").value.trim();
-    const clientEmail = document.getElementById('clientEmailInput').value.trim();
-    const clientPanNo = document.getElementById('clientPanNoInput').value.trim();
-    // Validation
+      const clientNameInput = document.getElementById('clientNameInput');
+    const clientPhoneInput = document.getElementById('clientPhoneInput');
+    const clientAddressInput = document.getElementById("clientAddressInput");
+    const clientEmailInput = document.getElementById('clientEmailInput');
+    const clientPanNoInput = document.getElementById('clientPanNoInput');
+
+    const clientName = clientNameInput.value.trim();
+    const clientPhone = clientPhoneInput.value.trim();
+    const clientAddress = clientAddressInput.value.trim();
+    const clientEmail = clientEmailInput.value.trim();
+    const clientPanNo = clientPanNoInput.value.trim();
     if (!clientName || !clientPhone) {
         showAlert('Please fill in all required fields (Name, Phone)', 'error');
         return;
     }
+   const email = clientEmail.value;
 
+// allow empty
+if (email !== '') {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailRegex.test(email)) {
+        alert('Please enter a valid email address');
+        clientEmailInput.classList.add('is-invalid');
+        clientEmailInput.focus(); 
+        return; 
+    }
+}
 
     // Show loading state
     const saveBtn = document.getElementById('saveClientBtn');

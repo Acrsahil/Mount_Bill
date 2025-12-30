@@ -134,6 +134,13 @@
 .thisRows:hover{
     background-color:rgb(243, 241, 241) ;
 }
+.filteredRow {
+    cursor: pointer;
+}
+
+.filteredRow:hover {
+    background-color: rgb(243, 241, 241);
+}
 
 :root {
   --border-color: #e5e7eb;
