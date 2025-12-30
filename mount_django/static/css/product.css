@@ -108,7 +108,7 @@
 
 
 .productlists.selected {
-    background-color: rgb(243, 241, 241); /* light blue highlight */
+    background-color: rgb(216, 242, 248); /* light blue highlight */
     font-weight: bold;
 }
 .productlists.active-product {
@@ -356,7 +356,7 @@
   font-size: 20px;
 }
 .productlists:hover{
-  background-color:rgb(243, 241, 241) ;
+ box-shadow: -3px 3px 15px rgba(85, 86, 88, 0.2);
 }
 /* Responsive: allow header controls to wrap on small screens */
 @media (max-width: 768px) {
