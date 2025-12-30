@@ -1,6 +1,7 @@
 // API calls for AJAX/fetch requests
 import { showAlert } from './utils.js';
-import { openAddProductModal,closeProductModalFunc  } from './events.js';
+import { openAddProductModal } from './events.js';
+
 
 //for csrfToken for js
 function getCookie(name) {
@@ -99,6 +100,12 @@ window.addEventListener('pageshow', (event) => {
     refreshProducts(true).catch(console.error); // force fetch only if page restored from BFCache
   }
 });
+
+function closeProductModalFunc(addProductModal){
+        if (addProductModal) {
+            addProductModal.style.display = 'none';
+            }
+        };
 // Save product to database via AJAX
 export async function saveProduct(addProductModal) {
     const productName = document.getElementById('productName').value.trim();
@@ -172,17 +179,15 @@ export async function saveProduct(addProductModal) {
             showAlert(result.message, 'success');
             // Close modal after short delay
             setTimeout(() => {
-                const closeProductModalFunc = () => {
-                    if (addProductModal) {
-                        addProductModal.style.display = 'none';
-                    }
-                };
-                closeProductModalFunc();
+                console.log("time out")
+                
+                
                 // Reset form
                 document.getElementById('productName').value = '';
                 const priceField = document.getElementById('productSellingPrice') || document.getElementById('productPrice');
                 if (priceField) priceField.value = '';
                 document.getElementById('productCategory').value = '';
+                closeProductModalFunc();
             }, 1500);
         } else {
             showAlert('Error: ' + (result.error || 'Failed to save product'), 'error');
@@ -829,11 +834,7 @@ export async function updateProduct(addProductModal) {
 
             // Close modal after short delay
             setTimeout(() => {
-                const closeProductModalFunc = () => {
-                    if (addProductModal) {
-                        addProductModal.style.display = 'none';
-                    }
-                };
+                
                 closeProductModalFunc();
 
                 // Reset form
