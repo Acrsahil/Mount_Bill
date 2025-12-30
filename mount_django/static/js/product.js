@@ -19,6 +19,48 @@ function getCookie(name) {
 }
 
 const csrfToken = getCookie('csrftoken');
+document.addEventListener('DOMContentLoaded',() => {
+const caterorylists = document.getElementById('caterorylists');
+const categoryPopup = document.getElementById('categoryPopup');
+const categoryList = document.getElementById('categoryList');
+const button = document.getElementById('caterorylists');
+// Toggle popup on button click
+caterorylists.addEventListener('click', (e) => {
+    // Prevent click from closing the popup immediately
+    e.stopPropagation();
+
+    const rect = caterorylists.getBoundingClientRect();
+
+    // Position the popup below the button
+    categoryPopup.style.top = rect.bottom + window.scrollY + 'px';
+    categoryPopup.style.left = rect.left + window.scrollX + 'px';
+
+    // Toggle visibility
+    if (categoryPopup.style.display === 'block') {
+        categoryPopup.style.display = 'none';
+    } else {
+        categoryPopup.style.display = 'block';
+    }
+});
+// Replace button text when clicking a category
+categoryList.addEventListener('click', (e) => {
+    const li = e.target;
+    if (li.tagName === 'LI') {
+        button.textContent = li.textContent;   // replace button label
+        categoryPopup.style.display = 'none';  // hide popup
+    }
+});
+
+// Close popup when clicking outside
+document.addEventListener('click', (e) => {
+    if (!categoryPopup.contains(e.target) && !caterorylists.contains(e.target)) {
+        categoryPopup.style.display = 'none';
+    }
+});
+
+})
+
+
 
 //open modal for add product of product-detail page
 document.addEventListener('DOMContentLoaded', () => {
@@ -41,6 +83,69 @@ document.addEventListener('DOMContentLoaded', () => {
     //     saveProduct(addProductModal)
     // })
 });
+
+// FILTER PRODUCTS
+const productList = document.querySelector('.productList');
+const productDetailSearchInput = document.getElementById('productDetailSearchInput');
+
+// //when input is inside the search input
+document.addEventListener('DOMContentLoaded', ()=>{
+productDetailSearchInput.addEventListener('input',() => {
+    filterProduct(products, productDetailSearchInput, productList)
+})
+})
+
+
+//filter product function
+export function filterProduct(products, productDetailSearchInput, productList) {
+    const searchLetter = productDetailSearchInput.value.toLowerCase();
+    const filteredProduct = products.filter(product => 
+        product.name.toLowerCase().includes(searchLetter)
+    );
+
+    productList.innerHTML = '';
+
+    filteredProduct.forEach((product,index) => {
+        const li = document.createElement('li');
+        li.classList.add('productlists');
+        li.textContent = product.name;
+        li.dataset.id = product.id;
+        li.dataset.uid = product.uid;
+        productList.appendChild(li);
+
+        
+ // Auto-select based on URL
+  const uidInUrl = selectedIdFromUrl();
+  if (uidInUrl && String(uidInUrl) === String(product.uid)) {
+      li.classList.add('selected');
+      const deleteBtn = document.querySelector('.delete-product-btn');
+      if (deleteBtn) deleteBtn.dataset.productId = product.id;
+      const editBtn = document.querySelector('.edit-product-btn');
+      if (editBtn) editBtn.dataset.productId = product.id;
+  }
+
+   li.addEventListener('click', () => {
+        //for deleting the product,we need product id
+        const deleteBtn = document.querySelector('.delete-product-btn');
+        const editBtn = document.querySelector('.edit-product-btn'); 
+        deleteBtn.dataset.productId = product.id;
+        editBtn.dataset.productId = product.id;
+        console.log("yo id ho haii",editBtn.dataset.productId)
+
+        history.pushState({}, '', `/dashboard/product-detail/${product.uid}`);
+        document.querySelectorAll('.productlists').forEach(item =>
+        {
+            item.classList.remove('selected');
+        }
+        )
+        li.classList.add('selected')
+        //immediately update the table
+        renderDetails(productsCache);
+      });
+});
+}
+
+
 let productsCache = []; // store products locally
 
 // Fetch products from backend
@@ -438,10 +543,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (adjustBtn) {
             const productId = adjustBtn.dataset.id;
+            console.log("yaa id ko value k ho??")
             const modal = document.getElementById('addStockModal');
             const modal1 = document.getElementById('reduceStockModal');
-            modal.dataset.productId = productId; 
-            modal1.dataset.productId = productId;
+            // modal.dataset.productId = productId; 
+            // modal1.dataset.productId = productId;
             // If popup is already open for the same product → close it
             if (currentProductId === productId && popup.style.display === 'flex') {
                 popup.style.display = 'none';

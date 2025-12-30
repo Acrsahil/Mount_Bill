@@ -134,6 +134,72 @@
 .thisRows:hover{
     background-color:rgb(243, 241, 241) ;
 }
+.filteredRow {
+    cursor: pointer;
+}
+
+.filteredRow:hover {
+    background-color: rgb(243, 241, 241);
+}
+/* Make popup hidden by default */
+#categoryPopup {
+    display: none;             /* hidden by default */
+    position: absolute;        /* appear below button */
+    width: 200px;              /* outer width */
+    height: 200px;             /* outer height */
+    background: white;
+    border: 2px solid #007BFF; /* bigger border */
+    border-radius: 12px;        /* rounded corners */
+    padding: 10px;             /* space inside outer container */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    z-index: 1000;
+    box-sizing: border-box;    /* include border/padding in size */
+}
+.popup-content {
+    width: 100%;              /* fit inside outer popup minus padding*/
+    height: 100%;             /* fit height minus padding */
+    padding: 5px;             /* extra space inside content */
+    box-sizing: border-box;
+    overflow-y: auto;         /* scroll if list too long */
+}
+/* List items */
+.popup-content ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.popup-content li {
+    padding: 6px 10px;
+    cursor: pointer;
+}
+
+.popup-content li:hover {
+    background-color: #f0f0f0;
+}
+.search-box-category {
+    position: relative;
+    width: 160px; /* adjust as needed */
+}
+
+/* Input inside inner content */
+.search-box-category input {
+    width: 100%;
+    padding: 6px 10px 6px 30px; /* leave space for search icon if needed */
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    margin-bottom: 8px;
+}
+.search-box-category i {
+    position: absolute;
+    left: 10px;  /* icon 10px from left */
+    top: 50%;
+    transform: translateY(-50%);
+    color: #888;
+    pointer-events: none; /* clicks go through to input */
+}
+
+
 
 :root {
   --border-color: #e5e7eb;

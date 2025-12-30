@@ -444,7 +444,7 @@
                 <div class="form-col">
                     <div class="form-group">
                         <label for="clientPhoneInput">Phone Number *</label>
-                        <input type="tel" id="clientPhoneInput" class="form-control" placeholder="Enter phone number" required>
+                        <input type="number" id="clientPhoneInput" class="form-control" placeholder="Enter phone number" required>
                     </div>
                 </div>
             </div>
@@ -462,7 +462,7 @@
             </div>
             <div class="form-group">
                 <label for="clientPanNoInput">Pan No </label>
-                <input type="text" id="clientPanNoInput" class="form-control" placeholder="Enter Pan Number">
+                <input type="number" id="clientPanNoInput" class="form-control" placeholder="Enter Pan Number">
             </div>
         </div>
         </div>
@@ -509,4 +509,5 @@ console.log('Active tab from Django:', window.djangoData.active_tab);
 <script type="module" src="{%static 'js/product.js'%}"></script>
 <script type="module" src="{% static 'js/main.js' %}"></script>
 <script type="module" src="{% static 'js/event.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 {% endblock %}

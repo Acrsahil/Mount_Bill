@@ -81,6 +81,7 @@ def get_serialized_data(user, active_tab="dashboard"):
     products_data = [
         {
             "id": p.id,
+            "uid":str(p.uid),
             "name": p.name,
             "cost_price": float(p.cost_price),
             "selling_price": float(p.selling_price),

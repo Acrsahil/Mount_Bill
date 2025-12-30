@@ -93,7 +93,7 @@
         <div class="search-box-sort">
             <div class="search-box-product">
                 <i class="fas fa-search"></i>
-                <input type="text" id="productSearchInput" placeholder="Search products...">
+                <input type="text" id="productDetailSearchInput" placeholder="Search products...">
             </div>
 
             <button class="btn btn-secondary" id="sortProductBtn">
@@ -103,9 +103,9 @@
 
         <!-- Row 3: Filters -->
         <div class="filter-row">
-            <button class="btn btn-secondary all-category">All Category</button>
-            <button class="btn btn-secondary all-category">All Stock</button>
-            <button class="btn btn-secondary all-category">All items</button>
+            <button class="btn btn-secondary all-category" id="caterorylists">All Category</button>
+            <button class="btn btn-secondary all-category" id="stocklists">All Stock</button>
+            <button class="btn btn-secondary all-category" id="itemlists">All items</button>
         </div>
 
         <!-- Product list -->
@@ -211,7 +211,24 @@
 </main>
 </div>
 
-
+<!--stock buttons-->
+{% comment %} <div class="stock-popup" id="addStockPopup">
+    <button class="popup-btn" id="addStock">Add Stock</button>
+    <button class="popup-btn" id="removeStock">Remove Stock</button>
+</div>  {% endcomment %}
+<div class="category-popup" id="categoryPopup">
+  <div class="popup-content">
+            <div class="search-box-category">
+                <i class="fas fa-search"></i>
+                <input type="text" id="categorySearchInput" placeholder="Search Category">
+            </div>
+    <ul id="categoryList">
+    <li>All Categories</li>
+    <!--Dynamic list for the category will be listed here-->
+    <li>General</li>
+    </ul>
+</div> 
+</div>
 {% endblock %}
 
 {% block extra_js %}
