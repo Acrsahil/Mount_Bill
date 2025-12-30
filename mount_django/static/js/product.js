@@ -19,6 +19,48 @@ function getCookie(name) {
 }
 
 const csrfToken = getCookie('csrftoken');
+document.addEventListener('DOMContentLoaded',() => {
+const caterorylists = document.getElementById('caterorylists');
+const categoryPopup = document.getElementById('categoryPopup');
+const categoryList = document.getElementById('categoryList');
+const button = document.getElementById('caterorylists');
+// Toggle popup on button click
+caterorylists.addEventListener('click', (e) => {
+    // Prevent click from closing the popup immediately
+    e.stopPropagation();
+
+    const rect = caterorylists.getBoundingClientRect();
+
+    // Position the popup below the button
+    categoryPopup.style.top = rect.bottom + window.scrollY + 'px';
+    categoryPopup.style.left = rect.left + window.scrollX + 'px';
+
+    // Toggle visibility
+    if (categoryPopup.style.display === 'block') {
+        categoryPopup.style.display = 'none';
+    } else {
+        categoryPopup.style.display = 'block';
+    }
+});
+// Replace button text when clicking a category
+categoryList.addEventListener('click', (e) => {
+    const li = e.target;
+    if (li.tagName === 'LI') {
+        button.textContent = li.textContent;   // replace button label
+        categoryPopup.style.display = 'none';  // hide popup
+    }
+});
+
+// Close popup when clicking outside
+document.addEventListener('click', (e) => {
+    if (!categoryPopup.contains(e.target) && !caterorylists.contains(e.target)) {
+        categoryPopup.style.display = 'none';
+    }
+});
+
+})
+
+
 
 //open modal for add product of product-detail page
 document.addEventListener('DOMContentLoaded', () => {
