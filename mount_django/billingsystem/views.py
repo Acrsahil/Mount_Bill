@@ -25,6 +25,22 @@ from .models import (
 )
 
 
+def category_json(request):
+    user = request.user
+    company =user.owned_company or user.active_company
+    
+    if not company:
+        return JsonResponse({'categories':[]})
+    categories = ProductCategory.objects.filter(company=company)
+    categories =[
+        {
+            'id':c.id,
+            'name':c.name,
+        }for c in categories
+    ]
+    
+    return JsonResponse({'categories':categories})
+
 @require_GET
 @never_cache
 def products_json(request):
