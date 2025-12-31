@@ -376,8 +376,7 @@ th {
 
 .modal-content {
     background-color: white;
-    border-radius: 12px;
-    width: 50%;
+    border-radius: 5px;
     max-width: 1400px;
     max-height: 85vh;
     overflow: hidden;
@@ -870,10 +869,7 @@ th {
 
 .modal-content {
     background-color: white;
-    border-radius: 12px;
-    width: 95%;
-    max-width: 1400px;
-    max-height: 100vh;
+    border-radius: 5px;
     overflow: hidden;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
     border: none;
