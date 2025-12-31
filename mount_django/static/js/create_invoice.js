@@ -1,6 +1,6 @@
 // Create Invoice Page - Standalone page version
 import { updateStats, showAlert } from './utils.js';
-import { 
+import {
     showProductSuggestions,
     showClientSuggestions,
     hideClientSearchHint,
@@ -8,7 +8,7 @@ import {
     clearClientDetails,
     loadInvoices,
 } from './dom.js';
-import { 
+import {
     handleItemUpdate,
     handleRemoveItem,
     selectClientFromHint,
@@ -24,7 +24,7 @@ const products = Array.isArray(window.djangoData.products) ? window.djangoData.p
 const productCategories = Array.isArray(window.djangoData.product_cat) ? window.djangoData.product_cat : [];
 let clients = Array.isArray(window.djangoData.clients) ? window.djangoData.clients : [];
 
-console.log("heram clients: ",clients)
+console.log("heram clients: ", clients)
 const csrfToken = window.djangoData.csrfToken || "";
 
 // Make these available globally
@@ -56,31 +56,31 @@ const cancelInvoiceBtnBottom = document.getElementById('cancelInvoiceBtnBottom')
 const totalCharges = document.getElementById('totalCharges');
 
 // Initialize the page
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const saveInvoiceBtn = document.getElementById('saveInvoiceBtn');
     // Save invoice button
     if (saveInvoiceBtn) {
         saveInvoiceBtn.addEventListener('click', () => saveInvoice());
     }
     console.log('Create Invoice Page loaded');
-    
+
     // Set today's date as default
     if (invoiceDate) {
         const today = new Date().toISOString().split('T')[0];
         invoiceDate.value = today;
     }
-    
+
     // Generate next invoice number
     if (invoiceNumber) {
         invoiceNumber.value = `INV-${window.nextInvoiceNumber.toString().padStart(3, '0')}`;
     }
-    
+
     // Setup event listeners
     setupPageEventListeners();
-    
+
     // Setup client search
     setupClientSearch();
-    
+
     // Auto-focus on client name field
     setTimeout(() => {
         if (clientNameInput) {
@@ -94,22 +94,22 @@ let is_addDiscountBtn = false;
 let is_addTaxBtn = false;
 
 //first row on table on first page load
-document.addEventListener('DOMContentLoaded',() => {
+document.addEventListener('DOMContentLoaded', () => {
     addInvoiceItem();
     //for notes or remarks
-    
-    document.getElementById('addnoteBtn').onclick =() =>{
+
+    document.getElementById('addnoteBtn').onclick = () => {
         is_addnotebtn = true;
-        document.getElementById('additionalNotes').innerHTML=`
+        document.getElementById('additionalNotes').innerHTML = `
         <div class='form-group'>
         <label for='notes'>Notes or Remarks</label>
         <textarea placeholder="Notes here........" id="note" style="resize:none" rows="10" cols="50"></textarea></div>
         `;
-        document.getElementById('addnoteBtn').style.display ='none';
+        document.getElementById('addnoteBtn').style.display = 'none';
     };
 
     //for discount charges
-    document.getElementById('addDiscountBtn').onclick = () => { 
+    document.getElementById('addDiscountBtn').onclick = () => {
         is_addDiscountBtn = true;
         document.getElementById('discountContainer').innerHTML = `
             <div class="form-group">
@@ -121,17 +121,17 @@ document.addEventListener('DOMContentLoaded',() => {
                        value="0" readonly>
             </div>
         `;
-        document.getElementById('addDiscountBtn').style.display='none';
-        
+        document.getElementById('addDiscountBtn').style.display = 'none';
+
         // Add event listener for discount percentage
         const discountPercentageInput = document.getElementById('globalDiscount');
         if (discountPercentageInput) {
-            discountPercentageInput.addEventListener('input', function() {
+            discountPercentageInput.addEventListener('input', function () {
                 updateGlobalDiscount();
             });
         }
     };
-    
+
     //for tax charges
     document.getElementById('addTaxBtn').onclick = () => {
         is_addTaxBtn = true;
@@ -148,12 +148,12 @@ document.addEventListener('DOMContentLoaded',() => {
             </div>
         `;
 
-        document.getElementById('addTaxBtn').style.display = 'none'; 
-        
+        document.getElementById('addTaxBtn').style.display = 'none';
+
         // Add event listener for tax percentage
         const taxPercentageInput = document.getElementById('globalTax');
         if (taxPercentageInput) {
-            taxPercentageInput.addEventListener('input', function() {
+            taxPercentageInput.addEventListener('input', function () {
                 updateGlobalTax();
             });
         }
@@ -161,7 +161,7 @@ document.addEventListener('DOMContentLoaded',() => {
 });
 
 //function to show total section
-function showTotalSection(){
+function showTotalSection() {
     if (totalCharges) {
         totalCharges.style.display = 'block';
     }
@@ -172,21 +172,21 @@ function updateGlobalDiscount() {
     const discountPercentageInput = document.getElementById('globalDiscount');
     const discountAmountInput = document.getElementById('globalDiscountAmount');
     const subtotalAmountEl = document.getElementById('subtotalAmounts');
-    
+
     if (!discountPercentageInput || !discountAmountInput || !subtotalAmountEl) return;
-    
+
     const subtotalValue = parseFloat(subtotalAmountEl.textContent.replace('Rs.', '')) || 0;
     const discountPercentage = parseFloat(discountPercentageInput.value) || 0;
-    
+
     // Calculate discount amount
     const discountAmount = (subtotalValue * discountPercentage) / 100;
-    
+
     // Update the discount amount field
     discountAmountInput.value = discountAmount.toFixed(2);
-    
+
     // Update the window.globalDiscount value
     window.globalDiscount = discountPercentage;
-    
+
     // Update totals
     updateTotals(window.invoiceItems, window.globalDiscount, window.globalTax);
 }
@@ -197,23 +197,23 @@ function updateGlobalTax() {
     const taxAmountInput = document.getElementById('taxAmount');
     const subtotalAmountEl = document.getElementById('subtotalAmounts');
     const discountAmountInput = document.getElementById('globalDiscountAmount');
-    
+
     if (!taxPercentageInput || !taxAmountInput || !subtotalAmountEl) return;
-    
+
     const subtotalValue = parseFloat(subtotalAmountEl.textContent.replace('Rs.', '')) || 0;
     const discountAmount = discountAmountInput ? parseFloat(discountAmountInput.value) || 0 : 0;
     const taxableAmount = subtotalValue - discountAmount;
     const taxPercentage = parseFloat(taxPercentageInput.value) || 0;
-    
+
     // Calculate tax amount
     const taxAmount = (taxableAmount * taxPercentage) / 100;
-    
+
     // Update the tax amount field
     taxAmountInput.value = taxAmount.toFixed(2);
-    
+
     // Update the window.globalTax value
     window.globalTax = taxPercentage;
-    
+
     // Update totals
     updateTotals(window.invoiceItems, window.globalDiscount, window.globalTax);
 }
@@ -224,18 +224,18 @@ function setupPageEventListeners() {
     if (addItemBtn) {
         addItemBtn.addEventListener('click', () => addInvoiceItem());
     }
-    
+
     // Cancel buttons
     if (cancelInvoiceBtn) {
         cancelInvoiceBtn.addEventListener('click', () => cancelInvoice());
     }
-    
+
     if (cancelInvoiceBtnBottom) {
         cancelInvoiceBtnBottom.addEventListener('click', () => cancelInvoice());
     }
-    
+
     // Global discount input listener
-    document.addEventListener('input', function(e) {
+    document.addEventListener('input', function (e) {
         if (e.target && e.target.id === 'globalDiscount') {
             updateGlobalDiscount();
         }
@@ -252,41 +252,41 @@ document.addEventListener('DOMContentLoaded', () => {
     const addChargeBtn = document.getElementById('addChargeBtn');
 
     // Limit additional charge amount input (dynamic safe)
-window.additionalContainer.addEventListener('keydown', function (e) {
-    const input = e.target;
+    window.additionalContainer.addEventListener('keydown', function (e) {
+        const input = e.target;
 
-    if (!input.matches('input[type="number"]')) return;
+        if (!input.matches('input[type="number"]')) return;
 
-    const allowedKeys = [
-        'Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'
-    ];
+        const allowedKeys = [
+            'Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'
+        ];
 
-    if (allowedKeys.includes(e.key)) return;
+        if (allowedKeys.includes(e.key)) return;
 
-    const value = input.value;
-    const hasDecimal = value.includes('.');
+        const value = input.value;
+        const hasDecimal = value.includes('.');
 
-    // Allow digits
-    if (/^\d$/.test(e.key)) {
-        const [intPart] = value.split('.');
-        if (intPart.length >= 8 && !hasDecimal) {
+        // Allow digits
+        if (/^\d$/.test(e.key)) {
+            const [intPart] = value.split('.');
+            if (intPart.length >= 8 && !hasDecimal) {
+                e.preventDefault();
+            }
+            return;
+        }
+
+        // Allow one decimal point
+        if (e.key === '.' && !hasDecimal) return;
+
+        e.preventDefault();
+    });
+
+    // Block paste (simple + safe)
+    window.additionalContainer.addEventListener('paste', function (e) {
+        if (e.target.matches('input[type="number"]')) {
             e.preventDefault();
         }
-        return;
-    }
-
-    // Allow one decimal point
-    if (e.key === '.' && !hasDecimal) return;
-
-    e.preventDefault();
-});
-
-// Block paste (simple + safe)
-window.additionalContainer.addEventListener('paste', function (e) {
-    if (e.target.matches('input[type="number"]')) {
-        e.preventDefault();
-    }
-});
+    });
 
 
     // Helper: recalc totals
@@ -363,13 +363,13 @@ window.additionalContainer.addEventListener('paste', function (e) {
 });
 
 //sending additional charges name and amount
-function additionalChargeName(){
+function additionalChargeName() {
     const charges = [];
     const chargesDiv = window.additionalContainer.querySelectorAll('.additional-input');
     chargesDiv.forEach(div => {
         const chargeName = div.querySelector('input[type="text"]').value.trim();
         const chargeAmount = parseFloat(div.querySelector('input[type="number"]').value) || 0;
-        charges.push({chargeName, chargeAmount});
+        charges.push({ chargeName, chargeAmount });
     });
     console.log(charges);
     return charges;
@@ -378,7 +378,7 @@ function additionalChargeName(){
 // CLIENT SEARCH FUNCTIONS
 export function setupClientSearch() {
     if (!clientNameInput || !clientSearchHint) return;
-    
+
     // Event listeners for client search
     clientNameInput.addEventListener('focus', () => handleClientSearchFocus());
     clientNameInput.addEventListener('input', (e) => handleClientSearch(e));
@@ -390,10 +390,10 @@ function handleClientSearchFocus() {
     if (clientSearchHint) {
         console.log("focus chaliraxa?")
         showClientSuggestions(window.clients, '', (hintElement) => selectClientFromHint(hintElement));
-        
+
         // Add click event to hints
         clientSearchHint.querySelectorAll('.hint-item').forEach(item => {
-            item.addEventListener('mousedown', function(e) {
+            item.addEventListener('mousedown', function (e) {
                 e.preventDefault();
                 selectClientFromHint(this);
             });
@@ -412,33 +412,33 @@ function handleClientSearchKeydown(e) {
         console.log("kei pani client suggestion xaina?")
         return;
     }
-    
+
     const hintItems = clientSearchHint.querySelectorAll('.hint-item');
     const visibleHintItems = Array.from(hintItems).filter(item => item.style.display !== 'none');
-    
+
     if (e.key === 'Tab' || e.key === 'Enter') {
         e.preventDefault();
-        
+
         if (currentSelectedHintIndex >= 0 && currentSelectedHintIndex < visibleHintItems.length) {
             selectClientFromHint(visibleHintItems[currentSelectedHintIndex]);
         } else {
             const searchTerm = e.target.value.toLowerCase();
             let matchedClient = null;
-            
+
             if (searchTerm === '') {
                 matchedClient = window.clients[0];
             } else {
-                matchedClient = window.clients.find(c => 
+                matchedClient = window.clients.find(c =>
                     c.name.toLowerCase().startsWith(searchTerm)
                 );
-                
+
                 if (!matchedClient) {
-                    matchedClient = window.clients.find(c => 
+                    matchedClient = window.clients.find(c =>
                         c.name.toLowerCase().includes(searchTerm)
                     );
                 }
             }
-            
+
             if (matchedClient) {
                 fillClientDetails(matchedClient);
                 hideClientSearchHint();
@@ -466,7 +466,7 @@ function updateHintSelection(visibleHintItems) {
         item.style.backgroundColor = '';
         item.style.color = '';
     });
-    
+
     if (currentSelectedHintIndex >= 0 && currentSelectedHintIndex < visibleHintItems.length) {
         visibleHintItems[currentSelectedHintIndex].style.backgroundColor = '#007bff';
         visibleHintItems[currentSelectedHintIndex].style.color = 'white';
@@ -492,12 +492,12 @@ export function setupProductSearchHandlersForPage() {
 function handleProductSearchFocus(e) {
     const itemId = parseInt(e.target.getAttribute('data-id'));
     const hintContainer = document.getElementById(`search-hint-${itemId}`);
-    
+
     if (hintContainer) {
         showProductSuggestions(itemId, window.products, '', (itemId, hintElement) => selectProductFromHint(itemId, hintElement));
-        
+
         hintContainer.querySelectorAll('.hint-item').forEach(item => {
-            item.addEventListener('mousedown', function(e) {
+            item.addEventListener('mousedown', function (e) {
                 e.preventDefault();
                 selectProductFromHint(itemId, this);
             });
@@ -514,65 +514,65 @@ function handleProductSearch(e) {
 function handleProductSearchKeydown(e) {
     const itemId = parseInt(e.target.getAttribute('data-id'));
     const hintContainer = document.getElementById(`search-hint-${itemId}`);
-    
+
     if (!hintContainer || hintContainer.style.display === 'none') {
         return;
     }
-    
+
     const hintItems = hintContainer.querySelectorAll('.hint-item');
     const visibleHintItems = Array.from(hintItems).filter(item => item.style.display !== 'none');
-    
+
     if (e.key === 'Tab' || e.key === 'Enter') {
         e.preventDefault();
-        
+
         if (currentSelectedProductHintIndex >= 0 && currentSelectedProductHintIndex < visibleHintItems.length) {
             selectProductFromHint(itemId, visibleHintItems[currentSelectedProductHintIndex]);
         } else {
             const searchTerm = e.target.value.toLowerCase();
             let matchedProduct = null;
-            
+
             if (searchTerm === '') {
                 matchedProduct = window.products[0];
             } else {
-                matchedProduct = window.products.find(p => 
+                matchedProduct = window.products.find(p =>
                     p.name.toLowerCase().startsWith(searchTerm)
                 );
-                
+
                 if (!matchedProduct) {
-                    matchedProduct = window.products.find(p => 
+                    matchedProduct = window.products.find(p =>
                         p.name.toLowerCase().includes(searchTerm)
                     );
                 }
             }
-            
+
             if (matchedProduct) {
                 const searchInput = document.querySelector(`.product-search-input[data-id="${itemId}"]`);
                 if (searchInput) {
                     searchInput.value = matchedProduct.name;
-                    
+
                     const item = window.invoiceItems.find(i => i.id === itemId);
                     if (item) {
                         item.productId = matchedProduct.id;
                         item.productName = matchedProduct.name;
                         item.description = matchedProduct.category || 'Product';
                         item.price = Number(matchedProduct.selling_price);
-                        
+
                         const row = searchInput.closest('tr');
                         if (row) {
                             const descriptionInput = row.querySelector('.item-description');
                             const priceInput = row.querySelector('.item-price');
-                            
+
                             if (descriptionInput) descriptionInput.value = matchedProduct.category || 'Product';
                             if (priceInput) priceInput.value = matchedProduct.selling_price;
                         }
-                        
+
                         updateItemTotal(itemId, window.invoiceItems);
                         updateTotals(window.invoiceItems, window.globalDiscount, window.globalTax);
-                        
+
                         if (hintContainer) {
                             hintContainer.style.display = 'none';
                         }
-                        
+
                         const quantityInput = row.querySelector('.item-quantity');
                         if (quantityInput) {
                             setTimeout(() => {
@@ -581,7 +581,7 @@ function handleProductSearchKeydown(e) {
                             }, 50);
                         }
                         //add new row here
-                        if(itemId == window.invoiceItems.length){
+                        if (itemId == window.invoiceItems.length) {
                             addInvoiceItem();
                         }
                         showTotalSection();
@@ -613,7 +613,7 @@ function updateProductHintSelection(visibleHintItems) {
         item.style.backgroundColor = '';
         item.style.color = '';
     });
-    
+
     if (currentSelectedProductHintIndex >= 0 && currentSelectedProductHintIndex < visibleHintItems.length) {
         visibleHintItems[currentSelectedProductHintIndex].style.backgroundColor = '#007bff';
         visibleHintItems[currentSelectedProductHintIndex].style.color = 'white';
@@ -636,38 +636,38 @@ function selectProductFromHint(itemId, hintElement) {
     const productName = hintElement.getAttribute('data-product-name');
     const sellingPrice = hintElement.getAttribute('data-product-selling-price');
     const category = hintElement.getAttribute('data-product-category');
-    
+
     const product = window.products.find(p => p.id === parseInt(productId));
     if (!product) return;
-    
+
     const item = window.invoiceItems.find(i => i.id === itemId);
     if (!item) return;
-    
+
     item.productId = product.id;
     item.productName = product.name;
     item.description = product.category || 'Product';
     item.price = Number(product.selling_price);
-    
+
     const row = document.querySelector(`.product-search-input[data-id="${itemId}"]`).closest('tr');
     if (!row) return;
-    
+
     const searchInput = row.querySelector('.product-search-input');
     const descriptionInput = row.querySelector('.item-description');
     const priceInput = row.querySelector('.item-price');
-    
+
     if (searchInput) searchInput.value = product.name;
     if (descriptionInput) descriptionInput.value = product.category || 'Product';
     if (priceInput) priceInput.value = product.selling_price;
-    
+
     const hintContainer = document.getElementById(`search-hint-${itemId}`);
     if (hintContainer) {
         hintContainer.style.display = 'none';
         currentSelectedProductHintIndex = -1;
     }
-    
+
     updateItemTotal(itemId, window.invoiceItems);
     updateTotals(window.invoiceItems, window.globalDiscount, window.globalTax);
-    
+
     const quantityInput = row.querySelector('.item-quantity');
     if (quantityInput) {
         setTimeout(() => {
@@ -675,7 +675,7 @@ function selectProductFromHint(itemId, hintElement) {
             quantityInput.select();
         }, 50);
     }
-    if(itemId == window.invoiceItems.length){
+    if (itemId == window.invoiceItems.length) {
         addInvoiceItem();
     }
     showTotalSection();
@@ -684,11 +684,11 @@ function selectProductFromHint(itemId, hintElement) {
 export function renderInvoiceItems(invoiceItems, invoiceItemsBody, setupProductSearchHandlers, handleItemUpdate, handleRemoveItem) {
     invoiceItemsBody.innerHTML = '';
 
-    invoiceItems.forEach((item,index) => {
+    invoiceItems.forEach((item, index) => {
         const discountAmount = Number(item.price) * Number(item.quantity) * (Number(item.discountPercent) / 100);
         const row = document.createElement('tr');
         row.innerHTML = `
-        <td>${index+1}</td>
+        <td>${index + 1}</td>
     <td style="position: relative;">
         <input type="text" style="font-size: 13px;"
             class="product-search-input" 
@@ -696,7 +696,7 @@ export function renderInvoiceItems(invoiceItems, invoiceItemsBody, setupProductS
             placeholder="Type product name (Tab to complete)..."
             value="${item.productName || ''}"
             >
-        <div  style="font-size: 13px;" class="search-hint product-search-hint" id="search-hint-${item.id}" style="display: none; position: absolute; background: white; border: 1px solid #ddd; overflow-y: auto; z-index: 1000;">
+        <div  class="search-hint product-search-hint" id="search-hint-${item.id}" style="display: none; position: absolute; background: white; border: 1px solid #ddd; overflow-y: auto; z-index: 1000;">
             <!-- Product suggestions will be dynamically added here -->
         </div>
     </td>
@@ -717,33 +717,33 @@ export function renderInvoiceItems(invoiceItems, invoiceItemsBody, setupProductS
     <td class="item-total" data-id="${item.id}">Rs. ${(Number(item.price) * Number(item.quantity) - discountAmount).toFixed(2)}</td>
     <td><button class="remove-item-btn" data-id="${item.id}"><i class="fas fa-trash"></i></button></td>
 `;
-     // Limit quantity to max 8 digits (typing + paste)
-invoiceItemsBody.addEventListener('keydown', function (e) {
-    if (!e.target.classList.contains('item-quantity')) return;
+        // Limit quantity to max 8 digits (typing + paste)
+        invoiceItemsBody.addEventListener('keydown', function (e) {
+            if (!e.target.classList.contains('item-quantity')) return;
 
-    const allowedKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'];
+            const allowedKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'];
 
-    if (allowedKeys.includes(e.key)) return;
+            if (allowedKeys.includes(e.key)) return;
 
-    // Only digits
-    if (!/^\d$/.test(e.key)) {
-        e.preventDefault();
-        return;
-    }
+            // Only digits
+            if (!/^\d$/.test(e.key)) {
+                e.preventDefault();
+                return;
+            }
 
-    // Max 8 digits
-    if (e.target.value.length >= 8) {
-        e.preventDefault();
-    }
-});
+            // Max 8 digits
+            if (e.target.value.length >= 8) {
+                e.preventDefault();
+            }
+        });
 
-invoiceItemsBody.addEventListener('paste', function (e) {
-    if (e.target.classList.contains('item-quantity')) {
-        e.preventDefault();
-    }
-});
+        invoiceItemsBody.addEventListener('paste', function (e) {
+            if (e.target.classList.contains('item-quantity')) {
+                e.preventDefault();
+            }
+        });
 
-invoiceItemsBody.appendChild(row);
+        invoiceItemsBody.appendChild(row);
     });
 
     // Add event listeners to the new inputs
@@ -763,7 +763,7 @@ invoiceItemsBody.appendChild(row);
 // Add invoice item
 function addInvoiceItem() {
     const itemId = window.invoiceItems.length + 1;
-    
+
     const newItem = {
         id: itemId,
         productId: '',
@@ -774,9 +774,9 @@ function addInvoiceItem() {
         discountAmount: 0,
         price: 0
     };
-    
+
     window.invoiceItems.push(newItem);
-    
+
     renderInvoiceItems(
         window.invoiceItems,
         invoiceItemsBody,
@@ -785,13 +785,13 @@ function addInvoiceItem() {
         (e) => handleRemoveItemWrapper(e)
     );
     updateTotals(window.invoiceItems, window.globalDiscount, window.globalTax);
-    
+
     setTimeout(() => {
         const newSearchInput = document.querySelector(`.product-search-input[data-id="${itemId}"]`);
         if (newSearchInput) {
             setTimeout(() => {
-                newSearchInput.scrollIntoView({ 
-                    behavior: 'smooth', 
+                newSearchInput.scrollIntoView({
+                    behavior: 'smooth',
                     block: 'center',
                     inline: 'nearest'
                 });
@@ -804,7 +804,7 @@ function addInvoiceItem() {
 function handleRemoveItemWrapper(e) {
     const itemId = parseInt(e.target.closest('button').getAttribute('data-id'));
     window.invoiceItems = window.invoiceItems.filter(i => i.id !== itemId);
-    
+
     if (invoiceItemsBody) {
         renderInvoiceItems(
             window.invoiceItems,
@@ -843,7 +843,7 @@ export function updateTotals(invoiceItems, globalDiscount, globalTax) {
     let subtotal = 0;
     let subtotalDiscountvalue = 0;
     let subtotalAmountValue = 0;
-    
+
     // Calculate subtotal from all items
     invoiceItems.forEach(item => {
         const quantity = Number(item.quantity) || 0;
@@ -866,12 +866,12 @@ export function updateTotals(invoiceItems, globalDiscount, globalTax) {
             window.additionalChargesTotal += Number(input.value) || 0;
         });
     }
-    
+
     // Update display elements
     const subtotalAmount = document.getElementById('subtotalAmount');
     const subtotalAmountEl = document.getElementById('subtotalAmounts');
     const subtotalDiscounts = document.getElementById('subtotalDiscount');
-    
+
     // Update discount and tax fields
     const discountPercentageInput = document.getElementById('globalDiscount');
     const discountAmountInput = document.getElementById('globalDiscountAmount');
@@ -879,87 +879,87 @@ export function updateTotals(invoiceItems, globalDiscount, globalTax) {
     const taxAmountInput = document.getElementById('taxAmount');
 
 
-    let globalDiscountPercent  = 0;
+    let globalDiscountPercent = 0;
     let globalTaxPercent = 0;
 
-    if(discountPercentageInput){
+    if (discountPercentageInput) {
         globalDiscountPercent = discountPercentageInput ? parseFloat(discountPercentageInput.value) || 0 : 0;
         console.log(globalDiscountPercent)
     }
 
-    if(discountPercentageInput){
+    if (discountPercentageInput) {
         globalTaxPercent = taxPercentageInput ? parseFloat(taxPercentageInput.value) || 0 : 0;
         console.log(globalTaxPercent)
     }
 
-    
-    
+
+
     // Calculate discount amount
     const discountValue = (subtotalAmountValue * globalDiscountPercent) / 100;
-    
+
     // Calculate taxable amount (after discount)
     const taxableAmount = subtotalAmountValue - discountValue;
-    
+
     // Calculate tax amount
     const taxValue = (taxableAmount * globalTaxPercent) / 100;
-    
+
     // Calculate final total
     const total = taxableAmount + taxValue + window.additionalChargesTotal;
     window.currentTotalValue = total;
-    
+
     // Update display
     if (subtotalAmountEl) subtotalAmountEl.textContent = `Rs. ${subtotalAmountValue.toFixed(2)}`;
     if (subtotalAmount) subtotalAmount.textContent = `Rs. ${subtotal.toFixed(2)}`;
     if (subtotalDiscounts) subtotalDiscounts.textContent = `Rs. ${subtotalDiscountvalue.toFixed(2)}`;
-    
+
     // Update discount amount field if it exists
     if (discountAmountInput) {
         discountAmountInput.value = discountValue.toFixed(2);
     }
-    
+
     // Update tax amount field if it exists
     if (taxAmountInput) {
         taxAmountInput.value = taxValue.toFixed(2);
     }
-    
+
     const totalAmountEl = document.getElementById('totalAmount');
     if (totalAmountEl) totalAmountEl.value = `Rs. ${total.toFixed(2)}`;
-    
+
     // Update window global values
     window.globalDiscount = globalDiscountPercent;
     window.globalTax = globalTaxPercent;
-    
+
     // check box for received amount
     const checkAmount = document.getElementById('checkAmount');
     window.receivableAmount = document.getElementById("receivedAmount");
-    
+
     if (checkAmount && window.receivableAmount) {
-        checkAmount.addEventListener('change', function() {
-            if(checkAmount.checked){
+        checkAmount.addEventListener('change', function () {
+            if (checkAmount.checked) {
                 window.receivableAmount.value = `${total.toFixed(2)}`;
                 window.receivableAmount.readOnly = true;
             }
-            else{
+            else {
                 window.receivableAmount.value = '';
                 window.receivableAmount.readOnly = false;
             }
         });
     }
 
-//for due amount
-const balanceDueAmount = document.getElementById('balanceDueAmount');
-const balanceDue = document.getElementById('balanceDue');
+    //for due amount
+    const balanceDueAmount = document.getElementById('balanceDueAmount');
+    const balanceDue = document.getElementById('balanceDue');
 
     window.receivableAmount.addEventListener('input', () => {
         console.log("yo receivable amount ho ", window.receivableAmount.value)
-        if (window.receivableAmount.value =="" || window.receivableAmount.value >= total){
+        if (window.receivableAmount.value == "" || window.receivableAmount.value >= total) {
             balanceDueAmount.style.display = "none";
-            }
-        else{
-        balanceDueAmount.style.display = "flex";
+        }
+        else {
+            balanceDueAmount.style.display = "flex";
         }
         balanceDue.value = total - Number(window.receivableAmount.value);
-        console.log("yo hoo aba chai",balanceDue.value)
+        console.log("yo hoo aba chai", balanceDue.value)
     });
 }
 
@@ -968,23 +968,23 @@ export async function saveInvoice() {
     const clientName = clientNameInput.value.trim();
     const invoiceDateValue = invoiceDate.value;
     const receivedAmount = window.receivableAmount ? parseFloat(window.receivableAmount.value) || 0 : 0;
-    
+
     // Get discount and tax values
     const discountPercentageInput = document.getElementById('globalDiscount');
     const discountAmountInput = document.getElementById('globalDiscountAmount');
     const taxPercentageInput = document.getElementById('globalTax');
     const taxAmountInput = document.getElementById('taxAmount');
-    
+
     const discountPercent = discountPercentageInput ? parseFloat(discountPercentageInput.value) || 0 : 0;
     const discountAmount = discountAmountInput ? parseFloat(discountAmountInput.value) || 0 : 0;
     const taxPercent = taxPercentageInput ? parseFloat(taxPercentageInput.value) || 0 : 0;
     const taxAmount = taxAmountInput ? parseFloat(taxAmountInput.value) || 0 : 0;
-    
+
     let noteshere = "";
-    if(is_addnotebtn){
+    if (is_addnotebtn) {
         noteshere = document.getElementById('note').value;
     }
-    
+
     const additionalchargeName = additionalChargeName();
 
     // Validation
@@ -993,19 +993,19 @@ export async function saveInvoice() {
         clientNameInput.focus();
         return;
     }
-    
+
     if (window.invoiceItems.length === 0) {
         showAlert('Please add at least one item to the invoice', 'error');
         return;
     }
-    
+
     // Show loading state
     const saveBtn = document.getElementById('saveInvoiceBtn');
     const originalText = saveBtn.innerHTML;
-    
+
     saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving Invoice...';
     saveBtn.disabled = true;
-    
+
     try {
         const invoiceData = {
             clientName: clientName,
@@ -1028,9 +1028,9 @@ export async function saveInvoice() {
         };
 
 
-        
+
         console.log('Sending invoice data:->>>>>>>>>>>>>>>>>>>>>>>', invoiceData);
-        
+
         const response = await fetch('/dashboard/save-invoice/', {
             method: 'POST',
             headers: {
@@ -1040,33 +1040,33 @@ export async function saveInvoice() {
             },
             body: JSON.stringify(invoiceData)
         });
-        
+
         const result = await response.json();
 
         if (!response.ok) {
-    if (result.field_errors) {
-        const fe = result.field_errors;
+            if (result.field_errors) {
+                const fe = result.field_errors;
 
-        // Prefer total_amount, but fall back to any field/non-field errors.
-        const candidate =
-            fe.total_amount ??
-            fe.__all__ ??              // model.clean() often uses __all__
-            fe.non_field_errors ??     // sometimes this key is used
-            Object.values(fe)[0];      // fallback: first field
+                // Prefer total_amount, but fall back to any field/non-field errors.
+                const candidate =
+                    fe.total_amount ??
+                    fe.__all__ ??              // model.clean() often uses __all__
+                    fe.non_field_errors ??     // sometimes this key is used
+                    Object.values(fe)[0];      // fallback: first field
 
-        const msg = Array.isArray(candidate) ? candidate[0] : candidate || result.error || 'Validation error';
-        showAlert(msg, 'error');
-    } else {
-        showAlert(result.error || 'Something went wrong', 'error');
-    }
-    return;
-}
-        
-        
-        
+                const msg = Array.isArray(candidate) ? candidate[0] : candidate || result.error || 'Validation error';
+                showAlert(msg, 'error');
+            } else {
+                showAlert(result.error || 'Something went wrong', 'error');
+            }
+            return;
+        }
+
+
+
         if (result.success) {
             showAlert(result.message, 'success');
-            
+
             // Update the invoices list
             if (result.invoice) {
                 const newInvoice = {
@@ -1077,7 +1077,7 @@ export async function saveInvoice() {
                     amount: result.invoice.totalAmount,
                     status: 'pending'
                 };
-                
+
                 // Update invoices array (this will be handled by main.js state management)
                 if (window.invoices) {
                     window.invoices.unshift(newInvoice);
@@ -1087,7 +1087,7 @@ export async function saveInvoice() {
                     }
                 }
             }
-            
+
             //Redirect to dashboard after short delay
             setTimeout(() => {
                 window.location.href = '/dashboard/invoices/';

@@ -55,12 +55,12 @@
    
     font-weight: 500;
     color:rgb(82, 78, 78);
-    font-size: 10px;
+    font-size: 13px;
     font-weight: 700;
 }
 .value{
     font-weight: 500;
-    font-size: 10px;
+    font-size: 13px;
 
 }
 
@@ -123,13 +123,17 @@ table{
 /* Table cells */
 .items-table th,
 .items-table td {
-    border-bottom: 1px solid #e0dcdc; /* only horizontal borders */
-    padding: 8px 12px;
+   
+    padding: 5px 10px;
 }
 
 /* Bold header */
-.items-table thead th {
-    font-weight: 600;
+.items-table thead th, .items-table thead td{
+    font-weight: 430;
+    border: none;
+    border-collapse: collapse;
+    height: 100%;
+    padding: 0px 10px;
 }
 
 
@@ -180,7 +184,7 @@ table{
 }
 .labelAmount,
 .valueAmount{
-    font-size: 10px;
+    font-size: 13px;
 }
 
 .delete-btn {
@@ -250,9 +254,10 @@ table{
     padding: 10px;
     border-radius: 10px;
     max-height: 70vh;
-    width: 55vw;
+    
     box-sizing: border-box;
     position: relative;
+    max-width: 60vw;
 }
 /* Header stays fixed inside modal-content */
 .modal-header {
@@ -310,3 +315,27 @@ div.modal-header{
 }
 
 
+.info-line span{
+    font-size: 13px;
+}
+
+td{
+    font-size: 13px;
+}
+
+table{
+    border: none;
+    outline: none;
+
+}
+table, th, td, tr {
+    border: none;
+    border-collapse: collapse;
+}
+.items-table,
+.items-table th,
+.items-table td,
+.items-table tr {
+    border: none !important;
+    border-collapse: collapse;
+}

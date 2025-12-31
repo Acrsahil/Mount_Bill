@@ -385,6 +385,7 @@ th {
     border: none;
     display: flex;
     flex-direction: column;
+    max-width: 60vw;
 }
 
 .modal-header {
@@ -780,6 +781,7 @@ th {
         width: 98%;
         margin: 10px;
         max-height: 90vh;
+        max-width: 60vw;
     }
     
     .modal-body {
@@ -876,6 +878,7 @@ th {
     border: none;
     display: flex;
     flex-direction: column;
+    max-width: 60vw;
 }
 
 .modal-header {
@@ -1207,6 +1210,8 @@ th {
 
 .modal-content {
     scroll-behavior: smooth;
+    max-width: 60vw;
+    width: 60vw;
 }
 
 
