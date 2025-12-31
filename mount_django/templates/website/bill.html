@@ -4,45 +4,94 @@
 {% block title %}InvoicePro - Billing System{% endblock %}
 
 {% block extra_css %}
+
 <link rel="stylesheet" href="{% static 'css/product.css' %}">
 <link rel="stylesheet" href="{% static 'css/bill.css' %}">
 <link rel="stylesheet" href="{%static 'css/client.css'%}">
+<link rel="stylesheet" href="{%static 'css/ai.css'%}">
+
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 {% endblock %}
 
 {% block content %}
 
 <div class="container">
     <!-- Sidebar -->
-    <div class="sidebar">
+    <div class="sidebar"  style="overflow: auto; height: 100vh;">
         <div class="logo">
-            <i class="fas fa-file-invoice-dollar"></i>
-            <h1 class="bg-orange-500 text-3xl">InvoicePro</h1>
+            <img src="{% static 'assets/logo.png' %}" style="width: 32px; height: 32px; margin-right: 10px;" alt="CHALAYO Logo">
+            <h1 class="text-3xl">CHALAYO</h1>
         </div>
         <ul class="menu">
             <li class="menu-item {% if active_tab == 'dashboard' %}active{% endif %}" data-tab="dashboard">
                 <i class="fas fa-home"></i>
                 <span>Dashboard</span>
             </li>
-            <li class="menu-item {% if active_tab == 'invoices' %}active{% endif %}" data-tab="invoices">
-                <i class="fas fa-file-invoice"></i>
-                <span>Invoices</span>
+
+            <li class="menu-item {% if active_tab == 'clients' %}active{% endif %}" data-tab="clients">
+                <i class="fas fa-users"></i>
+                <span>Customers</span>
             </li>
+
             <li class="menu-item {% if active_tab == 'products' %}active{% endif %}" data-tab="products">
                 <i class="fas fa-box"></i>
                 <span>Products</span>
             </li>
-            <li class="menu-item {% if active_tab == 'clients' %}active{% endif %}" data-tab="clients">
-                <i class="fas fa-users"></i>
-                <span>Clients</span>
+
+            <li class="menu-item {% if active_tab == 'invoices' %}active{% endif %}" data-tab="invoices">
+                <i class="fas fa-receipt"></i>
+                <span>Sales</span>
             </li>
-            <li class="menu-item">
+
+            
+
+            <li class="menu-item {% if active_tab == 'categories' %}active{% endif %}" data-tab="categories">
+                <i class="fas fa-tags"></i>
+                <span>Categories</span>
+            </li>
+
+            <li class="menu-item {% if active_tab == 'stock' %}active{% endif %}" data-tab="stock">
+                <i class="fas fa-warehouse"></i>
+                <span>Stock / Inventory</span>
+            </li>
+
+             
+
+            <li class="menu-item {% if active_tab == 'suppliers' %}active{% endif %}" data-tab="suppliers">
+                <i class="fas fa-truck"></i>
+                <span>Suppliers</span>
+            </li>
+
+            <li class="menu-item {% if active_tab == 'expenses' %}active{% endif %}" data-tab="expenses">
+                <i class="fas fa-money-bill-wave"></i>
+                <span>Expenses</span>
+            </li>
+
+            <li class="menu-item {% if active_tab == 'reports' %}active{% endif %}" data-tab="reports">
                 <i class="fas fa-chart-bar"></i>
                 <span>Reports</span>
             </li>
-            <li class="menu-item">
+
+            <li class="menu-item {% if active_tab == 'returns' %}active{% endif %}" data-tab="returns">
+                <i class="fas fa-undo-alt"></i>
+                <span>Returns</span>
+            </li>
+
+            <li class="menu-item {% if active_tab == 'trash' %}active{% endif %}" data-tab="trash">
+                <i class="fa-solid fa-trash-arrow-up"></i>
+                <span>Trash Recover</span>
+            </li>
+
+            <li class="menu-item {% if active_tab == 'ai' %}active{% endif %}" data-tab="ai-assistant-dashboard">
+                <i class="fa-solid fa-robot"></i>
+                <span>AI Assistant</span>
+            </li>
+
+            <li class="menu-item {% if active_tab == 'settings' %}active{% endif %}" data-tab="settings">
                 <i class="fas fa-cog"></i>
                 <span>Settings</span>
             </li>
+
         </ul>
     </div>
 
@@ -68,7 +117,7 @@
                         <i class="fas fa-file-invoice"></i>
                     </div>
                     <div class="stat-info">
-                        <h3 id="totalInvoices">142</h3>
+                        <h3 id="totalInvoices">Loading</h3>
                         <p>Total Invoices</p>
                     </div>
                 </div>
@@ -77,7 +126,7 @@
                         <i class="fas fa-check-circle"></i>
                     </div>
                     <div class="stat-info">
-                        <h3 id="paidAmount">$24,580</h3>
+                        <h3 id="paidAmount">Loading</h3>
                         <p>Paid Invoices</p>
                     </div>
                 </div>
@@ -86,7 +135,7 @@
                         <i class="fas fa-clock"></i>
                     </div>
                     <div class="stat-info">
-                        <h3 id="pendingAmount">$8,420</h3>
+                        <h3 id="pendingAmount">Loading</h3>
                         <p>Pending Invoices</p>
                     </div>
                 </div>
@@ -95,7 +144,7 @@
                         <i class="fas fa-exclamation-circle"></i>
                     </div>
                     <div class="stat-info">
-                        <h3 id="overdueAmount">$3,150</h3>
+                        <h3 id="overdueAmount">Loading</h3>
                         <p>Overdue Invoices</p>
                     </div>
                 </div>
@@ -150,6 +199,8 @@
             </div>
         </div>
 
+
+        
         <!-- Invoices Tab -->
         <div class="tab-content {% if active_tab == 'invoices' %}active{% endif %}" id="invoices-tab">
             <div class="header">

@@ -85,7 +85,7 @@ th{
 
 
 table{
-    font-size: 10px;
+    font-size: 15px;
 }
 
 /* Table styling */
@@ -235,7 +235,6 @@ table{
     z-index: 1000; 
     left: 0;
     top: 0;
-
     background-color: rgba(0,0,0,0.5); 
     overflow-y: auto;
     justify-content: center;
@@ -309,3 +308,5 @@ div.modal-header{
     background: #e94560;
     color: black;
 }
+
+

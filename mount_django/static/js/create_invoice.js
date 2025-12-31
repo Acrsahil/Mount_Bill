@@ -690,18 +690,18 @@ export function renderInvoiceItems(invoiceItems, invoiceItemsBody, setupProductS
         row.innerHTML = `
         <td>${index+1}</td>
     <td style="position: relative;">
-        <input type="text" 
+        <input type="text" style="font-size: 13px;"
             class="product-search-input" 
             data-id="${item.id}"
             placeholder="Type product name (Tab to complete)..."
             value="${item.productName || ''}"
-            style="width: 100%;">
-        <div class="search-hint product-search-hint" id="search-hint-${item.id}" style="display: none; position: absolute; background: white; border: 1px solid #ddd; max-height: 150px; overflow-y: auto; z-index: 1000; width: 100%;">
+            >
+        <div  style="font-size: 13px;" class="search-hint product-search-hint" id="search-hint-${item.id}" style="display: none; position: absolute; background: white; border: 1px solid #ddd; overflow-y: auto; z-index: 1000;">
             <!-- Product suggestions will be dynamically added here -->
         </div>
     </td>
-    <td><input type="number" class="item-quantity" data-id="${item.id}" value="${item.quantity}" min="1" style="width: 100%;"></td>
-    <td><input type="number" class="item-price" data-id="${item.id}" value="${item.price}" min="0" step="0.01" style="width: 100%;"></td>
+    <td><input type="number" class="item-quantity" data-id="${item.id}" value="${item.quantity}" min="1" ></td>
+    <td><input type="number" class="item-price" data-id="${item.id}" value="${item.price}" min="0" step="0.01" ></td>
     <!-- DISCOUNT CELL -->
     <td class="discount-cell">
         <input type="number"
