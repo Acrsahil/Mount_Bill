@@ -34,7 +34,9 @@ caterorylists.addEventListener('click', (e) => {
     // Position the popup below the button
     categoryPopup.style.top = rect.bottom + window.scrollY + 'px';
     categoryPopup.style.left = rect.left + window.scrollX + 'px';
-
+    
+    //fetch category from backend when clicked
+    loadCategories()
     // Toggle visibility
     if (categoryPopup.style.display === 'block') {
         categoryPopup.style.display = 'none';
@@ -43,14 +45,39 @@ caterorylists.addEventListener('click', (e) => {
     }
 });
 // Replace button text when clicking a category
+// categoryClick()
+async function categoryClick(categoryId){
+    const productList = document.querySelector('.productList');
+    //empty the list first 
+    productList.innerHTML=``;
+    console.log("category_id ho ",categoryId);
+    const res =await fetch(`/dashboard/filter-category/${categoryId}/`)
+    const data = await res.json();
+    const products = data.products;
+    console.log("yo ho ni data",products)
+    products.forEach(product => addProductToList(product, productList))
+}
 categoryList.addEventListener('click', (e) => {
-    const li = e.target;
-    if (li.tagName === 'LI') {
-        button.textContent = li.textContent;   // replace button label
-        categoryPopup.style.display = 'none';  // hide popup
-    }
-});
-
+        const li = e.target;
+        if (li.tagName === 'LI') {
+            button.textContent = li.textContent;
+            if(li.id == 'allCategories')
+            {
+                productList.innerHTML=``;
+                products.forEach(product => addProductToList(product, productList))
+                categoryPopup.style.display = 'none';
+            }
+            // replace button label
+            
+            else{
+                const category_id = li.dataset.id;
+            categoryClick(category_id);
+            categoryPopup.style.display = 'none';
+            }
+              // hide popup
+        }
+    });
+// }
 // Close popup when clicking outside
 document.addEventListener('click', (e) => {
     if (!categoryPopup.contains(e.target) && !caterorylists.contains(e.target)) {
@@ -61,7 +88,49 @@ document.addEventListener('click', (e) => {
 })
 
 
+//fetch category from backend
+let categories=[]
 
+async function loadCategories(){
+    try{
+        console.log("am i here?inside")
+        const res = await fetch("/dashboard/category-json/");
+        const data = await res.json();
+        console.log("yaa print garxu ma ",data)
+       
+        categories = data.categories
+        renderCategories(categories)
+    }catch(error){
+        console.error("Error loading categories",error)
+    }
+}
+
+function renderCategories(categoryArray){
+    const categoryList = document.getElementById('categoryList');
+    const generalCategory = document.getElementById('generalCategory');
+
+    document.querySelectorAll('.categorylists').forEach(li => li.remove())
+    categoryArray.forEach(category => {
+            const li = document.createElement('li');
+            li.classList.add('categorylists')
+            li.textContent = category.name;
+            li.dataset.id = category.id;
+
+        categoryList.insertBefore(li,generalCategory);
+        })
+}
+// FILTER Category
+document.addEventListener('DOMContentLoaded',() => {
+const categorySearchInput = document.getElementById('categorySearchInput');
+
+    categorySearchInput.addEventListener('input',()=>{
+    const searchTerm = categorySearchInput.value.toLowerCase();
+    const filteredCategory = categories.filter(category => category.name.toLowerCase().includes(searchTerm));
+        renderCategories(filteredCategory);
+    })
+
+loadCategories()
+})
 //open modal for add product of product-detail page
 document.addEventListener('DOMContentLoaded', () => {
     const addNewProductDetailBtn = document.getElementById('addNewProductDetailBtn');
@@ -105,7 +174,7 @@ export function filterProduct(products, productDetailSearchInput, productList) {
 
     productList.innerHTML = '';
 
-    filteredProduct.forEach((product,index) => {
+    filteredProduct.forEach((product) => {
         const li = document.createElement('li');
         li.classList.add('productlists');
         li.textContent = product.name;
