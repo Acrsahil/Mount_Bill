@@ -23,7 +23,27 @@ from .models import (
     ProductCategory,
     RemainingAmount,
 )
-
+def filter_category(request,id):
+    user = request.user
+    company =user.owned_company or user.active_company
+    
+    if not company:
+        return JsonResponse({'categories':[]})
+    products = Product.objects.filter(category__id = id)
+    print(products)
+    products_data = [
+        {
+            "id": p.id,
+            "uid": str(p.uid),
+            "name": p.name,
+            "category": p.category.name if p.category else "N/A",
+            "cost_price": float(p.cost_price),
+            "selling_price": float(p.selling_price),
+            "quantity": p.product_quantity,
+        }
+        for p in products
+    ]
+    return JsonResponse({'products':products_data})
 
 def category_json(request):
     user = request.user

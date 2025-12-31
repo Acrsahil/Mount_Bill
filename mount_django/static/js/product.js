@@ -45,14 +45,39 @@ caterorylists.addEventListener('click', (e) => {
     }
 });
 // Replace button text when clicking a category
+// categoryClick()
+async function categoryClick(categoryId){
+    const productList = document.querySelector('.productList');
+    //empty the list first 
+    productList.innerHTML=``;
+    console.log("category_id ho ",categoryId);
+    const res =await fetch(`/dashboard/filter-category/${categoryId}/`)
+    const data = await res.json();
+    const products = data.products;
+    console.log("yo ho ni data",products)
+    products.forEach(product => addProductToList(product, productList))
+}
 categoryList.addEventListener('click', (e) => {
-    const li = e.target;
-    if (li.tagName === 'LI') {
-        button.textContent = li.textContent;   // replace button label
-        categoryPopup.style.display = 'none';  // hide popup
-    }
-});
-
+        const li = e.target;
+        if (li.tagName === 'LI') {
+            button.textContent = li.textContent;
+            if(li.id == 'allCategories')
+            {
+                productList.innerHTML=``;
+                products.forEach(product => addProductToList(product, productList))
+                categoryPopup.style.display = 'none';
+            }
+            // replace button label
+            
+            else{
+                const category_id = li.dataset.id;
+            categoryClick(category_id);
+            categoryPopup.style.display = 'none';
+            }
+              // hide popup
+        }
+    });
+// }
 // Close popup when clicking outside
 document.addEventListener('click', (e) => {
     if (!categoryPopup.contains(e.target) && !caterorylists.contains(e.target)) {
