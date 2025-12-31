@@ -37,12 +37,11 @@ body {
     background: linear-gradient(135deg, var(--primary), var(--secondary));
     color: white;
     padding: 5px 30px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 13px rgba(0, 0, 0, 0.1);
 
-    /* match page-content width */
-    max-width: 1400px;
+    
     margin: 0 auto;
-    width: 100%;
+    width: 100vw;
 }
 
 .header-content{
@@ -79,36 +78,42 @@ body {
 
 /* Form Styles */
 .form-group {
-    margin-bottom: 10px;
-    font-size: 10px;
+    margin-bottom: 13px;
+    font-size: 13px;
 }
 
 .form-group label {
     display: block;
     margin-bottom: 8px;
-    font-size: 10px;
+    font-size: 13px;
     font-weight: bold;
 }
 .form-row-3 {
     display: flex;
     align-items: flex-start;
     width: 100%;
-    overflow: scroll;
+    /* overflow-x: scroll; */
 }
 
 .right-column {
     display: flex;
-    gap: 10px;
+    gap: 13px;
     margin-left: auto;  
 }
 .left-group .form-group input {
     width: 300px;
-    font-size: 10px;
+    font-size: 13px;
     height: 35px;
+    
 }
+
+.left-group .form-group input:active{
+    font-size: 13px;
+}
+
 .right-column .form-group input {
     width: 300px;
-    font-size: 10px;
+    font-size: 13px;
     height: 35px;
 
 }
@@ -117,7 +122,7 @@ body {
 
 .form-control {
     width: 100%;
-    padding: 10px 15px;
+    padding: 13px 15px;
     border: 1px solid var(--border);
     border-radius: 6px;
     font-size: 14px;
@@ -152,7 +157,7 @@ textarea.form-control {
     border: none;       
     background-color: white;
     cursor: pointer;
-    font-size: 10px;   
+    font-size: 13px;   
 }
 
 /* Three column row for invoice details */
@@ -185,7 +190,7 @@ textarea.form-control {
 }
 
 .invoice-items-header h4 {
-    font-size: 10px;
+    font-size: 13px;
     font-weight: 600;
     color: var(--dark);
     margin: 0;
@@ -196,20 +201,20 @@ textarea.form-control {
     width: 100%;
     border-collapse: collapse;
     font-family: Arial, sans-serif;
-    font-size: 10px;
+    font-size: 13px;
 }
 
 /* Borders like Excel */
 .invoice-items-table th,
 .invoice-items-table td {
     border: 1px solid #e2e2e2;
-    padding: 10px;
+    padding: 5px;
 }
 
 /* Header */
 .invoice-items-table thead th {
     background: #f8f8f8;
-    font-size:10px;
+    font-size:13px;
     text-align: left;
 }
 
@@ -238,7 +243,7 @@ textarea.form-control {
     background: transparent;
     padding: 6px;
     outline: none;
-    font-size:10px;
+    font-size:13px;
 }
 
 .invoice-items-table input:focus {
@@ -263,7 +268,7 @@ td{
     border: none;
     padding: 12px 24px;
     border-radius: 6px;
-    font-size: 10px;
+    font-size: 13px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
@@ -303,28 +308,28 @@ td{
 .invoice-totals-compact .total-column {
     display: flex;
     flex-direction: column; /* stack vertically */
-    gap: 10px;              /* space between rows */
-    margin-top: 10px;
-    font-size: 10px;
+    gap: 13px;              /* space between rows */
+    margin-top: 13px;
+    font-size: 13px;
 }
 
 .field-row {
     display: flex;
     align-items: center;
-    gap: 10px;               /* space between label and input/select */
+    gap: 13px;               /* space between label and input/select */
 }
 
 .field-row label {
     width: 200px; 
-    font-size: 10px;           /* fixed width for labels */
+    font-size: 13px;           /* fixed width for labels */
     text-align: right;
 }
 
 .field-row input,
 .field-row select {
     flex: 1;                 /* inputs take remaining space */
-    font-size: 10px;
-    padding: 5px 10px;
+    font-size: 13px;
+    padding: 5px 13px;
     border-radius: 5px;
     border: none;
 }
@@ -353,7 +358,7 @@ td{
     padding: 5px 15px;
     border: none;
     border-radius: 6px;
-    font-size: 10px;
+    font-size: 13px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
@@ -377,7 +382,7 @@ td{
 .btn-light {
     background-color: white;
     color: var(--dark);
-    font-size: 10px;
+    font-size: 13px;
     border: 1px solid var(--border);
 }
 
@@ -401,7 +406,7 @@ td{
 }
 
 .hint-item {
-    padding: 10px 15px;
+    padding: 13px 15px;
     cursor: pointer;
     border-bottom: 1px solid var(--border);
     transition: background-color 0.2s;
@@ -427,7 +432,7 @@ td{
 
 #additionalNotes textarea {
     caret-color: black; 
-    padding: 10px;   
+    padding: 13px;   
     color: grey;
     font-size: 17px;
     outline: none;
@@ -449,12 +454,12 @@ td{
 .button-row {
     display: flex;
     flex-direction: row;
-    gap: 10px;
+    gap: 13px;
     align-items: flex-end;
 }
 
 #addDiscountBtn,#addTaxBtn,#addChargeBtn,#addnoteBtn{
-    font-size: 10px !important;
+    font-size: 13px !important;
     cursor:pointer;
     font-weight:600;
 }
@@ -478,8 +483,8 @@ td{
 
 .additional-input {
     display: flex;
-    gap: 10px;
-    margin-bottom: 10px; /* space between input rows */
+    gap: 13px;
+    margin-bottom: 13px; /* space between input rows */
     /* width: 100%; */
 }
 
@@ -492,7 +497,7 @@ td{
 #addnoteBtn,
 #addTaxBtn {
     font-size: 17px;
-    padding: 5px 10px;
+    padding: 5px 13px;
     cursor: pointer;
     border: none;
     background: none;
@@ -594,7 +599,7 @@ td{
 #taxContainer .form-group {
   display: flex;
   align-items: center;
-  font-size: 10px;
+  font-size: 13px;
   gap: 0.5rem; /* spacing between label and inputs */
 }
 
@@ -614,4 +619,12 @@ td{
 }
 body{
     overflow: scroll;
+}
+
+.product-search-input::placeholder, .client-search-input::placeholder {
+    font-size: 13px;
+}
+
+.discount-cell *, .item-total{
+    font-size: 13px;
 }
