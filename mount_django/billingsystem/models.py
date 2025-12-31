@@ -8,7 +8,6 @@ from django.db import models
 from django.utils import timezone
 
 
-
 class User(AbstractUser):
     phone = models.CharField(max_length=15, blank=True)
     email = models.EmailField(blank=True)
@@ -97,7 +96,7 @@ class Product(models.Model):
     company = models.ForeignKey(
         Company, on_delete=models.CASCADE, related_name="products"
     )
-    
+
     uid = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=100)
     cost_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -123,7 +122,7 @@ class OrderList(models.Model):
     company = models.ForeignKey(
         Company, on_delete=models.CASCADE, related_name="orders"
     )
-    
+
     order_date = models.DateTimeField(default=timezone.now)
     customer = models.ForeignKey(
         Customer,
@@ -273,12 +272,16 @@ class RemainingAmount(models.Model):
 
 
 class ItemActivity(models.Model):
-    order = models.ForeignKey(OrderList,on_delete=models.SET_NULL,null=True,related_name="orderactivities")
-    product = models.ForeignKey(Product,on_delete=models.SET_NULL,null=True,related_name="activities")
+    order = models.ForeignKey(
+        OrderList, on_delete=models.CASCADE, null=True, related_name="orderactivities"
+    )
+    product = models.ForeignKey(
+        Product, on_delete=models.PROTECT, null=True, related_name="activities"
+    )
     date = models.DateField(auto_now=True)
-    change = models.CharField(max_length=50)
+    change = models.IntegerField()
     quantity = models.IntegerField()
-    remarks = models.CharField(max_length=200,blank=True)
+    remarks = models.CharField(max_length=200, blank=True)
 
     def __str__(self):
-        return self.type
+        return self.product.name

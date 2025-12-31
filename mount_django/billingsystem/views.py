@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_list_or_404, get_object_or_404, render
 from django.utils import timezone
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_exempt
@@ -17,19 +17,22 @@ from .models import (
     AdditionalCharges,
     Bill,
     Customer,
+    ItemActivity,
     OrderList,
     OrderSummary,
     Product,
     ProductCategory,
     RemainingAmount,
 )
-def filter_category(request,id):
+
+
+def filter_category(request, id):
     user = request.user
-    company =user.owned_company or user.active_company
-    
+    company = user.owned_company or user.active_company
+
     if not company:
-        return JsonResponse({'categories':[]})
-    products = Product.objects.filter(category__id = id)
+        return JsonResponse({"categories": []})
+    products = Product.objects.filter(category__id=id)
     print(products)
     products_data = [
         {
@@ -43,23 +46,26 @@ def filter_category(request,id):
         }
         for p in products
     ]
-    return JsonResponse({'products':products_data})
+    return JsonResponse({"products": products_data})
+
 
 def category_json(request):
     user = request.user
-    company =user.owned_company or user.active_company
-    
+    company = user.owned_company or user.active_company
+
     if not company:
-        return JsonResponse({'categories':[]})
+        return JsonResponse({"categories": []})
     categories = ProductCategory.objects.filter(company=company)
-    categories =[
+    categories = [
         {
-            'id':c.id,
-            'name':c.name,
-        }for c in categories
+            "id": c.id,
+            "name": c.name,
+        }
+        for c in categories
     ]
-    
-    return JsonResponse({'categories':categories})
+
+    return JsonResponse({"categories": categories})
+
 
 @require_GET
 @never_cache
@@ -179,6 +185,7 @@ def dashboard(request):
 
 @login_required
 @require_POST
+@transaction.atomic
 def save_product(request):
     """Save new product via AJAX - COMPATIBLE VERSION"""
     try:
@@ -264,7 +271,7 @@ def save_product(request):
             )
 
             # Create product
-        product = Product.objects.create(
+        product = Product(
             name=name,
             cost_price=cost_price,
             selling_price=selling_price,
@@ -272,6 +279,21 @@ def save_product(request):
             product_quantity=quantity,
             company=company,
         )
+
+        item_activity = ItemActivity(
+            product=product, change=quantity, quantity=quantity, remarks="Opening Stock"
+        )
+
+        try:
+            product.save()
+            item_activity.save()
+        except Exception:
+            transaction.set_rollback(True)
+            return JsonResponse(
+                {"success": False, "error": "Can't Save Data in Database"},
+                status=400,
+            )
+
         return JsonResponse(
             {
                 "success": True,
@@ -519,6 +541,24 @@ def save_invoice(request):
             total_amount += (quantity * price) - (
                 (quantity * price) * (discountPercent / 100)
             )
+
+            print("this is negatiove qty->>> ", -quantity)
+
+            new_qty = product.product_quantity - quantity
+            ItemActivity.objects.create(
+                order=order,
+                product=product,
+                change=-quantity,
+                quantity=product.product_quantity - quantity,
+                remarks=notes_here,
+            )
+
+            print("This is product Id::", product.id)
+
+            change_product = Product.objects.get(id=product.id)
+            change_product.product_quantity = new_qty
+            print("this is change_product Qty...", change_product.product_quantity)
+            change_product.save()
 
         # grand total amount
         final_amount = total_amount - (global_discount / 100) * total_amount
@@ -929,8 +969,22 @@ def product_detail(request, id: UUID = None):
     context = get_serialized_data(request.user, "dashboard")
     if id:
         product = get_object_or_404(Product, uid=id)
-        # separate key for separate product
+        item_activity = get_list_or_404(ItemActivity, product=product)
+
         context["product_detail"] = product
+        context["item_activity"] = item_activity
+
+        for act in item_activity:
+            print("this is act.product_name ", act.product.name)
+            print("this is act.change ", act.change)
+            print("this is act.quantity ", act.quantity)
+            print("this is act.remarks ", act.remarks)
+
+            if not act.order:
+                print("this is act.remarks ", "Reduce Stock")
+            else:
+                print("this is act.remarks ", f"Sales Invoice #{act.order.id}")
+
     return render(request, "website/product_detail.html", context)
 
 

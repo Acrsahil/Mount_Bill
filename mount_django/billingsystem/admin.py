@@ -8,6 +8,7 @@ from .models import (
     Bill,
     Company,
     Customer,
+    ItemActivity,
     OrderList,
     OrderSummary,
     Product,
@@ -244,3 +245,15 @@ class RemainingAmountAdmin(admin.ModelAdmin):
         "remaining_amount",
     )
     search_fields = ("customer",)
+
+
+@admin.register(ItemActivity)
+class ItemActivityAdmin(admin.ModelAdmin):
+    list_display = (
+        "order",
+        "product",
+        "date",
+        "change",
+        "quantity",
+    )
+    search_fields = ("order_id",)
