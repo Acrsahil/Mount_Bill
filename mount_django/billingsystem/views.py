@@ -25,6 +25,47 @@ from .models import (
     RemainingAmount,
 )
 
+def instock_product(request):
+    user = request.user
+    company = user.owned_company or user.active_company
+
+    if not company:
+        return JsonResponse({"categories": []})
+    products = Product.objects.filter(product_quantity__gt=0)
+    product_data =[
+        {
+            "id": p.id,
+            "uid": str(p.uid),
+            "name": p.name,
+            "category": p.category.name if p.category else "N/A",
+            "cost_price": float(p.cost_price),
+            "selling_price": float(p.selling_price),
+            "quantity": p.product_quantity,
+        }
+        for p in products
+    ]
+    return JsonResponse({"products": product_data})
+
+def lowOutstock_product(request):
+    user = request.user
+    company = user.owned_company or user.active_company
+
+    if not company:
+        return JsonResponse({"categories": []})
+    products = Product.objects.filter(product_quantity__lte=0)
+    product_data =[
+        {
+            "id": p.id,
+            "uid": str(p.uid),
+            "name": p.name,
+            "category": p.category.name if p.category else "N/A",
+            "cost_price": float(p.cost_price),
+            "selling_price": float(p.selling_price),
+            "quantity": p.product_quantity,
+        }
+        for p in products
+    ]
+    return JsonResponse({"products": product_data})
 
 def filter_category(request, id):
     user = request.user
@@ -230,7 +271,7 @@ def save_product(request):
             selling_price = float(selling_price)
             quantity = int(quantity)
 
-            if quantity <= 0:
+            if quantity < 0:
                 return JsonResponse(
                     {
                         "success": False,

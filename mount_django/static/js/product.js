@@ -19,6 +19,85 @@ function getCookie(name) {
 }
 
 const csrfToken = getCookie('csrftoken');
+
+
+//for stock filter
+
+const stocklistpopup = document.querySelector('.stocklist-popup');
+
+async function fetchinStockProduct(){
+    const res = await fetch(`/dashboard/instock-product/`);
+    const data = await res.json();
+    console.log("yo ho k ho ",data)
+    return data.products;
+    
+}
+
+async function fetchlowOutStockProduct(){
+    const res = await fetch(`/dashboard/lowOutstock-product/`);
+    const data = await res.json();
+    console.log("yo ho k ho ",data)
+    return data.products;
+    
+}
+document.addEventListener('DOMContentLoaded',() =>{
+    const stocklists = document.getElementById('stocklists');
+    
+    stocklists.addEventListener('click',(e) =>
+    {
+        
+        e.stopPropagation();
+        console.log("click vako xaina??")
+        const rect = stocklists.getBoundingClientRect();
+        
+        stocklistpopup.style.top = rect.bottom + window.scrollY + 'px';
+        stocklistpopup.style.left = rect.left + window.scrollX + 'px';
+
+        if(stocklistpopup.style.display === 'block'){
+            stocklistpopup.style.display = 'none';
+        }
+        else{
+            stocklistpopup.style.display = 'block';
+        }
+        
+       //for changing the button text
+      
+    })
+    document.addEventListener('click', (e) => {
+       if (!stocklistpopup.contains(e.target) && !stocklists.contains(e.target)) {
+        stocklistpopup.style.display = 'none';
+    }
+});
+
+stocklistpopup.addEventListener('click', async(e) => {
+      if (e.target.tagName === 'LI') {
+     stocklists.textContent = e.target.textContent; // change button text
+     if (e.target.id === 'allStock')
+     {
+        productList.innerHTML=``;
+        products.forEach(product => addProductToList(product,productList))
+        stocklistpopup.style.display = 'none';
+     }
+     if (e.target.id === 'inStock'){
+        const stockProduct = await fetchinStockProduct();
+        productList.innerHTML=``;
+        stockProduct.forEach(product => addProductToList(product,productList))
+        stocklistpopup.style.display = 'none';
+     }
+     if(e.target.id == 'lowStock' || e.target.id == 'outStock'){
+        const lowstockProduct = await fetchlowOutStockProduct();
+        productList.innerHTML = ``;
+        lowstockProduct.forEach(product => addProductToList(product,productList));
+        stocklistpopup.style.display = 'none';
+
+     }
+      stocklistpopup.style.display = 'none'; // close popup
+    }
+});
+})
+
+
+
 document.addEventListener('DOMContentLoaded',() => {
 const caterorylists = document.getElementById('caterorylists');
 const categoryPopup = document.getElementById('categoryPopup');
