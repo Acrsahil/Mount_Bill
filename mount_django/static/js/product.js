@@ -1,7 +1,7 @@
 // API calls for AJAX/fetch requests
 import { showAlert } from './utils.js';
 import { openAddProductModal,closeProductModalFunc  } from './events.js';
-
+import { openModal} from './bill_layout.js';
 //for csrfToken for js
 function getCookie(name) {
     let cookieValue = null;
@@ -362,11 +362,11 @@ function addProductActivityToTable(activity,productsactivityTableBody){
     if(!productsactivityTableBody) return;
     const row = document.createElement('tr');
     row.innerHTML = `
-    <td>Add Stock</td>
+    <td>${activity.type}</td>
     <td>${activity.date}</td>
     <td>${activity.change}</td>
     <td>${activity.quantity}</td>
-    <td>${activity.remarks}</td>`
+    <td>${activity.remarks}</td>`;
     productsactivityTableBody.appendChild(row);
 }
 

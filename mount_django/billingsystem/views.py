@@ -292,7 +292,7 @@ def save_product(request):
         )
 
         item_activity = ItemActivity(
-            product=product, change=quantity, quantity=quantity, remarks="Opening Stock"
+            product=product,type="Add Stock", change=quantity, quantity=quantity, remarks="Opening Stock"
         )
 
         try:
@@ -566,6 +566,7 @@ def save_invoice(request):
             new_qty = product.product_quantity - quantity
             ItemActivity.objects.create(
                 order=order,
+                type = f"sale invoice #{order.id}",
                 product=product,
                 change=-quantity,
                 quantity=product.product_quantity - quantity,
@@ -1016,6 +1017,7 @@ def fetch_product_activities(request,id : UUID):
     data = []
     for act in item_activities:
         data.append({
+                    "type": act.type,
                     "date": act.date.isoformat(),
                     "change": act.change,
                     "quantity": act.quantity,

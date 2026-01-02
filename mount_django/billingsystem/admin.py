@@ -160,6 +160,7 @@ class ProductAdmin(admin.ModelAdmin):
         "name",
         "cost_price",
         "selling_price",
+        "product_quantity",
         "category",
         "company",
         "date_added",
@@ -252,6 +253,7 @@ class ItemActivityAdmin(admin.ModelAdmin):
     list_display = (
         "order",
         "product",
+        "type",
         "date",
         "change",
         "quantity",

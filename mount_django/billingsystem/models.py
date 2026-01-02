@@ -278,6 +278,7 @@ class ItemActivity(models.Model):
     product = models.ForeignKey(
         Product, on_delete=models.PROTECT, null=True, related_name="activities"
     )
+    type = models.CharField(max_length=200)
     date = models.DateField(auto_now=True)
     change = models.IntegerField()
     quantity = models.IntegerField()
