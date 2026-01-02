@@ -33,12 +33,13 @@ async function getData(api_url) {
     console.error('Error:', error);
   }
 }
-export function openModal() {
+export function openModal(invoiceId) {
+     
     modal.style.display = "flex";
-    const row = event.target.closest('tr');
-    const invoice_id = parseInt(row.cells[0].innerText.split('-')[1]);
-    
-    const url = `/dashboard/invoice-layout/${invoice_id}/`;  // Add trailing slash
+    // const row = event.target.closest('tr');
+    // const invoice_id = parseInt(row.cells[0].innerText.split('-')[1]);
+    // console.log("invoice ko id",invoice_id)
+    const url = `/dashboard/invoice-layout/${invoiceId}/`;  // Add trailing slash
 
 
     

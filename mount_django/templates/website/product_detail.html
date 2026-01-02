@@ -4,10 +4,12 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/product.css' %}">
 <link rel="stylesheet" href="{% static 'css/bill.css' %}">
+{% comment %} <link rel="stylesheet" href="{% static 'css/bill_modal.css' %}"> {% endcomment %}
 
 {% endblock %}
 
 {% block content %}
+
   <script>
         // DEFINE FUNCTION FIRST in head or before body
         function closemodal() {
@@ -15,8 +17,91 @@
             document.getElementById("addProductModal").style.display = "none";
         }
     </script>
+{% comment %} {% include "website/bill_layout.html" %} {% endcomment %}
+<!--addstock buttons-->
+<div class="stock-popup" id="addStockPopup">
+    <button class="popup-btn" id="addStock">Add Stock</button>
+    <button class="popup-btn" id="reduceStock">Remove Stock</button>
+</div>
+
+<!--addStock popup-->
+<div class="modal" id="addStockModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Add Stock</h3>
+            <button class="close-btn" id="closeStockModal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label for="stockQuantity">Quantity To Add</label>
+                <input type="text" id="stockQuantity" class="form-control stock-quantity" required>
+            </div>
+            <div class="productPrices">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="productPrices" class="product-price">Cost Price</label>
+                        <input type="number" id="productPrices" class="form-control" placeholder="0.00" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="stockDate">Date</label>
+                        <input type="date" id="stockDate" class="form-control">
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="stockRemarks">Remarks</label>
+                <input type="text" id="stockRemarks" class="form-control"
+                       placeholder="Enter remarks.....">
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn btn-light" id="cancelStockBtn">Cancel</button>
+            <button class="btn btn-primary" id="saveStockBtn">Add Stock</button>
+        </div>
+
+    </div>
+</div>
 
 
+<!--reduceStock popup-->
+<div class="modal" id="reduceStockModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Reduce Stock</h3>
+            <button class="close-btn" id="closeStockModals">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label for="stockQuantity">Quantity To Reduce</label>
+                <input type="text" id="stockQuantities" class="form-control stock-quantity" required>
+            </div>
+            <div class="productPrices">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="productPrices" class="product-price">Cost Price</label>
+                        <input type="number" id="productPricess" class="form-control" placeholder="0.00" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="stockDate">Date</label>
+                        <input type="date" id="stockDates" class="form-control">
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="stockRemarks">Remarks</label>
+                <input type="text" id="stockRemarkss" class="form-control"
+                       placeholder="Enter remarks.....">
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn btn-light" id="cancelStockBtns">Cancel</button>
+            <button class="btn btn-primary" id="reduceStockBtn">Remove Stock</button>
+        </div>
+
+    </div>
+</div>
 <!-- Add Product Modal - WITH SUGGESTIONS -->
 <div class="modal" id="addProductModal">
     <div class="modal-content">
@@ -223,12 +308,22 @@
                 <input type="text" id="categorySearchInput" placeholder="Search Category">
             </div>
     <ul id="categoryList">
-    <li id="allCategories">All Categories</li>
+    <li id="allCategories">All Category</li>
     <!--Dynamic list for the category will be listed here-->
     <li id="generalCategory">General</li>
     </ul>
 </div> 
 </div>
+
+<div class ="stocklist-popup" id="stockListPopup">
+  <ul class ="stock-lists">
+    <li id="allStock">All stock</li>
+    <li id="inStock">In stock</li>
+    <li id="lowStock">Low stock</li>
+    <li id="outStock">Out of stock</li>
+  </ul>
+</div>
+{% include "website/invoice_modal.html" %}
 {% endblock %}
 
 {% block extra_js %}
@@ -256,5 +351,6 @@ if (typeof window.djangoData === 'undefined') {
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script type="module" src="{%static 'js/events.js'%}"></script>
 <script type="module" src="{%static 'js/product.js'%}"></script>
+<script type="module" src="{%static 'js/bill_layout.js'%}"></script>
 <script type="module" src="{% static 'js/main.js' %}"></script>
 {%endblock%}

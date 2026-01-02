@@ -264,8 +264,11 @@ export function loadInvoices(invoices, invoicesTableBody, csrfToken = '') {
 </td>
 `;
     // Add click event to view buttons using event delegation
-    row.addEventListener("click", () => {
-            openModal();
+    row.addEventListener("click", (event) => {
+         const row = event.target.closest('tr');
+            if (!row) return;
+            const invoiceId = row.dataset.orderId || parseInt(row.cells[0].innerText.split('-')[1]);
+            openModal(invoiceId);
 
         });
    

@@ -25,15 +25,25 @@ from .models import (
     RemainingAmount,
 )
 
-
-def filter_category(request, id):
+def filtered_products(request):
     user = request.user
     company = user.owned_company or user.active_company
 
     if not company:
-        return JsonResponse({"categories": []})
-    products = Product.objects.filter(category__id=id)
-    print(products)
+        return JsonResponse({"products": []})
+    
+    products = Product.objects.all()
+    category_id = request.GET.get('category')
+    stock_status = request.GET.get('stock')
+
+    if category_id:
+        products = products.filter(category__id=category_id)
+
+    if stock_status == 'instock':
+        products = products.filter(product_quantity__gt=0)
+    elif stock_status == 'outstock':
+        products = products.filter(product_quantity__lte=0)
+
     products_data = [
         {
             "id": p.id,
@@ -47,6 +57,7 @@ def filter_category(request, id):
         for p in products
     ]
     return JsonResponse({"products": products_data})
+
 
 
 def category_json(request):
@@ -230,7 +241,7 @@ def save_product(request):
             selling_price = float(selling_price)
             quantity = int(quantity)
 
-            if quantity <= 0:
+            if quantity < 0:
                 return JsonResponse(
                     {
                         "success": False,
@@ -281,7 +292,7 @@ def save_product(request):
         )
 
         item_activity = ItemActivity(
-            product=product, change=quantity, quantity=quantity, remarks="Opening Stock"
+            product=product,type="Add Stock", change=quantity, quantity=quantity, remarks="Opening Stock"
         )
 
         try:
@@ -293,7 +304,15 @@ def save_product(request):
                 {"success": False, "error": "Can't Save Data in Database"},
                 status=400,
             )
-
+        item_activity=[
+             {
+                    "type":item_activity.type,
+                    "date": item_activity.date.isoformat(),
+                    "change": item_activity.change,
+                    "quantity": item_activity.quantity,
+                    "remarks": item_activity.remarks,
+                }
+        ]
         return JsonResponse(
             {
                 "success": True,
@@ -307,6 +326,7 @@ def save_product(request):
                     "category": product.category.name if product.category else "",
                     "quantity": product.product_quantity,
                 },
+               "itemactivity":item_activity,
             }
         )
 
@@ -375,15 +395,30 @@ def add_stock(request, id):
         data = json.loads(request.body)
         product_id = data.get("id")
         stock = int(data.get("stock_to_add"))
+        remark = data.get("remarks")
         product = Product.objects.get(id=product_id)
-        product.product_quantity += stock
+        product.product_quantity+= stock
         product.save()
 
+        item_activity = ItemActivity(
+            product=product,type="Add Stock", change=f"+{stock}", quantity=product.product_quantity, remarks=remark
+        )
+        item_activity.save()
+        item_activity=[
+             {
+                    "type":item_activity.type,
+                    "date": item_activity.date.isoformat(),
+                    "change": item_activity.change,
+                    "quantity": item_activity.quantity,
+                    "remarks": item_activity.remarks,
+                }
+        ]
         return JsonResponse(
             {
                 "success": True,
                 "message": "Stock updated successfully",
                 "product": {"id": product.id, "quantity": product.product_quantity},
+                "itemactivity":item_activity,
             }
         )
     except Exception as e:
@@ -401,10 +436,23 @@ def reduce_stock(request, id):
         data = json.loads(request.body)
         product_id = data.get("id")
         stock = int(data.get("stock_to_remove"))
+        remark = data.get("remarks")
         product = Product.objects.get(id=product_id)
         product.product_quantity -= stock
         product.save()
-
+        item_activity = ItemActivity(
+            product=product,type="Reduce Stock", change=-stock, quantity=product.product_quantity, remarks=remark
+        )
+        item_activity.save()
+        item_activity=[
+             {
+                    "type":item_activity.type,
+                    "date": item_activity.date.isoformat(),
+                    "change": item_activity.change,
+                    "quantity": item_activity.quantity,
+                    "remarks": item_activity.remarks,
+                }
+        ]
         return JsonResponse(
             {
                 "success": True,
@@ -413,6 +461,7 @@ def reduce_stock(request, id):
                     "id": product.id,
                     "quantity": product.product_quantity,
                 },
+                "itemactivity":item_activity,
             }
         )
     except Exception as e:
@@ -547,6 +596,7 @@ def save_invoice(request):
             new_qty = product.product_quantity - quantity
             ItemActivity.objects.create(
                 order=order,
+                type = f"sale invoice #{order.id}",
                 product=product,
                 change=-quantity,
                 quantity=product.product_quantity - quantity,
@@ -987,6 +1037,27 @@ def product_detail(request, id: UUID = None):
 
     return render(request, "website/product_detail.html", context)
 
+def fetch_product_activities(request,id : UUID):
+    user = request.user
+    company = user.owned_company or user.active_company
+
+    if not company:
+        return JsonResponse({"activities": []})
+    item_activities = ItemActivity.objects.filter(product__uid = id)
+    data = []
+    for act in item_activities:
+        data.append({
+                    "type": act.type,
+                    "date": act.date.isoformat(),
+                    "change": act.change,
+                    "quantity": act.quantity,
+                    "remarks": act.remarks,
+                    "order_id": act.order.id if act.order else None 
+                }
+
+        )
+    return JsonResponse({"success":True,
+                         "activities":data})
 
 @login_required
 def create_invoice_page(request):
