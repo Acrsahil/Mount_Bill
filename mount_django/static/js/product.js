@@ -25,16 +25,14 @@ const csrfToken = getCookie('csrftoken');
 
 const stocklistpopup = document.querySelector('.stocklist-popup');
 
-async function fetchinStockProduct(){
-    const res = await fetch(`/dashboard/instock-product/`);
-    const data = await res.json();
-    console.log("yo ho k ho ",data)
-    return data.products;
-    
-}
+let currentCategory = null; // store the currently selected category
+let currentStock = "";      // store the currently selected stock filter
 
-async function fetchlowOutStockProduct(){
-    const res = await fetch(`/dashboard/lowOutstock-product/`);
+async function fetchStockProducts(category= null, stock=""){
+    let url = `/dashboard/filtered-products/?`;
+    if(category) url += `category=${category}&`;
+    if(stock) url += `stock=${stock}&`;
+    const res = await fetch(url);
     const data = await res.json();
     console.log("yo ho k ho ",data)
     return data.products;
@@ -74,23 +72,19 @@ stocklistpopup.addEventListener('click', async(e) => {
      stocklists.textContent = e.target.textContent; // change button text
      if (e.target.id === 'allStock')
      {
-        productList.innerHTML=``;
-        products.forEach(product => addProductToList(product,productList))
-        stocklistpopup.style.display = 'none';
+       currentStock = '';
      }
      if (e.target.id === 'inStock'){
-        const stockProduct = await fetchinStockProduct();
-        productList.innerHTML=``;
-        stockProduct.forEach(product => addProductToList(product,productList))
-        stocklistpopup.style.display = 'none';
+        currentStock = 'instock';
+        
      }
      if(e.target.id == 'lowStock' || e.target.id == 'outStock'){
-        const lowstockProduct = await fetchlowOutStockProduct();
-        productList.innerHTML = ``;
-        lowstockProduct.forEach(product => addProductToList(product,productList));
-        stocklistpopup.style.display = 'none';
-
+        currentStock = "outstock";
      }
+     const stockProduct = await fetchStockProducts(currentCategory, currentStock);
+        productList.innerHTML=``;
+        stockProduct.forEach(product => addProductToList(product,productList))
+        
       stocklistpopup.style.display = 'none'; // close popup
     }
 });
@@ -129,20 +123,18 @@ async function categoryClick(categoryId){
     const productList = document.querySelector('.productList');
     //empty the list first 
     productList.innerHTML=``;
-    console.log("category_id ho ",categoryId);
-    const res =await fetch(`/dashboard/filter-category/${categoryId}/`)
-    const data = await res.json();
-    const products = data.products;
-    console.log("yo ho ni data",products)
+    currentCategory = categoryId;
+    const products =await fetchStockProducts(currentCategory, currentStock);
     products.forEach(product => addProductToList(product, productList))
 }
-categoryList.addEventListener('click', (e) => {
+categoryList.addEventListener('click', async(e) => {
         const li = e.target;
         if (li.tagName === 'LI') {
             button.textContent = li.textContent;
             if(li.id == 'allCategories')
             {
-                productList.innerHTML=``;
+                currentCategory = null
+                const products =await fetchStockProducts(currentCategory, currentStock);
                 products.forEach(product => addProductToList(product, productList))
                 categoryPopup.style.display = 'none';
             }
@@ -426,6 +418,7 @@ export async function saveProduct(addProductModal) {
                     }
                 };
                 closeProductModalFunc();
+                // window.location.reload();
                 // Reset form
                 document.getElementById('productName').value = '';
                 const priceField = document.getElementById('productSellingPrice') || document.getElementById('productPrice');

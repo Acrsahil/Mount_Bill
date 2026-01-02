@@ -25,56 +25,25 @@ from .models import (
     RemainingAmount,
 )
 
-def instock_product(request):
+def filtered_products(request):
     user = request.user
     company = user.owned_company or user.active_company
 
     if not company:
-        return JsonResponse({"categories": []})
-    products = Product.objects.filter(product_quantity__gt=0)
-    product_data =[
-        {
-            "id": p.id,
-            "uid": str(p.uid),
-            "name": p.name,
-            "category": p.category.name if p.category else "N/A",
-            "cost_price": float(p.cost_price),
-            "selling_price": float(p.selling_price),
-            "quantity": p.product_quantity,
-        }
-        for p in products
-    ]
-    return JsonResponse({"products": product_data})
+        return JsonResponse({"products": []})
+    
+    products = Product.objects.all()
+    category_id = request.GET.get('category')
+    stock_status = request.GET.get('stock')
 
-def lowOutstock_product(request):
-    user = request.user
-    company = user.owned_company or user.active_company
+    if category_id:
+        products = products.filter(category__id=category_id)
 
-    if not company:
-        return JsonResponse({"categories": []})
-    products = Product.objects.filter(product_quantity__lte=0)
-    product_data =[
-        {
-            "id": p.id,
-            "uid": str(p.uid),
-            "name": p.name,
-            "category": p.category.name if p.category else "N/A",
-            "cost_price": float(p.cost_price),
-            "selling_price": float(p.selling_price),
-            "quantity": p.product_quantity,
-        }
-        for p in products
-    ]
-    return JsonResponse({"products": product_data})
+    if stock_status == 'instock':
+        products = products.filter(product_quantity__gt=0)
+    elif stock_status == 'outstock':
+        products = products.filter(product_quantity__lte=0)
 
-def filter_category(request, id):
-    user = request.user
-    company = user.owned_company or user.active_company
-
-    if not company:
-        return JsonResponse({"categories": []})
-    products = Product.objects.filter(category__id=id)
-    print(products)
     products_data = [
         {
             "id": p.id,
@@ -88,6 +57,7 @@ def filter_category(request, id):
         for p in products
     ]
     return JsonResponse({"products": products_data})
+
 
 
 def category_json(request):
