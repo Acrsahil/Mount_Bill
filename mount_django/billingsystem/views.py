@@ -304,7 +304,14 @@ def save_product(request):
                 {"success": False, "error": "Can't Save Data in Database"},
                 status=400,
             )
-
+        item_activity=[
+             {
+                    "date": item_activity.date.isoformat(),
+                    "change": item_activity.change,
+                    "quantity": item_activity.quantity,
+                    "remarks": item_activity.remarks,
+                }
+        ]
         return JsonResponse(
             {
                 "success": True,
@@ -318,6 +325,7 @@ def save_product(request):
                     "category": product.category.name if product.category else "",
                     "quantity": product.product_quantity,
                 },
+               "itemactivity":item_activity,
             }
         )
 
@@ -998,6 +1006,25 @@ def product_detail(request, id: UUID = None):
 
     return render(request, "website/product_detail.html", context)
 
+def fetch_product_activities(request,id : UUID):
+    user = request.user
+    company = user.owned_company or user.active_company
+
+    if not company:
+        return JsonResponse({"activities": []})
+    item_activities = ItemActivity.objects.filter(product__uid = id)
+    data = []
+    for act in item_activities:
+        data.append({
+                    "date": act.date.isoformat(),
+                    "change": act.change,
+                    "quantity": act.quantity,
+                    "remarks": act.remarks,
+                }
+
+        )
+    return JsonResponse({"success":True,
+                         "activities":data})
 
 @login_required
 def create_invoice_page(request):

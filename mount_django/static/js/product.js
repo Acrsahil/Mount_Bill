@@ -344,8 +344,42 @@ window.addEventListener('pageshow', (event) => {
     refreshProducts(true).catch(console.error); // force fetch only if page restored from BFCache
   }
 });
+
+
+//fetch Product to productsactivityTableBody
+async function fetchProductActivities(productUid,productsactivityTableBody){
+    if(!productUid || !productsactivityTableBody) return;
+    const res = await fetch(`/dashboard/fetch-activity/${productUid}/`)
+
+    const result = await res.json();
+    if(result.success){
+        loadProductActivity(result.activities,productsactivityTableBody)
+    }
+
+}
+
+function addProductActivityToTable(activity,productsactivityTableBody){
+    if(!productsactivityTableBody) return;
+    const row = document.createElement('tr');
+    row.innerHTML = `
+    <td>Add Stock</td>
+    <td>${activity.date}</td>
+    <td>${activity.change}</td>
+    <td>${activity.quantity}</td>
+    <td>${activity.remarks}</td>`
+    productsactivityTableBody.appendChild(row);
+}
+
+function loadProductActivity(activities,productsactivityTableBody){
+ if(productsactivityTableBody){
+    productsactivityTableBody.innerHTML=``;
+
+    activities.forEach((activity) => addProductActivityToTable(activity,productsactivityTableBody))
+ }
+}
 // Save product to database via AJAX
 export async function saveProduct(addProductModal) {
+    const productsactivityTableBody = document.getElementById('productsactivityTableBody');
     const productName = document.getElementById('productName').value.trim();
     const productCostPrice = document.getElementById('productCostPrice')?.value;
     const productSellingPrice = document.getElementById('productSellingPrice')?.value;
@@ -394,6 +428,7 @@ export async function saveProduct(addProductModal) {
         });
         const result = await response.json();
         console.log('Server response:', result);
+        console.log("yo itemactivity ma k aayo",result.itemactivity)
         if (result.success) {
             if (!result.product.uid) {
         console.error("Saved product missing UID:", result.product);
@@ -402,11 +437,11 @@ export async function saveProduct(addProductModal) {
     }
            // Add product to local cache and render table/list
             productsCache.unshift(result.product);
-
             renderProducts(); // rebuild table/list from DB
         
             updateProductCounts(productsCache.length);
-
+            
+            loadProductActivity(result.itemactivity,productsactivityTableBody)
             // Show success message
 
             showAlert(result.message, 'success');
@@ -460,7 +495,7 @@ export function addProductToTable(product,productsTableBody,index){
 
 export function addProductToList(product, productList) {
   if (!productList) return;
-
+  const tableBody = document.getElementById('productsactivityTableBody');
   const li = document.createElement('li');
   li.classList.add('productlists');
   li.textContent = product.name;
@@ -476,6 +511,7 @@ export function addProductToList(product, productList) {
       if (deleteBtn) deleteBtn.dataset.productId = product.id;
       const editBtn = document.querySelector('.edit-product-btn');
       if (editBtn) editBtn.dataset.productId = product.id;
+      fetchProductActivities(product.uid,tableBody)
   }
 
    li.addEventListener('click', () => {
@@ -495,6 +531,9 @@ export function addProductToList(product, productList) {
         li.classList.add('selected')
         //immediately update the table
         renderDetails(productsCache);
+
+        
+        fetchProductActivities(product.uid, tableBody);
       });
 }
 window.addEventListener('popstate',() =>
