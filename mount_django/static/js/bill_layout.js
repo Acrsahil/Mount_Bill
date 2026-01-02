@@ -33,17 +33,8 @@ async function getData(api_url) {
     console.error('Error:', error);
   }
 }
-export function openModal(invoiceId = null, event = null) {
-      if (!invoiceId) {
-        if (event) {
-            const row = event.target.closest('tr');
-            if (!row) return;
-            invoiceId = row.dataset.orderId || parseInt(row.cells[0].innerText.split('-')[1]);
-        } else {
-            console.error("No invoiceId or event provided!");
-            return;
-        }
-    }
+export function openModal(invoiceId) {
+     
     modal.style.display = "flex";
     // const row = event.target.closest('tr');
     // const invoice_id = parseInt(row.cells[0].innerText.split('-')[1]);

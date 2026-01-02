@@ -374,10 +374,12 @@ function addProductActivityToTable(activity,productsactivityTableBody){
     <td>${activity.remarks}</td>`;
 
     row.addEventListener('click', () => {
-        console.log("yo row.dataaset ko id",typeof row.dataset.orderId)
         if (parseInt(row.dataset.orderId)>0) {
             console.log("i am inside if")
             openModal(row.dataset.orderId);
+        }
+        else{
+            addStockModal.style.display = 'flex';
         }
     });
     productsactivityTableBody.appendChild(row);

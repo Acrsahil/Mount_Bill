@@ -4,11 +4,12 @@ from . import views
 
 urlpatterns = [
     path("", views.dashboard, name="dashboard"),
-    path("product-detail/", views.product_detail, name="product_detail"),
+   
     path("fetch-activity/<uuid:id>/", views.fetch_product_activities, name="fetch-activity"),
     path("products-json/", views.products_json, name="products_json"),
     path("category-json/", views.category_json, name="category_json"),
     path("filtered-products/", views.filtered_products, name="filtered_products"),
+    path("product-detail/", views.product_detail, name="product_detail"),
     path("product-detail/<uuid:id>/", views.product_detail, name="product_detail"),
     path("save-product/", views.save_product, name="save_product"),
     path("update-product/<int:id>/", views.update_product, name="update_product"),

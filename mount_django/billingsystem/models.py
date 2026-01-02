@@ -280,7 +280,7 @@ class ItemActivity(models.Model):
     )
     type = models.CharField(max_length=200)
     date = models.DateField(auto_now=True)
-    change = models.IntegerField()
+    change = models.CharField()
     quantity = models.IntegerField()
     remarks = models.CharField(max_length=200, blank=True)
 
