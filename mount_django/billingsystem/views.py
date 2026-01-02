@@ -306,6 +306,7 @@ def save_product(request):
             )
         item_activity=[
              {
+                    "type":item_activity.type,
                     "date": item_activity.date.isoformat(),
                     "change": item_activity.change,
                     "quantity": item_activity.quantity,
@@ -394,15 +395,30 @@ def add_stock(request, id):
         data = json.loads(request.body)
         product_id = data.get("id")
         stock = int(data.get("stock_to_add"))
+        remark = data.get("remarks")
         product = Product.objects.get(id=product_id)
-        product.product_quantity += stock
+        product.product_quantity+= stock
         product.save()
 
+        item_activity = ItemActivity(
+            product=product,type="Add Stock", change=f"+{stock}", quantity=product.product_quantity, remarks=remark
+        )
+        item_activity.save()
+        item_activity=[
+             {
+                    "type":item_activity.type,
+                    "date": item_activity.date.isoformat(),
+                    "change": item_activity.change,
+                    "quantity": item_activity.quantity,
+                    "remarks": item_activity.remarks,
+                }
+        ]
         return JsonResponse(
             {
                 "success": True,
                 "message": "Stock updated successfully",
                 "product": {"id": product.id, "quantity": product.product_quantity},
+                "itemactivity":item_activity,
             }
         )
     except Exception as e:
@@ -420,10 +436,23 @@ def reduce_stock(request, id):
         data = json.loads(request.body)
         product_id = data.get("id")
         stock = int(data.get("stock_to_remove"))
+        remark = data.get("remarks")
         product = Product.objects.get(id=product_id)
         product.product_quantity -= stock
         product.save()
-
+        item_activity = ItemActivity(
+            product=product,type="Reduce Stock", change=-stock, quantity=product.product_quantity, remarks=remark
+        )
+        item_activity.save()
+        item_activity=[
+             {
+                    "type":item_activity.type,
+                    "date": item_activity.date.isoformat(),
+                    "change": item_activity.change,
+                    "quantity": item_activity.quantity,
+                    "remarks": item_activity.remarks,
+                }
+        ]
         return JsonResponse(
             {
                 "success": True,
@@ -432,6 +461,7 @@ def reduce_stock(request, id):
                     "id": product.id,
                     "quantity": product.product_quantity,
                 },
+                "itemactivity":item_activity,
             }
         )
     except Exception as e:

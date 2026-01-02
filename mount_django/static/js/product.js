@@ -364,7 +364,7 @@ function addProductActivityToTable(activity,productsactivityTableBody){
     row.innerHTML = `
     <td>${activity.type}</td>
     <td>${activity.date}</td>
-    <td>${activity.change}</td>
+    <td>${String(activity.change)}</td>
     <td>${activity.quantity}</td>
     <td>${activity.remarks}</td>`;
     productsactivityTableBody.appendChild(row);
@@ -511,6 +511,8 @@ export function addProductToList(product, productList) {
       if (deleteBtn) deleteBtn.dataset.productId = product.id;
       const editBtn = document.querySelector('.edit-product-btn');
       if (editBtn) editBtn.dataset.productId = product.id;
+      const adjustBtn = document.querySelector('.adjust-stock-btn');
+      if (adjustBtn) adjustBtn.dataset.productId = product.id;
       fetchProductActivities(product.uid,tableBody)
   }
 
@@ -518,8 +520,10 @@ export function addProductToList(product, productList) {
         //for deleting the product,we need product id
         const deleteBtn = document.querySelector('.delete-product-btn');
         const editBtn = document.querySelector('.edit-product-btn'); 
+        const adjustBtn = document.querySelector('.adjust-stock-btn');
         deleteBtn.dataset.productId = product.id;
         editBtn.dataset.productId = product.id;
+        adjustBtn.dataset.productId = product.id;
         console.log("yo id ho haii",editBtn.dataset.productId)
 
         history.pushState({}, '', `/dashboard/product-detail/${product.uid}`);
@@ -643,27 +647,6 @@ export function loadProducts(products, productsTableBody, editProduct, deletePro
     products.forEach((product) => addProductToList(product, productList));
     };
     
-
-/*<div class="product-actions">
-    <button class="btn btn-primary edit-product-btn" data-id="${product.id}">
-        <i class="fas fa-edit"></i> Edit
-    </button>
-    <button class="btn btn-danger delete-product-btn" data-id="${product.id}">
-        <i class="fas fa-trash"></i> Delete
-    </button>
-    <button class="btn btn-success adjust-stock-btn" data-id="${product.id}">Adjust Stock
-    </button>
-</div>*/
-      
-
-    // Add event listeners to product buttons
-    // document.querySelectorAll('.edit-product-btn').forEach(button => {
-    //     button.addEventListener('click', function() {
-    //         const productId = parseInt(this.getAttribute('data-id'));
-    //         editProduct(productId);
-    //     });
-    // });
-   // Get the stored product ID from sessionStorage
    
 }
 
@@ -671,6 +654,7 @@ export function loadProducts(products, productsTableBody, editProduct, deletePro
 document.addEventListener('DOMContentLoaded', () => {
     const deleteBtn = document.querySelector('.delete-product-btn');
     const editBtn = document.querySelector('.edit-product-btn'); 
+    // const adjustBtns = document.querySelector('.adjust-stock-btn');
     deleteBtn.addEventListener('click', function() {
         const id = deleteBtn.dataset.productId;
         console.log("Deleting product", id);
@@ -722,12 +706,13 @@ document.addEventListener('DOMContentLoaded', function () {
         const adjustBtn = e.target.closest('.adjust-stock-btn');
 
         if (adjustBtn) {
-            const productId = adjustBtn.dataset.id;
-            console.log("yaa id ko value k ho??")
+            console.log("am i getting clicked??")
+            const productId = adjustBtn.dataset.productId;
+            console.log("yaa id ko value k ho??",productId);
             const modal = document.getElementById('addStockModal');
             const modal1 = document.getElementById('reduceStockModal');
-            // modal.dataset.productId = productId; 
-            // modal1.dataset.productId = productId;
+            modal.dataset.productId = productId; 
+            modal1.dataset.productId = productId;
             // If popup is already open for the same product → close it
             if (currentProductId === productId && popup.style.display === 'flex') {
                 popup.style.display = 'none';
@@ -760,7 +745,7 @@ if(!addStockBtn){
         console.log("are we here then??")
     } 
 else{
-    addStockBtn.addEventListener('click',() => addStock(addStockModal));
+    addStockBtn.addEventListener('click',() => addStockFunc());
 }      
 
 const reduceStockBtn = document.getElementById('reduceStockBtn');
@@ -768,10 +753,11 @@ if(!reduceStockBtn){
         console.log("are we here then??")
     } 
 else{
-    reduceStockBtn.addEventListener('click',() => reduceStock(reduceStockModal));
+    reduceStockBtn.addEventListener('click',() => reduceStockFunc());
 } 
 
-async function addStock(addStockModal) {
+async function addStockFunc() {
+    const productsactivityTableBody = document.getElementById('productsactivityTableBody');
     const modal = document.getElementById('addStockModal');
     const productId = modal?.dataset.productId;
 
@@ -838,7 +824,12 @@ async function addStock(addStockModal) {
                     window.products[index].quantity = result.product.quantity;
                 }
             }
-
+            renderDetails(window.products);
+            result.itemactivity.forEach(activity => {
+    addProductActivityToTable(activity, productsactivityTableBody);
+});
+            
+            
             // Refresh UI
             if (window.loadProducts) {
                 console.log("okay here in loadproduct")
@@ -869,7 +860,8 @@ async function addStock(addStockModal) {
     }
 }
 
-async function reduceStock(reduceStockModal) {
+async function reduceStockFunc() {
+    const productsactivityTableBody = document.getElementById('productsactivityTableBody');
     const modal1 = document.getElementById('reduceStockModal');
     const productId = modal1?.dataset.productId;
 
@@ -886,7 +878,7 @@ async function reduceStock(reduceStockModal) {
         return;
     }
 
-    if (!stockQuantity || Number(stockQuantity) <= 0) {
+    if (!stockQuantities || Number(stockQuantities) <= 0) {
         showAlert('Please enter a valid stock quantity!', 'error');
         document.getElementById('stockQuantities')?.focus();
         return;
@@ -937,7 +929,10 @@ async function reduceStock(reduceStockModal) {
                     window.products[index].quantity = result.product.quantity;
                 }
             }
-
+            renderDetails(window.products);
+            result.itemactivity.forEach(activity => {
+    addProductActivityToTable(activity, productsactivityTableBody);
+});
             // Refresh UI
             if (window.loadProducts) {
                 window.loadProducts();
@@ -1101,6 +1096,7 @@ export async function updateProduct(addProductModal) {
                     <td>$${(result.product.cost_price * (result.product.quantity || 0)).toFixed(2)}</td>
                 `;
             }
+            loadProductActivity(result.itemactivity,productsactivityTableBody)
             // Show success message
             showAlert(result.message, 'success');
 
