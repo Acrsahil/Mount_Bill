@@ -3,6 +3,7 @@ import { formatDate } from './utils.js';
 // RENDER INVOICE ITEMS
 import { editProduct,deleteProduct } from './product.js';
 import { openModal} from './bill_layout.js';
+import { editInvoiceSection} from './edit_invoice.js';
 // Show product suggestions
 export function showProductSuggestions(itemId, products, searchTerm = '', selectProductFromHint) {
     const hintContainer = document.getElementById(`search-hint-${itemId}`);
@@ -74,6 +75,29 @@ ${client.name} - ${client.email || 'No email'}
         hintContainer.style.display = 'none';
     }
 }
+
+
+// const createInvoicePage = document.getElementById("createInvoicePage")
+// console.log("this is edit createinvoicepage section ",createInvoicePage)
+
+
+
+
+const mycurrentUrl = window.location.href;
+const eachpart = mycurrentUrl.split('/')
+console.log(eachpart)
+const order_id = eachpart[eachpart.length-2]
+console.log(order_id)
+
+if(eachpart[eachpart.length-3] == 'invoices'){
+    editInvoiceSection(order_id)
+}
+
+
+
+
+
+
 
 // Show product name suggestions
 export function showProductNameSuggestions(products, searchTerm = '', fillProductDetails) {
@@ -270,18 +294,25 @@ export function loadInvoices(invoices, invoicesTableBody, csrfToken = '') {
             const invoiceId = row.dataset.orderId || parseInt(row.cells[0].innerText.split('-')[1]);
             openModal(invoiceId);
 
+
+
         });
-   
+
         invoicesTableBody.appendChild(row);
     });
+
+
 }
+
+
+
 
 // Filter invoices - FIXED VERSION
 export function filterInvoices(invoices, searchInput, invoicesTableBody) {
     const searchTerm = searchInput.value.toLowerCase();
     const filteredInvoices = invoices.filter(invoice => 
         (invoice.number && invoice.number.toLowerCase().includes(searchTerm)) ||
-        (invoice.client && invoice.client.toLowerCase().includes(searchTerm))
+            (invoice.client && invoice.client.toLowerCase().includes(searchTerm))
     );
 
     invoicesTableBody.innerHTML = '';
@@ -289,7 +320,7 @@ export function filterInvoices(invoices, searchInput, invoicesTableBody) {
     filteredInvoices.forEach(invoice => {
         // Ensure amount is a valid number, use 0 as default
         const amount = invoice.amount || 0;
-        
+
         const row = document.createElement('tr');
         row.innerHTML = `
 <td>${invoice.number || `INV-${invoice.id}`}</td>
@@ -323,22 +354,22 @@ export function filterProducts(products, productSearchInput, productsTableBody, 
     productsTableBody.innerHTML = '';
 
     filteredProducts.forEach((product,index) => {
-            const row = document.createElement('tr');
-            row.classList.add('filteredRow')
+        const row = document.createElement('tr');
+        row.classList.add('filteredRow')
         row.innerHTML = `
-        <td>${index+1}</td>
-        <td>${product.name}</td>
-        <td>${product.category || 'N/A'}</td>
-        <td>$${product.cost_price}</td>
-        <td>$${product.selling_price}</td>
+<td>${index+1}</td>
+<td>${product.name}</td>
+<td>${product.category || 'N/A'}</td>
+<td>$${product.cost_price}</td>
+<td>$${product.selling_price}</td>
 
-        <td>${String(product.quantity)}</td>
+<td>${String(product.quantity)}</td>
 
 `;
         row.addEventListener('click', () => {
-                window.location.href = `/dashboard/product-detail/${product.uid}`;
-            });
-    productsTableBody.appendChild(row);
+            window.location.href = `/dashboard/product-detail/${product.uid}`;
+        });
+        productsTableBody.appendChild(row);
     });
 }
 
@@ -347,8 +378,8 @@ export function filterClients(clients, clientSearchInput, clientsTableBody) {
     const searchTerm = clientSearchInput.value.toLowerCase();
     const filteredClients = clients.filter(client => 
         client.name.toLowerCase().includes(searchTerm) ||
-        (client.email && client.email.toLowerCase().includes(searchTerm)) ||
-        (client.phone && client.phone.toLowerCase().includes(searchTerm))
+            (client.email && client.email.toLowerCase().includes(searchTerm)) ||
+            (client.phone && client.phone.toLowerCase().includes(searchTerm))
     );
 
     if (!clientsTableBody) return;

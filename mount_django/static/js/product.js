@@ -876,6 +876,20 @@ async function addStockFunc() {
 }
 
 async function reduceStockFunc() {
+    // Check if button exists
+    if (!reduceStockBtn) {
+        console.error('reduceStockBtn not found');
+        return;
+    }
+    
+    // Store original button state
+    const originalHTML = reduceStockBtn.innerHTML;
+    const originalDisabled = reduceStockBtn.disabled;
+    
+    // Immediately disable and show loading
+    reduceStockBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Reducing...';
+    reduceStockBtn.disabled = true;
+    
     const productsactivityTableBody = document.getElementById('productsactivityTableBody');
     const modal1 = document.getElementById('reduceStockModal');
     const productId = modal1?.dataset.productId;
@@ -883,29 +897,28 @@ async function reduceStockFunc() {
     console.log("Product ID:", productId);
 
     const stockQuantities = document.getElementById('stockQuantities')?.value;
-    console.log("reduceStock ko quantity",stockQuantities)
+    console.log("reduceStock ko quantity", stockQuantities);
     const productPrices = document.getElementById('productPricess')?.value;
     const stockDate = document.getElementById('stockDates')?.value;
     const stockRemarks = document.getElementById('stockRemarkss')?.value || "";
 
     if (!productId) {
         showAlert('Product ID not found!', 'error');
+        // Restore button on error
+        reduceStockBtn.innerHTML = originalHTML;
+        reduceStockBtn.disabled = originalDisabled;
         return;
     }
 
     if (!stockQuantities || Number(stockQuantities) <= 0) {
         showAlert('Please enter a valid stock quantity!', 'error');
         document.getElementById('stockQuantities')?.focus();
+        // Restore button on error
+        reduceStockBtn.innerHTML = originalHTML;
+        reduceStockBtn.disabled = originalDisabled;
         return;
     }
 
-    // Button loading state
-    // const addStockBtn = document.getElementById('addStockBtn');
-    // const originalText = addStockBtn.innerHTML;
-
-    reduceStockBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Reducing...';
-    reduceStockBtn.disabled = true;
-    
     try {
         const productData = {
             id: productId,
@@ -925,9 +938,16 @@ async function reduceStockFunc() {
             body: JSON.stringify(productData)
         });
 
-        // 🔥 VERY IMPORTANT
+        // 🔥 VERY IMPORTANT - Check response status
         if (!response.ok) {
-            throw new Error(`Server error: ${response.status}`);
+            let errorMsg = `Server error: ${response.status}`;
+            try {
+                const errorData = await response.json();
+                errorMsg = errorData.error || errorMsg;
+            } catch (e) {
+                // Ignore JSON parse error
+            }
+            throw new Error(errorMsg);
         }
 
         const result = await response.json();
@@ -944,37 +964,57 @@ async function reduceStockFunc() {
                     window.products[index].quantity = result.product.quantity;
                 }
             }
+            
+            // Render details and activities
             renderDetails(window.products);
-            result.itemactivity.forEach(activity => {
-    addProductActivityToTable(activity, productsactivityTableBody);
-});
+            
+            if (result.itemactivity && Array.isArray(result.itemactivity)) {
+                // Clear existing table rows if needed
+                // productsactivityTableBody.innerHTML = '';
+                
+                result.itemactivity.forEach(activity => {
+                    addProductActivityToTable(activity, productsactivityTableBody);
+                });
+            }
+            
             // Refresh UI
             if (window.loadProducts) {
                 window.loadProducts();
             }
 
             showAlert(result.message || 'Stock removed successfully!', 'success');
+            document.getElementById('stockQuantities').value = '';
 
-            // Close modal
+            // Show success state on button briefly
+            reduceStockBtn.innerHTML = '<i class="fas fa-check"></i> Reduced!';
+            reduceStockBtn.disabled = true;
+            
+            // Close modal after delay
             setTimeout(() => {
-                if (reduceStockModal) {
-                    reduceStockModal.style.display = 'none';
+                if (modal1) {
+                    modal1.style.display = 'none';
                 }
-            }, 1200);
+                // Reset button after modal closes
+                reduceStockBtn.innerHTML = originalHTML;
+                reduceStockBtn.disabled = false;
+            }, 1500);
 
         } else {
             showAlert(result.error || 'Failed to remove stock', 'error');
+            // Restore button on API error
+            reduceStockBtn.innerHTML = originalHTML;
+            reduceStockBtn.disabled = false;
         }
 
     } catch (error) {
-        console.error('Add stock error:', error);
-        showAlert('Something went wrong. Please try again.', 'error');
-
-    } finally {
-        // Restore button
-        // addStockBtn.innerHTML = originalText;
-        // addStockBtn.disabled = false;
-    }
+        console.error('Reduce stock error:', error);
+        showAlert(error.message || 'Something went wrong. Please try again.', 'error');
+        // Restore button on network/other errors
+        reduceStockBtn.innerHTML = originalHTML;
+        reduceStockBtn.disabled = false;
+        
+    } 
+    // Note: Removed finally block since we handle restoration in each case
 }
 
 // Product edit/delete functions
