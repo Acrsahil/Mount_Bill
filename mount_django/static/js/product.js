@@ -361,12 +361,25 @@ async function fetchProductActivities(productUid,productsactivityTableBody){
 function addProductActivityToTable(activity,productsactivityTableBody){
     if(!productsactivityTableBody) return;
     const row = document.createElement('tr');
+    if (activity.order_id) {
+            row.dataset.orderId = activity.order_id;
+            row.classList.add("clickable-row");
+        }
+
     row.innerHTML = `
     <td>${activity.type}</td>
     <td>${activity.date}</td>
     <td>${String(activity.change)}</td>
     <td>${activity.quantity}</td>
     <td>${activity.remarks}</td>`;
+
+    row.addEventListener('click', () => {
+        console.log("yo row.dataaset ko id",typeof row.dataset.orderId)
+        if (parseInt(row.dataset.orderId)>0) {
+            console.log("i am inside if")
+            openModal(row.dataset.orderId);
+        }
+    });
     productsactivityTableBody.appendChild(row);
 }
 
@@ -1096,7 +1109,7 @@ export async function updateProduct(addProductModal) {
                     <td>$${(result.product.cost_price * (result.product.quantity || 0)).toFixed(2)}</td>
                 `;
             }
-            loadProductActivity(result.itemactivity,productsactivityTableBody)
+           
             // Show success message
             showAlert(result.message, 'success');
 

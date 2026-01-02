@@ -264,8 +264,8 @@ export function loadInvoices(invoices, invoicesTableBody, csrfToken = '') {
 </td>
 `;
     // Add click event to view buttons using event delegation
-    row.addEventListener("click", () => {
-            openModal();
+    row.addEventListener("click", (event) => {
+            openModal(null,event);
 
         });
    

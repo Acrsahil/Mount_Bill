@@ -4,6 +4,7 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/product.css' %}">
 <link rel="stylesheet" href="{% static 'css/bill.css' %}">
+{% comment %} <link rel="stylesheet" href="{% static 'css/bill_modal.css' %}"> {% endcomment %}
 
 {% endblock %}
 
@@ -16,7 +17,7 @@
             document.getElementById("addProductModal").style.display = "none";
         }
     </script>
-
+{% comment %} {% include "website/bill_layout.html" %} {% endcomment %}
 <!--addstock buttons-->
 <div class="stock-popup" id="addStockPopup">
     <button class="popup-btn" id="addStock">Add Stock</button>
@@ -296,10 +297,10 @@
 </div>
 
 <!--stock buttons-->
-<div class="stock-popup" id="addStockPopup">
+{% comment %} <div class="stock-popup" id="addStockPopup">
     <button class="popup-btn" id="addStock">Add Stock</button>
     <button class="popup-btn" id="removeStock">Remove Stock</button>
-</div> 
+</div>  {% endcomment %}
 <div class="category-popup" id="categoryPopup">
   <div class="popup-content">
             <div class="search-box-category">
@@ -322,6 +323,7 @@
     <li id="outStock">Out of stock</li>
   </ul>
 </div>
+{% include "website/invoice_modal.html" %}
 {% endblock %}
 
 {% block extra_js %}

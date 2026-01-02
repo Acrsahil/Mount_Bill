@@ -1052,6 +1052,7 @@ def fetch_product_activities(request,id : UUID):
                     "change": act.change,
                     "quantity": act.quantity,
                     "remarks": act.remarks,
+                    "order_id": act.order.id if act.order else None 
                 }
 
         )

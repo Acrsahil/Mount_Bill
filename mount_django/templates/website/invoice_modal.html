@@ -1,0 +1,143 @@
+{% load static %}
+
+<link rel="stylesheet" href="{% static 'css/bill_modal.css' %}">
+
+<div id="invoiceModal" class="modal">
+  <div class="modal-content">
+
+    <!-- HEADER -->
+    <div class="modal-header">
+      <h2>Invoice No. <span id="invoiceNumber"></span></h2>
+      <span class="close">&times;</span>
+    </div>
+
+    <div class="modal-scrollable">
+      <div class="bill-container">
+
+        <!-- COMPANY HEADER -->
+        <div class="bill-header">
+          <h1 id="companyName"></h1>
+          <p id="companyAddress"></p>
+          <p id="companyPhone"></p>
+        </div>
+
+        <!-- BODY -->
+        <div class="bill-body">
+          <div class="top-row">
+
+            <!-- LEFT : CUSTOMER -->
+            <div class="left-info">
+              <div class="info-line">
+                <span class="label">Buyer’s Name:</span>
+                <span class="value" id="customerName"></span>
+              </div>
+
+              <div id="customer_add" class="info-line">
+                <span class="label">Address:</span>
+                <span class="value" id="customerAddress"></span>
+              </div>
+
+              <div class="info-line">
+                <span class="label">Phone No:</span>
+                <span class="value" id="customerPhone"></span>
+              </div>
+
+              <div id= "Panid" class="info-line">
+                <span class="label">PAN No:</span>
+                <span class="value" id="customerPAN"></span>
+              </div>
+            </div>
+
+            <!-- RIGHT : INVOICE META -->
+            <div class="right-info">
+              <div class="info-line">
+                <span class="label">Invoice No:</span>
+                <span class="value" id="invoiceNumbers"></span>
+              </div>
+
+              <div class="info-line">
+                <span class="label">Invoice Date:</span>
+                <span class="value" id="invoiceDate"></span>
+              </div>
+
+              <div class="info-line">
+                <span class="label">Payment Mode:</span>
+                <span class="value">Cash</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ITEMS TABLE -->
+        <div class="info-table">
+          <table class="items-table" border="1">
+            <thead>
+              <tr>
+                <th>S.N.</th>
+                <th>Name</th>
+                <th>Quantity</th>
+                <th>Rate</th>
+                <th>Discount</th>
+                <th>Amount</th>
+              </tr>
+            </thead>
+            <tbody id="itemsBody">
+              <!-- JS will inject rows -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- BOTTOM -->
+        <div class="bill-bottom">
+
+          <!-- REMARKS -->
+          <div class="bill-remarks">
+            <h2 id = "rem" >Remarks</h2>
+            <h3 id="remarksText"></h3>
+          </div>
+
+          <!-- AMOUNTS -->
+          <ul class="bill-amounts">
+            <li>
+              <span class="label">Sub Total:</span>
+              <span class="value" id="subTotal">Rs.</span>
+            </li>
+
+            <li id="dislabel">
+              <span class="label" id="discountLabel"></span>
+              <span class="value" id="discount">Rs.</span>
+            </li>
+
+            <li id="taxlabel">
+              <span class="label" id="taxLabel">Tax:</span>
+              <span class="value" id="tax">Rs.</span>
+            </li>
+            <li>
+              <span class="label">Total Amount:</span>
+              <span class="value" id="totalAmount">Rs.</span>
+            </li>
+            <li>
+              <span class="label">Received Amount:</span>
+              <span class="value" id="receivedAmount">Rs.</span>
+            </li>
+            <li class="bordered" id="dueam">
+              <strong class="labelAmount">Amount Due:</strong>
+              <strong class="valueAmount" id="amountDue">Rs.</strong>
+            </li>
+          </ul>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- FOOTER BUTTONS -->
+    <div class="bill-footer">
+      <button class="delete-btn"><i class="fa fa-trash"></i></button>
+      <button id="editbtn" class="edit-btn"><i class="fa fa-edit"></i></button>
+      <button class="print-btn"><i class="fa fa-print"></i> Print PDF</button>
+      <button class="download-btn"><i class="fa fa-download"></i> Download PDF</button>
+    </div>
+
+  </div>
+</div>
