@@ -78,7 +78,10 @@ stocklistpopup.addEventListener('click', async(e) => {
         currentStock = 'instock';
         
      }
-     if(e.target.id == 'lowStock' || e.target.id == 'outStock'){
+     if(e.target.id == 'lowStock'){
+        currentStock = "lowstock";
+     }
+     if(e.target.id == 'outStock'){
         currentStock = "outstock";
      }
      const stockProduct = await fetchStockProducts(currentCategory, currentStock);
@@ -345,15 +348,200 @@ window.addEventListener('pageshow', (event) => {
   }
 });
 
+// edit stock inside the product activity list
+export async function editAddAcitivity(activityId) {
+    const activity = window.activities.find(a => String(a.id) === String(activityId));
+    const addStockModal = document.getElementById('addStockModal');
+    let quantityInput = document.getElementById('stockQuantity')
+    let productSellingPrice = document.getElementById('productPrices');
+    let stockDate = document.getElementById('stockDate');
+    let stockRemarks = document.getElementById('stockRemarks');
 
+    //buttons in the modal
+    const deleteStockBtn = document.getElementById('deleteStockBtn');
+    const editStockBtn = document.getElementById('editStockBtn');
+    const cancelStockBtn = document.getElementById('cancelStockBtn');
+    const updateStockBtn = document.getElementById('UpdateStockBtn');
+    const saveStockBtn = document.getElementById('saveStockBtn');
+    cancelStockBtn.style.display = 'none';
+    updateStockBtn.style.display = 'none';
+    saveStockBtn.style.display = 'none';
+
+    //edit button to make the readonly into write
+    editStockBtn.addEventListener('click',() =>{
+        quantityInput.readOnly = false;
+        productSellingPrice.readOnly = false;
+        stockDate.readOnly = false;
+        stockRemarks.readOnly = false;
+        cancelStockBtn.style.display = 'flex';
+        updateStockBtn.style.display = 'flex';
+        deleteStockBtn.style.display = 'none';
+        editStockBtn.style.display = 'none';
+
+    })
+
+    //to delete the itemactivity
+    addStockModal.dataset.id = activityId
+    // deleteStockBtn.addEventListener('click',() => {
+
+    // })
+    if (activity) {
+        console.log("activity vetiyo")
+        updateStockBtn.addEventListener('click',() =>{
+            console.log("okay here in update")
+            updateActivity(activity,addStockModal)
+        })
+     // Populate form with product data
+        
+        quantityInput.readOnly = true;
+        productSellingPrice.readOnly = true;
+        stockDate.readOnly = true;
+        stockRemarks.readOnly = true;
+
+        
+
+        stockRemarks.value= activity.remarks;
+        console.log("yo first letter haii",activity.change[0]);
+        if(activity.change[0] == '-'){
+            const afterRemovalNegation = activity.change.slice(1);
+            quantityInput.value = afterRemovalNegation;
+            document.querySelector('.product-price').textContent = 'Selling Price';
+            console.log('window  product ko value haii ',activity.product_selling_price)
+            productSellingPrice.value = activity.product_selling_price;
+            stockDate.value = activity.date;
+        }
+        if(activity.change[0] == '+'){
+            const afterRemovalAdd = activity.change.slice(1);
+            quantityInput.value = afterRemovalAdd;
+            document.querySelector('.product-price').textContent = 'Cost Price';
+            document.getElementById('productPrices').value = activity.product_cost_price;
+        }
+
+    //     // Change modal title and button
+    document.querySelector('#addStockModal .modal-header h3').textContent = 'Edit Product';
+    document.querySelector('.stock-label').textContent = 'Quantity';
+    //     document.getElementById('updateProductBtn').style.display = 'flex';
+    //     const quantity = document.querySelector('.productQuantities');
+    //     quantity.style.display = 'none';
+
+        // Show modal
+        
+        if (addStockModal) {
+            addStockModal.style.display = 'flex';
+        }
+    }
+}
+
+function updateActivityRowInTable(updatedActivity) {
+    const tableBody = document.getElementById('productsactivityTableBody');
+    if (!tableBody) return;
+
+    // Find existing row by data-activity-id
+    const row = tableBody.querySelector(`tr[data-activity-id='${updatedActivity.id}']`);
+
+    if (row) {
+        // Update the existing row
+        row.cells[0].textContent = updatedActivity.type;
+        row.cells[1].textContent = updatedActivity.date;
+        row.cells[2].textContent = updatedActivity.stock_quantity;
+        row.cells[3].textContent = updatedActivity.quantity;
+        row.cells[4].textContent = updatedActivity.remarks;
+    } else {
+        // If row doesn't exist, add as new
+        addProductActivityToTable(updatedActivity, tableBody);
+    }
+}
+
+
+// Save product to database via AJAX
+export async function updateActivity(activity,addStockModal) {
+    const activityId = addStockModal.dataset.id;
+       const stockQuantity = document.getElementById('stockQuantity')?.value;
+       const productPrices = document.getElementById('productPrices')?.value;
+        const stockDate = document.getElementById('stockDate')?.value;
+        const stockRemarks = document.getElementById('stockRemarks')?.value;
+
+        if (!productPrices || parseFloat(productPrices) <= 0 || isNaN(productPrices)) {
+        showAlert('Please enter a valid price', 'error');
+    }
+     // Show loading state
+    const updateStockBtn = document.getElementById('UpdateStockBtn');
+    const originalText = updateStockBtn.innerHTML;
+    
+    updateStockBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
+    updateStockBtn.disabled = true;
+
+    try {
+        // Prepare data for sending
+        const stockData = {
+            id: activityId,
+            stockQuantity: stockQuantity,
+            productPrices: productPrices,
+            stockDate: stockDate,
+            stockRemarks: stockRemarks,
+            type:activity.type,
+            remarks:activity.remarks,
+        };
+    
+        // Send AJAX request to Django
+        const response = await fetch(`/dashboard/update-stock/${activityId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': window.djangoData.csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify(stockData)
+        });
+
+        const result = await response.json();
+        console.log('Server response:', result);
+
+        if (result.success) {
+
+            updateActivityRowInTable(result.updatedActivity);
+            // Show success message
+            showAlert(result.message, 'success');
+
+            // Close modal after short delay
+            setTimeout(() => {
+                const closeProductModalFunc = () => {
+                    if (addStockModal) {
+                        addStockModal.style.display = 'none';
+                    }
+                };
+                closeProductModalFunc();
+
+            //     // Reset form
+            document.getElementById('stockQuantity').value = '';
+            document.getElementById('productPrices').value = '';
+            document.getElementById('stockDate').value = '';
+            document.getElementById('stockRemarks').value = '';
+            }, 1500);
+
+        } else {
+            showAlert('Error: ' + (result.error || 'Failed to save product'), 'error');
+        }
+
+    } catch (error) {
+        console.error('Error saving product:', error);
+        showAlert('Network error. Please check your connection and try again.', 'error');
+    } finally {
+        // Restore button state
+        updateStockBtn.innerHTML = originalText;
+        updateStockBtn.disabled = false;
+    }
+
+}
 //fetch Product to productsactivityTableBody
 async function fetchProductActivities(productUid,productsactivityTableBody){
     if(!productUid || !productsactivityTableBody) return;
     const res = await fetch(`/dashboard/fetch-activity/${productUid}/`)
 
     const result = await res.json();
+    window.activities = result.activities
     if(result.success){
-        loadProductActivity(result.activities,productsactivityTableBody)
+        loadProductActivity(window.activities,productsactivityTableBody)
     }
 
 }
@@ -361,10 +549,16 @@ async function fetchProductActivities(productUid,productsactivityTableBody){
 function addProductActivityToTable(activity,productsactivityTableBody){
     if(!productsactivityTableBody) return;
     const row = document.createElement('tr');
+    
+    row.classList.add("activityRow");
     if (activity.order_id) {
             row.dataset.orderId = activity.order_id;
             row.classList.add("clickable-row");
         }
+    else{
+        row.dataset.activityId = activity.id;
+        console.log("id of itemactivity",row.dataset.activityId)
+    }
 
     row.innerHTML = `
     <td>${activity.type}</td>
@@ -374,22 +568,26 @@ function addProductActivityToTable(activity,productsactivityTableBody){
     <td>${activity.remarks}</td>`;
 
     row.addEventListener('click', () => {
-        if (parseInt(row.dataset.orderId)>0) {
-            console.log("i am inside if")
+        if (row.dataset.orderId && parseInt(row.dataset.orderId) > 0) {
+            console.log("i am inside if");
             openModal(row.dataset.orderId);
+        } 
+
+        else if (row.dataset.activityId && (!row.dataset.orderId || row.dataset.orderId === '')) {
+            console.log("is this getting clicked");
+            editAddAcitivity(row.dataset.activityId);
         }
-        else{
-            addStockModal.style.display = 'flex';
-        }
-    });
-    productsactivityTableBody.appendChild(row);
+})
+    
+    productsactivityTableBody.prepend(row);
+    
 }
 
 function loadProductActivity(activities,productsactivityTableBody){
  if(productsactivityTableBody){
     productsactivityTableBody.innerHTML=``;
 
-    activities.forEach((activity) => addProductActivityToTable(activity,productsactivityTableBody))
+    activities.reverse().forEach((activity) => addProductActivityToTable(activity,productsactivityTableBody))
  }
 }
 // Save product to database via AJAX
@@ -686,10 +884,41 @@ document.addEventListener('DOMContentLoaded', () => {
     
 
 
+//reset addStockModal 
+function resetAddStockModal() {
+    const modal = document.getElementById('addStockModal');
+    if (!modal) return;
+
+    // Reset title
+    const header = modal.querySelector('.modal-header h3');
+    if (header) header.textContent = 'Add Stock';
+
+    // Reset buttons
+    const deleteBtn = document.getElementById('deleteStockBtn');
+    const editBtn = document.getElementById('editStockBtn');
+    const updateBtn = document.getElementById('UpdateStockBtn');
+
+
+    if (deleteBtn) deleteBtn.style.display = 'none';
+    if (editBtn) editBtn.style.display = 'none';
+    if (updateBtn) updateBtn.style.display = 'none';
+
+    // Reset input fields
+    const stockQuantity = document.getElementById('stockQuantity');
+    const productPrices = document.getElementById('productPrices');
+    const stockDate = document.getElementById('stockDate');
+    const stockRemarks = document.getElementById('stockRemarks');
+
+    if (stockQuantity) stockQuantity.value = '';
+    if (productPrices) productPrices.value = '';
+    if (stockDate) stockDate.value = '';
+    if (stockRemarks) stockRemarks.value = '';
+}
 
   document.addEventListener('click', function(e) {
         const addStock = e.target.id === 'addStock';
         if(addStock){
+            resetAddStockModal();
             const addStockModal = document.getElementById('addStockModal');
             if (addStockModal) {
             addStockModal.style.display = 'flex';

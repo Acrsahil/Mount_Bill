@@ -38,12 +38,14 @@ def filtered_products(request):
     stock_status = request.GET.get("stock")
 
     if category_id:
-        products = products.filter(category__id=category_id)
+        products = products.filter(category__id=category_id).order_by('-date_added')
 
     if stock_status == "instock":
-        products = products.filter(product_quantity__gt=0)
+        products = products.filter(product_quantity__gt=0).order_by('-date_added')
+    elif stock_status == "lowstock":
+        products = products.filter(product_quantity__lte=10).order_by('-date_added')
     elif stock_status == "outstock":
-        products = products.filter(product_quantity__lte=0)
+        products = products.filter(product_quantity__lte=0).order_by('-date_added')
 
     products_data = [
         {
@@ -66,7 +68,7 @@ def category_json(request):
 
     if not company:
         return JsonResponse({"categories": []})
-    categories = ProductCategory.objects.filter(company=company)
+    categories = ProductCategory.objects.filter(company=company).order_by('-id')
     categories = [
         {
             "id": c.id,
@@ -87,7 +89,7 @@ def products_json(request):
     if not company:
         return JsonResponse({"products": [], "count": 0})
 
-    products = Product.objects.filter(company=company).select_related("category")
+    products = Product.objects.filter(company=company).select_related("category").order_by('-date_added')
 
     products_data = [
         {
@@ -294,7 +296,7 @@ def save_product(request):
         item_activity = ItemActivity(
             product=product,
             type="Add Stock",
-            change=quantity,
+            change=f"+{quantity}",
             quantity=quantity,
             remarks="Opening Stock",
         )
@@ -312,7 +314,7 @@ def save_product(request):
             {
                 "type": item_activity.type,
                 "date": item_activity.date.isoformat(),
-                "change": item_activity.change,
+                "change": f"+{item_activity.change}",
                 "quantity": item_activity.quantity,
                 "remarks": item_activity.remarks,
             }
@@ -1060,11 +1062,14 @@ def fetch_product_activities(request, id: UUID):
 
     if not company:
         return JsonResponse({"activities": []})
-    item_activities = ItemActivity.objects.filter(product__uid=id)
+    item_activities = ItemActivity.objects.filter(product__uid=id).order_by('-id')
     data = []
     for act in item_activities:
         data.append(
             {
+                "id": act.id,
+                "product_selling_price": act.product.selling_price,
+                "product_cost_price": act.product.cost_price,
                 "type": act.type,
                 "date": act.date.isoformat(),
                 "change": act.change,
@@ -1075,6 +1080,81 @@ def fetch_product_activities(request, id: UUID):
         )
     return JsonResponse({"success": True, "activities": data})
 
+
+@login_required
+@csrf_exempt
+@require_POST
+def update_stock(request, id):
+    try:
+        data = json.loads(request.body)
+
+        activity_id = data.get("id")
+        stock_quantity = float(data.get("stockQuantity"))
+        product_price = data.get("productPrices")
+        stock_date = data.get("stockDate")
+        stock_remarks = data.get("stockRemarks")
+        type = str(data.get("type"))
+        remark = str(data.get("remarks"))
+        print("yo kun type ho rw",type)
+        item_activity = ItemActivity.objects.get(id=activity_id)
+        product = item_activity.product
+
+        if type == 'Reduce Stock':
+            old_reduction = abs(float(item_activity.change))
+            print(f"change ma vako value paila ghataako{old_reduction}")
+            restored_stock = product.product_quantity + old_reduction
+            print(f"feri esbata ghatnu parne ho{restored_stock}")
+            new_quantity = restored_stock - stock_quantity
+
+            item_activity.change = -stock_quantity
+
+        
+        elif type == 'Add Stock' and remark =="Opening Stock":
+            item_activity.change = f"+{stock_quantity}"
+            new_quantity = stock_quantity
+
+        elif type == 'Add Stock':
+            old_addition = abs(float(item_activity.change))
+            restored_stock = product.product_quantity - old_addition
+            new_quantity = restored_stock + stock_quantity
+
+            item_activity.change = f"+{stock_quantity}"
+
+        else:
+            return JsonResponse(
+                {"success": False, "error": "Invalid stock type"},
+                status=400
+            )
+
+        product.product_quantity = new_quantity
+        product.save()
+        item_activity.date = stock_date 
+        item_activity.remarks = stock_remarks
+        item_activity.quantity = new_quantity
+        item_activity.save()
+
+        return JsonResponse(
+                {
+                    "success": True,
+                    "message": "Stock updated successfully",
+                    "updatedActivity": {
+                        "id": item_activity.id,
+                        "type": item_activity.type,
+                        "date": item_activity.date,
+                        "stock_quantity": item_activity.change,
+                        "quantity": item_activity.quantity,
+                        "remarks": item_activity.remarks,
+                        
+                    },
+                }
+            )
+
+    except Exception as e:
+            print("Update product error:", e)
+            return JsonResponse(
+                {"success": False, "error": f"Server error: {str(e)}"}, status=500
+            )
+    
 
 @login_required
 def create_invoice_page(request):

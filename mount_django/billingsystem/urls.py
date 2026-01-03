@@ -6,6 +6,7 @@ urlpatterns = [
     path("", views.dashboard, name="dashboard"),
    
     path("fetch-activity/<uuid:id>/", views.fetch_product_activities, name="fetch-activity"),
+    path("update-stock/<int:id>/", views.update_stock, name="update_stock"),
     path("products-json/", views.products_json, name="products_json"),
     path("category-json/", views.category_json, name="category_json"),
     path("filtered-products/", views.filtered_products, name="filtered_products"),
