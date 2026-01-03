@@ -214,26 +214,106 @@ export function loadClients(clients, clientsTableBody) {
     
     clientsTableBody.innerHTML = '';
     
-    clients.forEach(client => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${client.name}</td>
-            <td>${client.email || '-'}</td>
-            <td>${client.phone || '-'}</td>
-            <td class="action-cell">
-                <div class="action-btn action-view">
-                    <i class="fas fa-eye"></i>
+    clients.forEach((client, index) => {
+    const row = document.createElement('tr');
+    row.classList.add('border-b', 'border-gray-200', 'hover:bg-gray-50', 'transition-colors');
+    
+    // Generate initials for avatar
+    const initials = client.name 
+        ? client.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2)
+        : 'NA';
+    
+    // Format currency
+    const formatCurrency = (amount) => {
+        if (!amount && amount !== 0) return '$0.00';
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD'
+        }).format(amount);
+    };
+    
+    // Determine client activity status
+    const totalInvoices = client.total_invoices || client.totalInvoices || 0;
+    const totalSpent = client.total_spent || client.totalSpent || 0;
+    const statusClass = totalInvoices > 10 ? 'bg-green-100 text-green-800' :
+                       totalInvoices > 0 ? 'bg-blue-100 text-blue-800' :
+                       'bg-gray-100 text-gray-800';
+    const statusText = totalInvoices > 10 ? 'Premium' :
+                      totalInvoices > 0 ? 'Active' : 'New';
+    
+    row.innerHTML = `
+        <td class="py-2 px-4 text-sm text-gray-600">${client.id || client.uid || 'N/A'}</td>
+        <td class="py-2 px-4">
+            <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 bg-gradient-to-r from-blue-100 to-blue-50 rounded-full flex items-center justify-center">
+                    <span class="text-blue-600 font-medium text-xs">${initials}</span>
                 </div>
-                <div class="action-btn action-edit" data-id="${client.id}">
-                    <i class="fas fa-edit"></i>
+                <div>
+                    <div class="font-medium text-gray-800 text-sm">${client.name || 'N/A'}</div>
+                    <span class="inline-flex px-1.5 py-0.5 rounded text-xs font-medium ${statusClass}">
+                        ${statusText}
+                    </span>
                 </div>
-                <div class="action-btn action-delete" data-id="${client.id}">
-                    <i class="fas fa-trash"></i>
+            </div>
+        </td>
+        <td class="py-2 px-4 text-sm text-gray-700">
+            <div class="flex items-center space-x-1">
+                <i class="fas fa-envelope text-gray-400 text-xs"></i>
+                <span class="truncate max-w-[120px]">${client.email || 'N/A'}</span>
+            </div>
+        </td>
+        <td class="py-2 px-4 text-sm text-gray-700">
+            <div class="flex items-center space-x-1">
+                <i class="fas fa-phone text-gray-400 text-xs"></i>
+                <span>${client.phone || 'N/A'}</span>
+            </div>
+        </td>
+        <td class="py-2 px-4">
+            <div class="flex items-center space-x-1">
+                <span class="text-sm font-medium text-gray-800">${totalInvoices}</span>
+                <span class="text-xs text-gray-500">invoices</span>
+            </div>
+        </td>
+        <td class="py-2 px-4">
+            <div class="text-sm font-bold text-green-600">${formatCurrency(totalSpent)}</div>
+            ${totalInvoices > 0 ? `
+                <div class="text-xs text-gray-500">
+                    Avg: ${formatCurrency(totalSpent / totalInvoices)}
                 </div>
-            </td>
-        `;
-        clientsTableBody.appendChild(row);
-    });
+            ` : ''}
+        </td>
+        <td class="py-2 px-4">
+            <div class="flex items-center space-x-1">
+                <button class="text-blue-600 hover:text-blue-800 p-1.5 rounded hover:bg-blue-50 transition-colors" title="View">
+                    <i class="fas fa-eye text-xs"></i>
+                </button>
+                <button class="text-gray-600 hover:text-gray-800 p-1.5 rounded hover:bg-gray-100 transition-colors action-edit" data-id="${client.id || client.uid}" title="Edit">
+                    <i class="fas fa-edit text-xs"></i>
+                </button>
+                <button class="text-red-600 hover:text-red-800 p-1.5 rounded hover:bg-red-50 transition-colors action-delete" data-id="${client.id || client.uid}" title="Delete">
+                    <i class="fas fa-trash text-xs"></i>
+                </button>
+            </div>
+        </td>
+    `;
+    clientsTableBody.appendChild(row);
+});
+}
+
+// Helper function to get status badge classes
+function getStatusClasses(status) {
+    switch(status?.toLowerCase()) {
+        case 'paid':
+            return 'bg-green-100 text-green-800';
+        case 'pending':
+            return 'bg-yellow-100 text-yellow-800';
+        case 'overdue':
+            return 'bg-red-100 text-red-800';
+        case 'draft':
+            return 'bg-gray-100 text-gray-800';
+        default:
+            return 'bg-gray-100 text-gray-800';
+    }
 }
 
 // Load invoices - FIXED VERSION
@@ -242,31 +322,69 @@ export function loadInvoices(invoices, invoicesTableBody, csrfToken = '') {
 
     invoicesTableBody.innerHTML = '';
 
-    invoices.forEach(invoice => {
+    invoices.forEach((invoice, index) => {
         // Ensure amount is a valid number, use 0 as default
         const amount = invoice.amount || 0;
+        const status = invoice.status || 'pending';
+        const statusClasses = getStatusClasses(status);
         
         const row = document.createElement('tr');
-        row.classList.add("invoicesList");
+        row.classList.add('border-b', 'border-gray-200', 'hover:bg-gray-50', 'cursor-pointer', 'transition-colors');
+        
         row.innerHTML = `
-<td>${invoice.number || `INV-${invoice.id}`}</td>
-<td>${invoice.client || 'Unknown Client'}</td>
-<td>${formatDate(invoice.issueDate || invoice.date || new Date().toISOString())}</td>
-<td>$${parseFloat(amount).toFixed(2)}</td>
-<td><span class="status status-${invoice.status || 'pending'}">${(invoice.status || 'pending').charAt(0).toUpperCase() + (invoice.status || 'pending').slice(1)}</span></td>
-<td class="action-cell">
-    <div class="action-btn action-edit">
-        <i class="fas fa-edit"></i>
-    </div>
-    <div class="action-btn action-delete" data-token="${csrfToken}" data-id="${invoice.id}">
-        <i class="fas fa-trash"></i>
-    </div>
-</td>
-`;
-    // Add click event to view buttons using event delegation
-    row.addEventListener("click", () => {
-            openModal();
-
+            <td class="py-2 px-4">
+                <div class="text-sm font-medium text-gray-800">${invoice.number || `INV-${invoice.id || index + 1}`}</div>
+                <div class="text-xs text-gray-500">${formatDate(invoice.issueDate || invoice.date || new Date().toISOString())}</div>
+            </td>
+            <td class="py-2 px-4">
+                <div class="text-sm text-gray-800">${invoice.client || 'Unknown Client'}</div>
+                <div class="text-xs text-gray-500">${invoice.client_email || ''}</div>
+            </td>
+            <td class="py-2 px-4 text-sm text-gray-700">
+                ${formatDate(invoice.dueDate || invoice.due_date || '') || 'No due date'}
+            </td>
+            <td class="py-2 px-4">
+                <div class="text-sm font-bold text-gray-800">$${parseFloat(amount).toFixed(2)}</div>
+                ${invoice.tax ? `<div class="text-xs text-gray-500">Tax: $${parseFloat(invoice.tax).toFixed(2)}</div>` : ''}
+            </td>
+            <td class="py-2 px-4">
+                <span class="inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${statusClasses}">
+                    <i class="fas ${
+                        status === 'paid' ? 'fa-check-circle' :
+                        status === 'pending' ? 'fa-clock' :
+                        status === 'overdue' ? 'fa-exclamation-circle' :
+                        'fa-file'
+                    } mr-1"></i>
+                    ${status.charAt(0).toUpperCase() + status.slice(1)}
+                </span>
+            </td>
+            <td class="py-2 px-4">
+                <div class="flex items-center space-x-1">
+                    <button class="action-edit text-blue-600 hover:text-blue-800 p-1.5 rounded hover:bg-blue-50 transition-colors" title="Edit">
+                        <i class="fas fa-edit text-xs"></i>
+                    </button>
+                    <button class="action-delete text-red-600 hover:text-red-800 p-1.5 rounded hover:bg-red-50 transition-colors" 
+                            data-token="${csrfToken}" 
+                            data-id="${invoice.id}" 
+                            title="Delete">
+                        <i class="fas fa-trash text-xs"></i>
+                    </button>
+                    <button class="text-green-600 hover:text-green-800 p-1.5 rounded hover:bg-green-50 transition-colors" title="Download">
+                        <i class="fas fa-download text-xs"></i>
+                    </button>
+                    <button class="text-purple-600 hover:text-purple-800 p-1.5 rounded hover:bg-purple-50 transition-colors" title="Send">
+                        <i class="fas fa-paper-plane text-xs"></i>
+                    </button>
+                </div>
+            </td>
+        `;
+        
+        // Add click event to view buttons using event delegation
+        row.addEventListener("click", (e) => {
+            // Only open modal if clicking on the row itself, not on action buttons
+            if (!e.target.closest('button')) {
+                openModal();
+            }
         });
    
         invoicesTableBody.appendChild(row);

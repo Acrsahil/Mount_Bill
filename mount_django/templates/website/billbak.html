@@ -269,75 +269,75 @@
 
 <div class="flex h-screen bg-gray-50">
     <!-- Sidebar - Purple Gradient (Fixed Width) -->
-    <div class="sidebar bg-[#F7F5EE] text-[#87847F] w-64 flex-shrink-0 h-screen overflow-auto">
+    <div class="sidebar bg-gradient-to-b from-[#3a0ca3] via-[#4361ee] to-[#3a0ca3] text-white w-64 flex-shrink-0 h-screen overflow-auto">
         <div class="logo flex items-center p-5 border-b border-white/20">
             <img src="{% static 'assets/logo.png' %}" class="w-7 h-7 mr-3" alt="CHALAYO Logo">
-            <h1 class="text-blue-500 text-xl font-bold tracking-tight">CHALAYO</h1>
+            <h1 class="text-xl font-bold tracking-tight">CHALAYO</h1>
         </div>
         <ul class="menu p-3 space-y-0.5">
-            <li class="menu-item flex items-center p-3 rounded-lg hover:text-white hover:bg-blue-500 transition-all duration-200 cursor-pointer {% if active_tab == 'dashboard' %}bg-blue-500 border-l-4 border-white text-white{% endif %}" data-tab="dashboard">
-                <i class="fas fa-home w-5 text-center mr-3 text-balck"></i>
+            <li class="menu-item flex items-center p-3 rounded-lg hover:bg-white/10 transition-all duration-200 cursor-pointer {% if active_tab == 'dashboard' %}bg-white/10 border-l-4 border-white{% endif %}" data-tab="dashboard">
+                <i class="fas fa-home w-5 text-center mr-3 text-white/80"></i>
                 <span class="font-medium text-sm">Dashboard</span>
             </li>
 
-            <li class="menu-item flex items-center p-3 rounded-lg hover:text-white hover:bg-blue-500 transition-all duration-200 cursor-pointer {% if active_tab == 'clients' %}bg-blue-500 border-l-4 border-white  text-gray-100{% endif %}" data-tab="clients">
-                <i class="fas fa-users w-5 text-center mr-3 text-balck"></i>
+            <li class="menu-item flex items-center p-3 rounded-lg hover:bg-white/10 transition-all duration-200 cursor-pointer {% if active_tab == 'clients' %}bg-white/10 border-l-4 border-white{% endif %}" data-tab="clients">
+                <i class="fas fa-users w-5 text-center mr-3 text-white/80"></i>
                 <span class="font-medium text-sm">Customers</span>
             </li>
 
-            <li class="menu-item flex items-center p-3 rounded-lg hover:text-white hover:bg-blue-500 transition-all duration-200 cursor-pointer {% if active_tab == 'products' %}bg-blue-500 border-l-4 border-white  text-gray-100{% endif %}" data-tab="products">
-                <i class="fas fa-box w-5 text-center mr-3 text-balck"></i>
+            <li class="menu-item flex items-center p-3 rounded-lg hover:bg-white/10 transition-all duration-200 cursor-pointer {% if active_tab == 'products' %}bg-white/10 border-l-4 border-white{% endif %}" data-tab="products">
+                <i class="fas fa-box w-5 text-center mr-3 text-white/80"></i>
                 <span class="font-medium text-sm">Products</span>
             </li>
 
-            <li class="menu-item flex items-center p-3 rounded-lg hover:text-white hover:bg-blue-500 transition-all duration-200 cursor-pointer {% if active_tab == 'invoices' %}bg-blue-500 border-l-4 border-white  text-gray-100{% endif %}" data-tab="invoices">
-                <i class="fas fa-receipt w-5 text-center mr-3 text-balck"></i>
+            <li class="menu-item flex items-center p-3 rounded-lg hover:bg-white/10 transition-all duration-200 cursor-pointer {% if active_tab == 'invoices' %}bg-white/10 border-l-4 border-white{% endif %}" data-tab="invoices">
+                <i class="fas fa-receipt w-5 text-center mr-3 text-white/80"></i>
                 <span class="font-medium text-sm">Sales</span>
             </li>
 
             <!-- Other menu items remain the same -->
-            <li class="menu-item flex items-center p-3 rounded-lg hover:text-white hover:bg-blue-500 transition-all duration-200 cursor-pointer {% if active_tab == 'categories' %}bg-blue-500 border-l-4 border-white  text-gray-100{% endif %}" data-tab="categories">
-                <i class="fas fa-tags w-5 text-center mr-3 text-balck"></i>
+            <li class="menu-item flex items-center p-3 rounded-lg hover:bg-white/10 transition-all duration-200 cursor-pointer {% if active_tab == 'categories' %}bg-white/10 border-l-4 border-white{% endif %}" data-tab="categories">
+                <i class="fas fa-tags w-5 text-center mr-3 text-white/80"></i>
                 <span class="font-medium text-sm">Categories</span>
             </li>
 
-            <li class="menu-item flex items-center p-3 rounded-lg hover:text-white hover:bg-blue-500 transition-all duration-200 cursor-pointer {% if active_tab == 'stock' %}bg-blue-500 border-l-4 border-white text-white{% endif %}" data-tab="stock">
-                <i class="fas fa-warehouse w-5 text-center mr-3 text-balck"></i>
+            <li class="menu-item flex items-center p-3 rounded-lg hover:bg-white/10 transition-all duration-200 cursor-pointer {% if active_tab == 'stock' %}bg-white/10 border-l-4 border-white{% endif %}" data-tab="stock">
+                <i class="fas fa-warehouse w-5 text-center mr-3 text-white/80"></i>
                 <span class="font-medium text-sm">Stock / Inventory</span>
             </li>
 
-            <li class="menu-item flex items-center p-3 rounded-lg hover:text-white hover:bg-blue-500 transition-all duration-200 cursor-pointer {% if active_tab == 'suppliers' %}bg-blue-500 border-l-4 border-white text-white{% endif %}" data-tab="suppliers">
-                <i class="fas fa-truck w-5 text-center mr-3 text-balck"></i>
+            <li class="menu-item flex items-center p-3 rounded-lg hover:bg-white/10 transition-all duration-200 cursor-pointer {% if active_tab == 'suppliers' %}bg-white/10 border-l-4 border-white{% endif %}" data-tab="suppliers">
+                <i class="fas fa-truck w-5 text-center mr-3 text-white/80"></i>
                                 <span class="font-medium text-sm">Suppliers</span>
             </li>
 
-            <li class="menu-item flex items-center p-3 rounded-lg hover:text-white hover:bg-blue-500 transition-all duration-200 cursor-pointer {% if active_tab == 'expenses' %}bg-blue-500 border-l-4 border-white text-white{% endif %}" data-tab="expenses">
-                <i class="fas fa-money-bill-wave w-5 text-center mr-3 text-balck"></i>
+            <li class="menu-item flex items-center p-3 rounded-lg hover:bg-white/10 transition-all duration-200 cursor-pointer {% if active_tab == 'expenses' %}bg-white/10 border-l-4 border-white{% endif %}" data-tab="expenses">
+                <i class="fas fa-money-bill-wave w-5 text-center mr-3 text-white/80"></i>
                 <span class="font-medium text-sm">Expenses</span>
             </li>
 
-            <li class="menu-item flex items-center p-3 rounded-lg hover:text-white hover:bg-blue-500 transition-all duration-200 cursor-pointer {% if active_tab == 'reports' %}bg-blue-500 border-l-4 border-white text-white{% endif %}" data-tab="reports">
-                <i class="fas fa-chart-bar w-5 text-center mr-3 text-balck"></i>
+            <li class="menu-item flex items-center p-3 rounded-lg hover:bg-white/10 transition-all duration-200 cursor-pointer {% if active_tab == 'reports' %}bg-white/10 border-l-4 border-white{% endif %}" data-tab="reports">
+                <i class="fas fa-chart-bar w-5 text-center mr-3 text-white/80"></i>
                 <span class="font-medium text-sm">Reports</span>
             </li>
 
-            <li class="menu-item flex items-center p-3 rounded-lg hover:text-white hover:bg-blue-500 transition-all duration-200 cursor-pointer {% if active_tab == 'returns' %}bg-blue-500 border-l-4 border-white text-white{% endif %}" data-tab="returns">
-                <i class="fas fa-undo-alt w-5 text-center mr-3 text-balck"></i>
+            <li class="menu-item flex items-center p-3 rounded-lg hover:bg-white/10 transition-all duration-200 cursor-pointer {% if active_tab == 'returns' %}bg-white/10 border-l-4 border-white{% endif %}" data-tab="returns">
+                <i class="fas fa-undo-alt w-5 text-center mr-3 text-white/80"></i>
                 <span class="font-medium text-sm">Returns</span>
             </li>
 
-            <li class="menu-item flex items-center p-3 rounded-lg hover:text-white hover:bg-blue-500 transition-all duration-200 cursor-pointer {% if active_tab == 'trash' %}bg-blue-500 border-l-4 border-white text-white{% endif %}" data-tab="trash">
-                <i class="fa-solid fa-trash-arrow-up w-5 text-center mr-3 text-balck"></i>
+            <li class="menu-item flex items-center p-3 rounded-lg hover:bg-white/10 transition-all duration-200 cursor-pointer {% if active_tab == 'trash' %}bg-white/10 border-l-4 border-white{% endif %}" data-tab="trash">
+                <i class="fa-solid fa-trash-arrow-up w-5 text-center mr-3 text-white/80"></i>
                 <span class="font-medium text-sm">Trash Recover</span>
             </li>
 
-            <li class="menu-item flex items-center p-3 rounded-lg hover:text-white hover:bg-blue-500 transition-all duration-200 cursor-pointer {% if active_tab == 'ai' %}bg-blue-500 border-l-4 border-white{% endif %}" data-tab="ai-assistant-dashboard">
-                <i class="fa-solid fa-robot w-5 text-center mr-3 text-balck"></i>
+            <li class="menu-item flex items-center p-3 rounded-lg hover:bg-white/10 transition-all duration-200 cursor-pointer {% if active_tab == 'ai' %}bg-white/10 border-l-4 border-white{% endif %}" data-tab="ai-assistant-dashboard">
+                <i class="fa-solid fa-robot w-5 text-center mr-3 text-white/80"></i>
                 <span class="font-medium text-sm">AI Assistant</span>
             </li>
 
-            <li class="menu-item flex items-center p-3 rounded-lg hover:text-white hover:bg-blue-500 transition-all duration-200 cursor-pointer {% if active_tab == 'settings' %}bg-blue-500 border-l-4 border-white text-white{% endif %}" data-tab="settings">
-                <i class="fas fa-cog w-5 text-center mr-3 text-balck"></i>
+            <li class="menu-item flex items-center p-3 rounded-lg hover:bg-white/10 transition-all duration-200 cursor-pointer {% if active_tab == 'settings' %}bg-white/10 border-l-4 border-white{% endif %}" data-tab="settings">
+                <i class="fas fa-cog w-5 text-center mr-3 text-white/80"></i>
                 <span class="font-medium text-sm">Settings</span>
             </li>
         </ul>
@@ -376,56 +376,68 @@
                 <div class="lg:col-span-2">
                     <!-- Quick Stats Cards -->
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-                        <div class="bg-green-100 rounded-lg border border-gray-200 p-3 hover:shadow-sm transition-shadow">
+                        <div class="bg-white rounded-lg border border-gray-200 p-3 hover:shadow-sm transition-shadow">
                             <div class="flex items-center justify-between">
                                 <div>
-                                    <p class="text-xs text-gray-500 mb-1">To Receive</p>
+                                    <p class="text-xs text-gray-500 mb-1">Total Invoices</p>
                                     <h3 class="text-lg font-bold text-gray-800" id="totalInvoices">0</h3>
                                 </div>
-                                <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                                    <i class="text-green-500 bg-transparent fas fa-arrow-down mr-1 text-xs"></i>
+                                <div class="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-file-invoice text-blue-500 text-sm"></i>
                                 </div>
                             </div>
-                           
+                            <div class="mt-1 text-xs text-green-600 flex items-center">
+                                <i class="fas fa-arrow-up mr-1 text-xs"></i>
+                                <span>12% increase</span>
+                            </div>
                         </div>
 
-                        <div class="bg-red-100 rounded-lg border border-gray-200 p-3 hover:shadow-sm transition-shadow">
+                        <div class="bg-white rounded-lg border border-gray-200 p-3 hover:shadow-sm transition-shadow">
                             <div class="flex items-center justify-between">
                                 <div>
-                                    <p class="text-xs text-gray-500 mb-1">To Give</p>
+                                    <p class="text-xs text-gray-500 mb-1">Paid Invoices</p>
                                     <h3 class="text-lg font-bold text-gray-800" id="paidAmount">0</h3>
                                 </div>
-                                <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
-                                    <i class="text-red-500 fas fa-arrow-up mr-1 text-xs"></i>
+                                <div class="w-8 h-8 bg-green-50 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-check-circle text-green-500 text-sm"></i>
                                 </div>
                             </div>
-                            
+                            <div class="mt-1 text-xs text-green-600 flex items-center">
+                                <i class="fas fa-arrow-up mr-1 text-xs"></i>
+                                <span>8% increase</span>
+                            </div>
                         </div>
 
-                        <div class="bg-blue-100 rounded-lg border border-gray-200 p-3 hover:shadow-sm transition-shadow">
+                        <div class="bg-white rounded-lg border border-gray-200 p-3 hover:shadow-sm transition-shadow">
                             <div class="flex items-center justify-between">
                                 <div>
-                                    <p class="text-xs text-gray-500 mb-1">Purchese (Poush)</p>
-                                    <h3 class="text-lg font-bold text-gray-800" id="pendingAmount">Rs. 7,23,820</h3>
+                                    <p class="text-xs text-gray-500 mb-1">Pending</p>
+                                    <h3 class="text-lg font-bold text-gray-800" id="pendingAmount">0</h3>
                                 </div>
-                                <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                                    <i class="text-blue-500 fa-solid fa-cart-shopping mr-1 text-xs"></i>
+                                <div class="w-8 h-8 bg-yellow-50 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-clock text-yellow-500 text-sm"></i>
                                 </div>
                             </div>
-                            
+                            <div class="mt-1 text-xs text-red-600 flex items-center">
+                                <i class="fas fa-arrow-down mr-1 text-xs"></i>
+                                <span>3% decrease</span>
+                            </div>
                         </div>
 
-                        <div class="bg-red-100 rounded-lg border border-gray-200 p-3 hover:shadow-sm transition-shadow">
+                        <div class="bg-white rounded-lg border border-gray-200 p-3 hover:shadow-sm transition-shadow">
                             <div class="flex items-center justify-between">
                                 <div>
-                                    <p class="text-xs text-gray-500 mb-1">Expense (Poush)</p>
+                                    <p class="text-xs text-gray-500 mb-1">Overdue</p>
                                     <h3 class="text-lg font-bold text-gray-800" id="overdueAmount">0</h3>
                                 </div>
-                                <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
-                                    <i class="text-red-500 fa-solid fa-wallet mr-1 text-xs"></i>
+                                <div class="w-8 h-8 bg-red-50 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-exclamation-circle text-red-500 text-sm"></i>
                                 </div>
                             </div>
-                            
+                            <div class="mt-1 text-xs text-red-600 flex items-center">
+                                <i class="fas fa-arrow-up mr-1 text-xs"></i>
+                                <span>5% increase</span>
+                            </div>
                         </div>
                     </div>
 
@@ -613,9 +625,12 @@
                             </div>
                             <div class="flex items-center justify-between">
                                 <span class="text-xs text-gray-600">Profit</span>
-                                <span class="text-xs font-medium text-green-600">$3,620</span>
+                                <span class="text-xs font-medium text-blue-600">$3,620</span>
                             </div>
-                            
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs text-gray-600">Avg. Sale</span>
+                                <span class="text-xs font-medium text-purple-600">$285</span>
+                            </div>
                         </div>
                     </div>
 
@@ -949,7 +964,47 @@
                     </div>
                 </div>
 
-                
+                <!-- Quick Stats -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                    <div class="bg-white border border-gray-200 rounded-lg p-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="text-xs text-gray-500">Top Client</div>
+                                <div class="text-lg font-bold text-gray-800">TechCorp Inc.</div>
+                                <div class="text-sm text-gray-600 mt-1">$12,450 spent</div>
+                            </div>
+                            <div class="w-9 h-9 bg-blue-50 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-crown text-blue-500"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white border border-gray-200 rounded-lg p-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="text-xs text-gray-500">Avg. Invoice Value</div>
+                                <div class="text-lg font-bold text-gray-800">$385.50</div>
+                                <div class="text-sm text-green-600 mt-1">+8.2% increase</div>
+                            </div>
+                            <div class="w-9 h-9 bg-green-50 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-chart-bar text-green-500"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white border border-gray-200 rounded-lg p-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="text-xs text-gray-500">New This Month</div>
+                                <div class="text-lg font-bold text-gray-800">8</div>
+                                <div class="text-sm text-blue-600 mt-1">New clients added</div>
+                            </div>
+                            <div class="w-9 h-9 bg-purple-50 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-user-plus text-purple-500"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         
@@ -959,371 +1014,9 @@
     
 </div>
 
-<!-- INVOICE VIEW MODAL (Added this section) -->
 
-<!-- MODALS SECTION -->
-<!-- Add Product Modal -->
-<div class="app-modal" id="addProductModal">
-    <div class="app-modal-content">
-        <div class="app-modal-header">
-            <h3>Add New Product</h3>
-            <button class="app-modal-close" id="closeProductModal">&times;</button>
-        </div>
-        <div class="app-modal-choice">
-            <button type="button" class="app-tab-link active" data-tab="product-basic">Basic Info</button>
-            <button type="button" class="app-tab-link" data-tab="product-advanced">Advanced</button>
-        </div>
-        <div class="app-modal-body">
-            <div id="product-basic" class="app-tab-content active">
-                <div class="app-form-group">
-                    <label for="productName">Product Name *</label>
-                    <input type="text" id="productName" class="app-form-control" placeholder="Enter product name" required>
-                </div>
-                <div class="app-form-row">
-                    <div class="app-form-col">
-                        <div class="app-form-group">
-                            <label for="productCostPrice">Cost Price ($) *</label>
-                            <input type="number" id="productCostPrice" class="app-form-control" placeholder="0.00" min="0" step="0.01" required>
-                        </div>
-                    </div>
-                    <div class="app-form-col">
-                        <div class="app-form-group">
-                            <label for="productSellingPrice">Selling Price ($) *</label>
-                            <input type="number" id="productSellingPrice" class="app-form-control" placeholder="0.00" min="0" step="0.01" required>
-                        </div>
-                    </div>
-                </div>
-                <div class="app-form-row">
-                    <div class="app-form-col">
-                        <div class="app-form-group">
-                            <label for="productQuantity">Quantity *</label>
-                            <input type="number" id="productQuantity" class="app-form-control" placeholder="0" min="0" required>
-                        </div>
-                    </div>
-                    <div class="app-form-col">
-                        <div class="app-form-group" style="position: relative;">
-                            <label for="productCategory">Category</label>
-                            <input type="text" id="productCategory" class="app-form-control product-category-search-input" 
-                                   placeholder="Type to search...">
-                            <div class="search-hint" id="product-category-search-hint">
-                                <!-- Category suggestions will appear here -->
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div id="product-advanced" class="app-tab-content">
-                <div class="app-form-group">
-                    <label for="productDescription">Description</label>
-                    <textarea id="productDescription" class="app-form-control" rows="3" placeholder="Enter product description"></textarea>
-                </div>
-                <div class="app-form-group">
-                    <label for="productBarcode">Barcode/SKU</label>
-                    <input type="text" id="productBarcode" class="app-form-control" placeholder="Optional">
-                </div>
-            </div>
-        </div>
-        <div class="app-modal-footer">
-            <button class="app-btn app-btn-light" id="cancelProductBtn">Cancel</button>
-            <button class="app-btn app-btn-primary" id="saveProductBtn">Save Product</button>
-            <button class="app-btn app-btn-primary" id="updateProductBtn" style="display: none;">Update Product</button>
-        </div>
-    </div>
-</div>
 
-<!-- Add Client Modal -->
-<div class="app-modal" id="addClientModal">
-    <div class="app-modal-content">
-        <div class="app-modal-header">
-            <h3>Add New Client</h3>
-            <button class="app-modal-close" id="closeClientModal">&times;</button>
-        </div>
-        <div class="app-modal-choice">
-            <button type="button" class="app-tab-link active" data-tab="client-info">Client Info</button>
-            <button type="button" class="app-tab-link" data-tab="additional-info">Additional Info</button>
-        </div>
-        <div class="app-modal-body">
-            <div id="client-info" class="app-tab-content active">
-                <div class="app-form-group">
-                    <label for="clientNameInput">Client Name *</label>
-                    <input type="text" id="clientNameInput" class="app-form-control" placeholder="Enter client name" required>
-                </div>
-                <div class="app-form-row">
-                    <div class="app-form-col">
-                        <div class="app-form-group">
-                            <label for="clientPhoneInput">Phone Number *</label>
-                            <input type="tel" id="clientPhoneInput" class="app-form-control" placeholder="Enter phone number" required>
-                        </div>
-                    </div>
-                    <div class="app-form-col">
-                        <div class="app-form-group">
-                            <label for="clientEmailInput">Email</label>
-                            <input type="email" id="clientEmailInput" class="app-form-control" placeholder="Enter email">
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div id="additional-info" class="app-tab-content">
-                <div class="app-form-group">
-                    <label for="clientAddressInput">Address</label>
-                    <textarea id="clientAddressInput" class="app-form-control" rows="2" placeholder="Enter address"></textarea>
-                </div>
-                <div class="app-form-row">
-                    <div class="app-form-col">
-                        <div class="app-form-group">
-                            <label for="clientPanNoInput">PAN Number</label>
-                            <input type="text" id="clientPanNoInput" class="app-form-control" placeholder="Enter PAN Number">
-                        </div>
-                    </div>
-                    <div class="app-form-col">
-                        <div class="app-form-group">
-                            <label for="clientType">Client Type</label>
-                            <select id="clientType" class="app-form-control">
-                                <option value="regular">Regular</option>
-                                <option value="business">Business</option>
-                                <option value="wholesale">Wholesale</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="app-modal-footer">
-            <button class="app-btn app-btn-light" id="cancelClientBtn">Cancel</button>
-            <button class="app-btn app-btn-primary" id="saveClientBtn">Save Client</button>
-        </div>
-    </div>
-</div>
 
-<!-- Create Invoice Modal -->
-<div class="app-modal" id="createInvoiceModal">
-    <div class="app-modal-content" style="max-width: 800px;">
-        <div class="app-modal-header">
-            <h3>Create New Invoice</h3>
-            <button class="app-modal-close" id="closeInvoiceModal">&times;</button>
-        </div>
-        <div class="app-modal-body">
-            <div class="app-form-row">
-                <div class="app-form-col">
-                    <div class="app-form-group">
-                        <label for="invoiceClient">Client *</label>
-                        <select id="invoiceClient" class="app-form-control" required>
-                            <option value="">Select a client</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="app-form-col">
-                    <div class="app-form-group">
-                        <label for="invoiceDate">Invoice Date *</label>
-                        <input type="date" id="invoiceDate" class="app-form-control" required>
-                    </div>
-                </div>
-            </div>
-            <div class="app-form-group">
-                <label>Add Products</label>
-                <div style="position: relative;">
-                    <input type="text" id="invoiceProductSearch" class="app-form-control" placeholder="Search products...">
-                    <div class="search-hint" id="invoice-product-search-hint"></div>
-                </div>
-            </div>
-            <div class="app-form-group">
-                <div style="overflow-x: auto;">
-                    <table style="width: 100%; border-collapse: collapse;">
-                        <thead>
-                            <tr style="background-color: #f9fafb;">
-                                <th style="padding: 10px; text-align: left;">Product</th>
-                                <th style="padding: 10px; text-align: left;">Price</th>
-                                <th style="padding: 10px; text-align: left;">Quantity</th>
-                                <th style="padding: 10px; text-align: left;">Total</th>
-                                <th style="padding: 10px; text-align: left;">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="invoiceItems">
-                            <!-- Invoice items will be added here -->
-                        </tbody>
-                        <tfoot>
-                            <tr>
-                                <td colspan="3" style="text-align: right; padding: 10px; font-weight: bold;">Total:</td>
-                                <td id="invoiceTotal" style="padding: 10px; font-weight: bold;">$0.00</td>
-                                <td></td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
-            </div>
-        </div>
-        <div class="app-modal-footer">
-            <button class="app-btn app-btn-light" id="cancelInvoiceBtn">Cancel</button>
-            <button class="app-btn app-btn-primary" id="saveInvoiceBtn">Create Invoice</button>
-        </div>
-    </div>
-</div>
-
-<!-- Modals Javascripts -->
- <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Modal functionality
-    const modals = {
-        product: document.getElementById('addProductModal'),
-        client: document.getElementById('addClientModal'),
-        invoice: document.getElementById('createInvoiceModal')
-    };
-
-    const modalButtons = {
-        product: document.getElementById('addNewProductBtn'),
-        client: document.getElementById('addClientBtn'),
-        invoice: document.getElementById('createInvoiceBtnTab')
-    };
-
-    const closeButtons = {
-        product: document.getElementById('closeProductModal'),
-        client: document.getElementById('closeClientModal'),
-        invoice: document.getElementById('closeInvoiceModal')
-    };
-
-    const cancelButtons = {
-        product: document.getElementById('cancelProductBtn'),
-        client: document.getElementById('cancelClientBtn'),
-        invoice: document.getElementById('cancelInvoiceBtn')
-    };
-
-    // Function to open modal
-    function openModal(modal) {
-        if (modal) {
-            modal.classList.add('active');
-            document.body.style.overflow = 'hidden'; // Prevent background scrolling
-        }
-    }
-
-    // Function to close modal
-    function closeModal(modal) {
-        if (modal) {
-            modal.classList.remove('active');
-            document.body.style.overflow = 'auto'; // Restore scrolling
-        }
-    }
-
-    // Set up event listeners for opening modals
-    if (modalButtons.product) {
-        modalButtons.product.addEventListener('click', () => openModal(modals.product));
-    }
-    
-    if (modalButtons.client) {
-        modalButtons.client.addEventListener('click', () => openModal(modals.client));
-    }
-    
-    if (modalButtons.invoice) {
-        modalButtons.invoice.addEventListener('click', () => openModal(modals.invoice));
-    }
-
-    // Set up event listeners for closing modals
-    Object.keys(closeButtons).forEach(key => {
-        if (closeButtons[key]) {
-            closeButtons[key].addEventListener('click', () => closeModal(modals[key]));
-        }
-    });
-
-    Object.keys(cancelButtons).forEach(key => {
-        if (cancelButtons[key]) {
-            cancelButtons[key].addEventListener('click', () => closeModal(modals[key]));
-        }
-    });
-
-    // Close modal when clicking outside the modal content
-    Object.values(modals).forEach(modal => {
-        if (modal) {
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    closeModal(modal);
-                }
-            });
-        }
-    });
-
-    // Tab functionality for modals
-    const tabLinks = document.querySelectorAll('.app-tab-link');
-    tabLinks.forEach(link => {
-        link.addEventListener('click', function() {
-            const tabName = this.getAttribute('data-tab');
-            const tabContainer = this.closest('.app-modal-content');
-            
-            // Remove active class from all tabs in this modal
-            tabContainer.querySelectorAll('.app-tab-link').forEach(t => t.classList.remove('active'));
-            tabContainer.querySelectorAll('.app-tab-content').forEach(t => t.classList.remove('active'));
-            
-            // Add active class to clicked tab
-            this.classList.add('active');
-            tabContainer.querySelector(`#${tabName}`).classList.add('active');
-        });
-    });
-
-    // Set current date for invoice date input
-    const invoiceDateInput = document.getElementById('invoiceDate');
-    if (invoiceDateInput) {
-        const today = new Date().toISOString().split('T')[0];
-        invoiceDateInput.value = today;
-        invoiceDateInput.min = today;
-    }
-
-    // Search functionality for product category
-    const categoryInput = document.getElementById('productCategory');
-    const categoryHint = document.getElementById('product-category-search-hint');
-    
-    if (categoryInput && categoryHint) {
-        categoryInput.addEventListener('input', function() {
-            const searchTerm = this.value.toLowerCase();
-            const categories = window.djangoData.product_cat || [];
-            
-            if (searchTerm.length > 0) {
-                const filtered = categories.filter(cat => 
-                    cat.name.toLowerCase().includes(searchTerm)
-                );
-                
-                if (filtered.length > 0) {
-                    categoryHint.innerHTML = filtered.map(cat => 
-                        `<div class="search-hint-item" data-value="${cat.name}">${cat.name}</div>`
-                    ).join('');
-                    categoryHint.style.display = 'block';
-                } else {
-                    categoryHint.innerHTML = '<div class="search-hint-item">No categories found</div>';
-                    categoryHint.style.display = 'block';
-                }
-            } else {
-                categoryHint.style.display = 'none';
-            }
-        });
-
-        // Handle click on category suggestion
-        categoryHint.addEventListener('click', function(e) {
-            if (e.target.classList.contains('search-hint-item')) {
-                categoryInput.value = e.target.getAttribute('data-value');
-                categoryHint.style.display = 'none';
-            }
-        });
-
-        // Hide hint when clicking outside
-        document.addEventListener('click', function(e) {
-            if (!categoryInput.contains(e.target) && !categoryHint.contains(e.target)) {
-                categoryHint.style.display = 'none';
-            }
-        });
-    }
-
-    // Keyboard shortcuts for modals
-    document.addEventListener('keydown', function(e) {
-        // Close modal on Escape key
-        if (e.key === 'Escape') {
-            Object.values(modals).forEach(modal => {
-                if (modal && modal.classList.contains('active')) {
-                    closeModal(modal);
-                }
-            });
-        }
-    });
-});
-</script>
-
-<!-- End Modal Javascript -->
 
 
 <script>
@@ -1375,9 +1068,9 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Update active menu item
         menuItems.forEach(item => {
-            item.classList.remove('bg-blue-500', 'border-l-4', 'border-white');
+            item.classList.remove('bg-white/10', 'border-l-4', 'border-white');
             if (item.dataset.tab === tabName) {
-                item.classList.add('bg-blue-500', 'border-l-4', 'border-white');
+                item.classList.add('bg-white/10', 'border-l-4', 'border-white');
             }
         });
     }
@@ -1400,9 +1093,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
-<!-- INVOICE VIEW MODAL (Added this section) -->
-{% include "website/bill_layout.html" %}
-{% comment %} {% include "website/product.html" %} {% endcomment %}
+
 
 
 {% endblock %}

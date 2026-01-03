@@ -297,25 +297,75 @@ export async function saveProduct(addProductModal) {
     }
 }
 
-export function addProductToTable(product,productsTableBody,index){
+export function addProductToTable(product, productsTableBody, index){
     if (!productsTableBody) return;
-      const row = document.createElement('tr');
-      row.classList.add('thisRows');
-      row.innerHTML = `
-        <td>${index+1}</td>
-        <td>${product.name}</td>
-        <td>${product.category || 'N/A'}</td>
-        <td>$${product.cost_price}</td>
-        <td>$${product.selling_price}</td>
-        <td>${String(product.quantity)}</td>
-      `;
-      row.addEventListener('click', () => {
-        
+    
+    const row = document.createElement('tr');
+    row.classList.add('border-b', 'border-gray-200', 'hover:bg-gray-50', 'transition-colors');
+    
+    // Determine stock status for styling
+    const quantity = product.quantity || 0;
+    let statusClass = '';
+    let statusText = '';
+    let statusColor = '';
+    
+    if (quantity > 20) {
+        statusClass = 'bg-green-100 text-green-800';
+        statusText = 'In Stock';
+        statusColor = 'green';
+    } else if (quantity > 10) {
+        statusClass = 'bg-yellow-100 text-yellow-800';
+        statusText = 'Low Stock';
+        statusColor = 'yellow';
+    } else if (quantity > 0) {
+        statusClass = 'bg-orange-100 text-orange-800';
+        statusText = 'Low Stock';
+        statusColor = 'orange';
+    } else {
+        statusClass = 'bg-red-100 text-red-800';
+        statusText = 'Out of Stock';
+        statusColor = 'red';
+    }
+    
+    // Calculate progress bar width
+    let progressWidth = Math.min((quantity / 50) * 100, 100);
+    if (quantity === 0) progressWidth = 0;
+    
+    row.innerHTML = `
+        <td class="py-2 px-3 text-sm text-gray-600">${index+1}</td>
+        <td class="py-2 px-3">
+            <div class="font-medium text-gray-800 text-sm">${product.name}</div>
+        </td>
+        <td class="py-2 px-3">
+            <span class="inline-flex px-2 py-1 rounded text-xs font-medium bg-purple-50 text-purple-700">
+                ${product.category || 'N/A'}
+            </span>
+        </td>
+        <td class="py-2 px-3">
+            <div class="text-sm text-gray-700">$${product.cost_price || '0.00'}</div>
+        </td>
+        <td class="py-2 px-3">
+            <div class="text-sm font-medium text-green-600">$${product.selling_price || '0.00'}</div>
+        </td>
+        <td class="py-2 px-3">
+            <div class="flex items-center space-x-2">
+                <span class="text-sm font-medium text-gray-800">${String(product.quantity || 0)}</span>
+                <div class="w-12 bg-gray-200 rounded-full h-1.5">
+                    <div class="h-1.5 rounded-full bg-${statusColor}-500" style="width: ${progressWidth}%"></div>
+                </div>
+                <span class="inline-flex px-2 py-0.5 rounded text-xs font-medium ${statusClass}">
+                    ${statusText}
+                </span>
+            </div>
+        </td>
+    `;
+    
+    row.addEventListener('click', () => {
         window.location.href = `/dashboard/product-detail/${product.uid}`;
-      });
+    });
 
-      productsTableBody.appendChild(row);
-  }
+    productsTableBody.appendChild(row);
+}
 
 export function addProductToList(product, productList) {
   if (!productList) return;

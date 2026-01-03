@@ -1,0 +1,202 @@
+<!-- Invoices Tab -->
+<div class="tab-content {% if active_tab == 'invoices' %}active{% endif %}" id="invoices-tab">
+    <div class="header">
+        <h2>Invoices</h2>
+        <div class="user-info">
+            <div class="user-avatar">{{ request.user.username.0 | upper  }}</div>
+            <div>
+                <div>{{ request.user.username }}</div>
+                <div style="font-size: 12px; color: var(--gray);">Administrator</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Invoice Action Buttons -->
+    <div class="action-buttons">
+        <button class="btn btn-primary" id="createInvoiceBtnTab">
+            <i class="fas fa-plus"></i> Create Invoice
+        </button>
+        <button class="btn btn-light">
+            <i class="fas fa-filter"></i> Filter
+        </button>
+        <button class="btn btn-light">
+            <i class="fas fa-print"></i> Print
+        </button>
+    </div>
+
+    <!-- Invoice Table -->
+    <div class="invoice-section">
+        <div class="section-header">
+            <h3>All Invoices</h3>
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Search invoices...">
+            </div>
+        </div>
+        <table id="invoicesTable">
+            <thead>
+                <tr>
+                    <th>Bill No #</th>
+                    <th>Client</th>
+                    <th>Date</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="invoicesTableBody">
+                <!-- Invoices will be dynamically added here -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Products Tab -->
+<div class="tab-content {% if active_tab == 'products' %}active{% endif %}" id="products">
+    <div class="header">
+        <h2>Product Management</h2>
+        <div class="user-info">
+            <div class="user-avatar">{{ request.user.username.0 | upper  }}</div>
+            <div>
+                <div>{{ request.user.username }}</div>
+                <div style="font-size: 12px; color: var(--gray);">Administrator</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="action-buttons">
+        <button class="btn btn-primary" id="addNewProductBtn">
+            <i class="fas fa-plus"></i> Add New Product
+        </button>
+        <button class="btn btn-light" id="importProductsBtn">
+            <i class="fas fa-file-import"></i> Import Products
+        </button>
+        <button class="btn btn-light" id="exportProductsBtn">
+            <i class="fas fa-file-export"></i> Export Products
+        </button>
+    </div>
+
+    <div class="invoice-section">
+        <div class="section-header">
+            <h3 id ="productCount">All Products({{product_number}})</h3>
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="productSearchInput" placeholder="Search products...">
+            </div>
+        </div>
+            <table id="productsTable">
+            <thead>
+                <tr>
+                    <th>S.N.</th>
+                    <th>Product Name</th>
+                    <th>Category</th>
+                    <th>Purchase Price</th>
+                    <th>Selling Price</th>
+                    <th>Quantity</th>
+                </tr>
+            </thead>
+            <tbody id="productsTableBody">
+                <!-- products will be dynamically added here -->
+            </tbody>
+        </table>
+        {% comment %} </div> {% endcomment %}
+    </div>
+</div>
+
+<!-- Clients Tab -->
+<div class="tab-content {% if active_tab == 'clients' %}active{% endif %}" id="clients">
+    <div class="header">
+        <h2>Client Management</h2>
+        <div class="user-info">
+            <div class="user-avatar">{{ request.user.username.0 | upper  }}</div>
+            <div>
+                <div>{{ request.user.username }}</div>
+                <div style="font-size: 12px; color: var(--gray);">Administrator</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Client Action Buttons -->
+    <div class="action-buttons">
+        <button class="btn btn-primary" id="addClientBtn">
+            <i class="fas fa-plus"></i> Add New Client
+        </button>
+        <button class="btn btn-light" id="importClientsBtn">
+            <i class="fas fa-file-import"></i> Import Clients
+        </button>
+        <button class="btn btn-light" id="exportClientsBtn">
+            <i class="fas fa-file-export"></i> Export Clients
+        </button>
+        <button class="btn btn-warning" id="bulkClientActionBtn">
+            <i class="fas fa-cog"></i> Bulk Actions
+        </button>
+    </div>
+
+    <!-- Client Stats -->
+    <div class="stats-container">
+        <div class="stat-card stat-1">
+            <div class="stat-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-info">
+                <h3 id="totalClients">0</h3>
+                <p>Total Clients</p>
+            </div>
+        </div>
+        <div class="stat-card stat-2">
+            <div class="stat-icon">
+                <i class="fas fa-star"></i>
+            </div>
+            <div class="stat-info">
+                <h3 id="activeClients">0</h3>
+                <p>Active Clients</p>
+            </div>
+        </div>
+        <div class="stat-card stat-3">
+            <div class="stat-icon">
+                <i class="fas fa-file-invoice"></i>
+            </div>
+            <div class="stat-info">
+                <h3 id="clientInvoices">0</h3>
+                <p>Total Invoices</p>
+            </div>
+        </div>
+        <div class="stat-card stat-4">
+            <div class="stat-icon">
+                <i class="fas fa-dollar-sign"></i>
+            </div>
+            <div class="stat-info">
+                <h3 id="clientRevenue">$0</h3>
+                <p>Total Revenue</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Client List Section -->
+    <div class="invoice-section">
+        <div class="section-header">
+            <h3>All Clients</h3>
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="clientSearchInput" placeholder="Search clients...">
+            </div>
+        </div>
+        <table id="clientsTable">
+            <thead>
+                <tr>
+                    <th>Client ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Address</th>
+                    <th>Phone</th>
+                    <th>Total Invoices</th>
+                    <th>Total Spent</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="clientsTableBody">
+                <!-- Clients will be dynamically added here -->
+            </tbody>
+        </table>
+    </div>
+</div>

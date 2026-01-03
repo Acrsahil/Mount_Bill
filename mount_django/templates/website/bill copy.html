@@ -1,0 +1,564 @@
+{% extends "layout.html" %}
+{% load static %}
+
+{% block title %}InvoicePro - Billing System{% endblock %}
+
+{% block extra_css %}
+
+<link rel="stylesheet" href="{% static 'css/product.css' %}">
+<link rel="stylesheet" href="{% static 'css/bill.css' %}">
+<link rel="stylesheet" href="{%static 'css/client.css'%}">
+<link rel="stylesheet" href="{%static 'css/ai.css'%}">
+
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+    <!-- Sidebar -->
+    <div class="sidebar"  style="overflow: auto; height: 100vh;">
+        <div class="logo">
+            <img src="{% static 'assets/logo.png' %}" style="width: 32px; height: 32px; margin-right: 10px;" alt="CHALAYO Logo">
+            <h1 class="text-3xl">CHALAYO</h1>
+        </div>
+        <ul class="menu">
+            <li class="menu-item {% if active_tab == 'dashboard' %}active{% endif %}" data-tab="dashboard">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </li>
+
+            <li class="menu-item {% if active_tab == 'clients' %}active{% endif %}" data-tab="clients">
+                <i class="fas fa-users"></i>
+                <span>Customers</span>
+            </li>
+
+            <li class="menu-item {% if active_tab == 'products' %}active{% endif %}" data-tab="products">
+                <i class="fas fa-box"></i>
+                <span>Products</span>
+            </li>
+
+            <li class="menu-item {% if active_tab == 'invoices' %}active{% endif %}" data-tab="invoices">
+                <i class="fas fa-receipt"></i>
+                <span>Sales</span>
+            </li>
+
+            
+
+            <li class="menu-item {% if active_tab == 'categories' %}active{% endif %}" data-tab="categories">
+                <i class="fas fa-tags"></i>
+                <span>Categories</span>
+            </li>
+
+            <li class="menu-item {% if active_tab == 'stock' %}active{% endif %}" data-tab="stock">
+                <i class="fas fa-warehouse"></i>
+                <span>Stock / Inventory</span>
+            </li>
+
+             
+
+            <li class="menu-item {% if active_tab == 'suppliers' %}active{% endif %}" data-tab="suppliers">
+                <i class="fas fa-truck"></i>
+                <span>Suppliers</span>
+            </li>
+
+            <li class="menu-item {% if active_tab == 'expenses' %}active{% endif %}" data-tab="expenses">
+                <i class="fas fa-money-bill-wave"></i>
+                <span>Expenses</span>
+            </li>
+
+            <li class="menu-item {% if active_tab == 'reports' %}active{% endif %}" data-tab="reports">
+                <i class="fas fa-chart-bar"></i>
+                <span>Reports</span>
+            </li>
+
+            <li class="menu-item {% if active_tab == 'returns' %}active{% endif %}" data-tab="returns">
+                <i class="fas fa-undo-alt"></i>
+                <span>Returns</span>
+            </li>
+
+            <li class="menu-item {% if active_tab == 'trash' %}active{% endif %}" data-tab="trash">
+                <i class="fa-solid fa-trash-arrow-up"></i>
+                <span>Trash Recover</span>
+            </li>
+
+            <li class="menu-item {% if active_tab == 'ai' %}active{% endif %}" data-tab="ai-assistant-dashboard">
+                <i class="fa-solid fa-robot"></i>
+                <span>AI Assistant</span>
+            </li>
+
+            <li class="menu-item {% if active_tab == 'settings' %}active{% endif %}" data-tab="settings">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </li>
+
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Dashboard Tab -->
+        <div class="tab-content {% if active_tab == 'dashboard' %}active{% endif %}" id="dashboard">
+            <div class="header">
+                <h2>Dashboard</h2>
+                <div class="user-info">
+                    <div class="user-avatar">{{ request.user.username.0 | upper  }}</div>
+                    <div>
+                        <div>{{ request.user.username }}</div>
+                        <div style="font-size: 12px; color: var(--gray);">Administrator</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="stats-container">
+                <div class="stat-card stat-1">
+                    <div class="stat-icon">
+                        <i class="fas fa-file-invoice"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="totalInvoices">Loading</h3>
+                        <p>Total Invoices</p>
+                    </div>
+                </div>
+                <div class="stat-card stat-2">
+                    <div class="stat-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="paidAmount">Loading</h3>
+                        <p>Paid Invoices</p>
+                    </div>
+                </div>
+                <div class="stat-card stat-3">
+                    <div class="stat-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="pendingAmount">Loading</h3>
+                        <p>Pending Invoices</p>
+                    </div>
+                </div>
+                <div class="stat-card stat-4">
+                    <div class="stat-icon">
+                        <i class="fas fa-exclamation-circle"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="overdueAmount">Loading</h3>
+                        <p>Overdue Invoices</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <button class="btn btn-primary" id="createInvoiceBtn">
+                    <i class="fas fa-plus"></i> Create Invoice
+                </button>
+                <button class="btn btn-success" id="addProductBtn">
+                    <i class="fas fa-plus-circle"></i> Add Product
+                </button>
+                <button class="btn btn-warning" id="filterInvoicesBtn">
+                    <i class="fas fa-filter"></i> Filter Invoices
+                </button>
+                <button class="btn btn-danger" id="bulkDeleteBtn">
+                    <i class="fas fa-trash"></i> Bulk Delete
+                </button>
+                <button class="btn btn-light" id="printBtn">
+                    <i class="fas fa-print"></i> Print
+                </button>
+                <button class="btn btn-light" id="refreshBtn">
+                    <i class="fas fa-sync"></i> Refresh
+                </button>
+            </div>
+
+            <!-- Invoice Table -->
+            <div class="invoice-section">
+                <div class="section-header">
+                    <h3>Recent Bills</h3>
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="searchInput" placeholder="Search invoices...">
+                    </div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Bill No #</th>
+                            <th>Client</th>
+                            <th>Date</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Invoices will be dynamically added here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+
+        
+        <!-- Invoices Tab -->
+        <div class="tab-content {% if active_tab == 'invoices' %}active{% endif %}" id="invoices-tab">
+            <div class="header">
+                <h2>Invoices</h2>
+                <div class="user-info">
+                    <div class="user-avatar">{{ request.user.username.0 | upper  }}</div>
+                    <div>
+                        <div>{{ request.user.username }}</div>
+                        <div style="font-size: 12px; color: var(--gray);">Administrator</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Invoice Action Buttons -->
+            <div class="action-buttons">
+                <button class="btn btn-primary" id="createInvoiceBtnTab">
+                    <i class="fas fa-plus"></i> Create Invoice
+                </button>
+                <button class="btn btn-light">
+                    <i class="fas fa-filter"></i> Filter
+                </button>
+                <button class="btn btn-light">
+                    <i class="fas fa-print"></i> Print
+                </button>
+            </div>
+
+            <!-- Invoice Table -->
+            <div class="invoice-section">
+                <div class="section-header">
+                    <h3>All Invoices</h3>
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Search invoices...">
+                    </div>
+                </div>
+                <table id="invoicesTable">
+                    <thead>
+                        <tr>
+                            <th>Bill No #</th>
+                            <th>Client</th>
+                            <th>Date</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="invoicesTableBody">
+                        <!-- Invoices will be dynamically added here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Products Tab -->
+        <div class="tab-content {% if active_tab == 'products' %}active{% endif %}" id="products">
+            <div class="header">
+                <h2>Product Management</h2>
+                <div class="user-info">
+                    <div class="user-avatar">{{ request.user.username.0 | upper  }}</div>
+                    <div>
+                        <div>{{ request.user.username }}</div>
+                        <div style="font-size: 12px; color: var(--gray);">Administrator</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn btn-primary" id="addNewProductBtn">
+                    <i class="fas fa-plus"></i> Add New Product
+                </button>
+                <button class="btn btn-light" id="importProductsBtn">
+                    <i class="fas fa-file-import"></i> Import Products
+                </button>
+                <button class="btn btn-light" id="exportProductsBtn">
+                    <i class="fas fa-file-export"></i> Export Products
+                </button>
+            </div>
+
+            <div class="invoice-section">
+                <div class="section-header">
+                    <h3 id ="productCount">All Products({{product_number}})</h3>
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="productSearchInput" placeholder="Search products...">
+                    </div>
+                </div>
+                    <table id="productsTable">
+                    <thead>
+                        <tr>
+                            <th>S.N.</th>
+                            <th>Product Name</th>
+                            <th>Category</th>
+                            <th>Purchase Price</th>
+                            <th>Selling Price</th>
+                            <th>Quantity</th>
+                        </tr>
+                    </thead>
+                    <tbody id="productsTableBody">
+                        <!-- products will be dynamically added here -->
+                    </tbody>
+                </table>
+                {% comment %} </div> {% endcomment %}
+            </div>
+        </div>
+
+        <!-- Clients Tab -->
+        <div class="tab-content {% if active_tab == 'clients' %}active{% endif %}" id="clients">
+            <div class="header">
+                <h2>Client Management</h2>
+                <div class="user-info">
+                    <div class="user-avatar">{{ request.user.username.0 | upper  }}</div>
+                    <div>
+                        <div>{{ request.user.username }}</div>
+                        <div style="font-size: 12px; color: var(--gray);">Administrator</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Client Action Buttons -->
+            <div class="action-buttons">
+                <button class="btn btn-primary" id="addClientBtn">
+                    <i class="fas fa-plus"></i> Add New Client
+                </button>
+                <button class="btn btn-light" id="importClientsBtn">
+                    <i class="fas fa-file-import"></i> Import Clients
+                </button>
+                <button class="btn btn-light" id="exportClientsBtn">
+                    <i class="fas fa-file-export"></i> Export Clients
+                </button>
+                <button class="btn btn-warning" id="bulkClientActionBtn">
+                    <i class="fas fa-cog"></i> Bulk Actions
+                </button>
+            </div>
+
+            <!-- Client Stats -->
+            <div class="stats-container">
+                <div class="stat-card stat-1">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="totalClients">0</h3>
+                        <p>Total Clients</p>
+                    </div>
+                </div>
+                <div class="stat-card stat-2">
+                    <div class="stat-icon">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="activeClients">0</h3>
+                        <p>Active Clients</p>
+                    </div>
+                </div>
+                <div class="stat-card stat-3">
+                    <div class="stat-icon">
+                        <i class="fas fa-file-invoice"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="clientInvoices">0</h3>
+                        <p>Total Invoices</p>
+                    </div>
+                </div>
+                <div class="stat-card stat-4">
+                    <div class="stat-icon">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="clientRevenue">$0</h3>
+                        <p>Total Revenue</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Client List Section -->
+            <div class="invoice-section">
+                <div class="section-header">
+                    <h3>All Clients</h3>
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="clientSearchInput" placeholder="Search clients...">
+                    </div>
+                </div>
+                <table id="clientsTable">
+                    <thead>
+                        <tr>
+                            <th>Client ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Address</th>
+                            <th>Phone</th>
+                            <th>Total Invoices</th>
+                            <th>Total Spent</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="clientsTableBody">
+                        <!-- Clients will be dynamically added here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>InvoicePro Billing System &copy; 2023. All rights reserved.</p>
+        </div>
+    </div>
+</div>
+
+<!-- INVOICE VIEW MODAL (Added this section) -->
+{% include "website/bill_layout.html" %}
+{% include "website/product.html" %}
+<!-- Add Product Modal - WITH SUGGESTIONS -->
+<div class="modal" id="addProductModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Add New Product</h3>
+            <button class="close-btn" id="closeProductModal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group" style="position: relative;">
+                <label for="productName">Product Name *</label>
+                <input type="text" id="productName" class="form-control ">
+            </div>
+            <div class = "productQuantities">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="productQuantity" class="updateProduct">Product Quantity</label>
+                        <input type="number" id="productQuantity" class="form-control" placeholder="0.00" min="0" step="0.01" required>
+                    </div>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-col">
+                    <div class="form-group">
+                        <label for="productCostPrice">Cost Price ($) *</label>
+                        <input type="number" id="productCostPrice" class="form-control" placeholder="0.00" min="0" step="0.01" required>
+                    </div>
+                </div>
+                <div class="form-col">
+                    <div class="form-group">
+                        <label for="productSellingPrice">Selling Price ($) *</label>
+                        <input type="number" id="productSellingPrice" class="form-control" placeholder="0.00" min="0" step="0.01" required>
+                    </div>
+                </div>
+                <div class="form-col">
+                    <div class="form-group" style="position: relative;">
+                        <label for="productCategory">Category</label>
+                        <input type="text" id="productCategory" class="form-control product-category-search-input" 
+                               placeholder="Type category name (Tab to complete)...">
+                        <div class="search-hint" id="product-category-search-hint" style="display: none; position: absolute; background: white; border: 1px solid #ddd; max-height: 150px; overflow-y: auto; z-index: 1000; width: 100%;">
+                            <!-- Category suggestions will appear here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-light" id="cancelProductBtn">Cancel</button>
+            <button class="btn btn-primary" id="saveProductBtn">Save Product</button>
+            <button class="btn btn-primary" id="updateProductBtn">Update Product</button>
+        </div>
+    </div>
+</div>
+
+{% comment %} <!--stock buttons-->
+<div class="stock-popup" id="addStockPopup">
+    <button class="popup-btn" id="addStock">Add Stock</button>
+    <button class="popup-btn" id="removeStock">Remove Stock</button>
+</div> {% endcomment %}
+
+<!-- Add Client Modal - SIMPLIFIED -->
+<div class="modal" id="addClientModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Add New Client</h3>
+            <button class="close-btn" id="closeClientModal">&times;</button>
+        </div>
+        <div class = "modal-choice">
+            <button type="button" class="tab-links active" data-tab="client-info">Client Info</button>
+            <button type="button" class="tab-links" data-tab="additional-info">Additional Info</button>
+        </div>
+        <div class="modal-body">
+            <!--Client info-->
+            <div id="client-info" class="tab-contents active">
+            <div class="form-group">
+                <label for="clientNameInput">Client Name *</label>
+                <input type="text" id="clientNameInput" class="form-control" placeholder="Enter client name" required>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-col">
+                    <div class="form-group">
+                        <label for="clientPhoneInput">Phone Number *</label>
+                        <input type="number" id="clientPhoneInput" class="form-control" placeholder="Enter phone number" required>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!--Additional info-->
+        <div id="additional-info" class="tab-contents">
+            <div class="form-group">
+                <label for="clientAddressInput">Address </label>
+                <input type="text" id="clientAddressInput" class="form-control" placeholder="Enter address">
+            </div>
+            <div class="form-group">
+                <label for="clientEmailInput">Email </label>
+                <input type="email" id="clientEmailInput" class="form-control" placeholder="Enter email">
+            </div>
+            <div class="form-group">
+                <label for="clientPanNoInput">Pan No </label>
+                <input type="number" id="clientPanNoInput" class="form-control" placeholder="Enter Pan Number">
+            </div>
+        </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-light" id="cancelClientBtn">Cancel</button>
+            <button class="btn btn-primary" id="saveClientBtn">Save Client</button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+{% block extra_js %}
+<script>
+// Simple and safe data structure
+window.djangoData = {
+    products: {{ product|safe }},
+    product_cat: {{ product_cat|safe }},
+    clients: {{ customer|safe }},
+    invoices: {{ invoices|safe }},
+    csrfToken: "{{ csrf_token }}",
+    active_tab: "{{ active_tab|default:'dashboard' }}"
+};
+</script>
+
+<script>
+// SAFETY CHECK - Add this right before loading bill.js
+if (typeof window.djangoData === 'undefined') {
+    window.djangoData = {
+        products: [],
+        product_cat: [],
+        clients: [],
+        invoices: {{ invoices|safe }},
+        csrfToken: "{{ csrf_token }}",
+        active_tab: "{{ active_tab|default:'dashboard' }}"
+    };
+}
+
+console.log('Active tab from Django:', window.djangoData.active_tab);
+</script>
+
+<script>const csrfToken = "{{ csrf_token }}";</script>
+<script type="module" src="{%static 'js/client.js'%}"></script>
+<script type="module" src="{% static 'js/delete.js' %}"></script>
+<script type="module" src="{%static 'js/product.js'%}"></script>
+<script type="module" src="{% static 'js/main.js' %}"></script>
+<script type="module" src="{% static 'js/event.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+{% endblock %}

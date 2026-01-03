@@ -1,140 +1,76 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Invoice</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f1f5f9; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-    .modal { background: rgba(0,0,0,0.05); padding: 20px; }
-    .modal-content { background: white; border-radius: 4px; box-shadow: 0 1px 8px rgba(0,0,0,0.06); max-width: 760px; overflow: hidden; }
-    .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border-bottom: 1px solid #e2e8f0; background: #f8fafc; }
-    .modal-header h2 { margin: 0; font-size: 14px; font-weight: 600; color: #1f2937; }
-    #invoiceNumber { color: #4f46e5; }
-    .close { font-size: 20px; cursor: pointer; color: #64748b; line-height: 1; }
-    .modal-scrollable { max-height: 60vh; overflow-y: auto; }
-    .bill-container { padding: 14px; }
-    .bill-header { text-align: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #e2e8f0; }
-    #companyName { margin: 0 0 2px 0; font-size: 18px; font-weight: 700; color: #111827; }
-    #companyAddress, #companyPhone { margin: 1px 0; color: #64748b; font-size: 11px; }
-    .bill-body { margin-bottom: 16px; }
-    .top-row { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
-    .left-info, .right-info { flex: 1; min-width: 220px; }
-    .info-line { display: flex; margin-bottom: 4px; align-items: center; }
-    .label { font-weight: 500; color: #475569; width: 90px; flex-shrink: 0; font-size: 12px; }
-    .value { color: #1f2937; font-size: 12px; }
-    .info-table { margin-bottom: 16px; overflow-x: auto; }
-    .items-table { width: 100%; border-collapse: collapse; border: 1px solid #cbd5e1; font-size: 12px; }
-    .items-table thead { background: #f1f5f9; }
-    .items-table th { padding: 6px 8px; text-align: left; font-weight: 600; color: #334155; border: 1px solid #cbd5e1; }
-    .items-table td { padding: 4px 8px; border: 1px solid #cbd5e1; }
-    .bill-bottom { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 20px; }
-    .bill-remarks { flex: 1; min-width: 200px; }
-    #rem { margin: 0 0 4px 0; font-size: 12px; color: #334155; }
-    #remarksText { margin: 0; font-size: 11px; font-weight: normal; color: #64748b; }
-    .bill-amounts { flex: 1; min-width: 200px; list-style: none; padding: 0; margin: 0; font-size: 12px; }
-    .bill-amounts li { display: flex; justify-content: space-between; margin-bottom: 4px; }
-    .bill-amounts .label { color: #64748b; width: auto; }
-    .bill-amounts .value { font-weight: 500; }
-    .bill-amounts li:nth-last-child(3) { margin-bottom: 6px; padding-top: 6px; border-top: 1px solid #e2e8f0; }
-    .bill-amounts li:nth-last-child(3) .label { color: #334155; font-weight: 600; }
-    .bill-amounts li:nth-last-child(3) .value { font-weight: 600; color: #1f2937; }
-    #dueam { margin-top: 8px; padding-top: 8px; border-top: 2px solid #4f46e5; }
-    .labelAmount { color: #1f2937; font-size: 12px; }
-    .valueAmount { color: #4f46e5; font-size: 13px; }
-    .bill-footer { display: flex; justify-content: flex-end; gap: 8px; padding: 10px 14px; border-top: 1px solid #e2e8f0; background: #f8fafc; }
-    .bill-footer button { padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 11px; border: 1px solid; transition: opacity 0.2s; }
-    .bill-footer button:hover { opacity: 0.9; }
-    .delete-btn { background: #fef2f2; color: #dc2626; border-color: #fecaca; }
-    .edit-btn { background: #eff6ff; color: #2563eb; border-color: #dbeafe; }
-    .print-btn { background: #f1f5f9; color: #334155; border-color: #cbd5e1; }
-    .download-btn { background: #4f46e5; color: white; border-color: #4f46e5; }
-  </style>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
-</head>
-
-<body>
-
-<div id="invoiceModal" class="modal">
-  <div class="modal-content">
-
-    <!-- HEADER -->
-    <div class="modal-header">
-      <h2>Invoice No. <span id="invoiceNumber"></span></h2>
-      <span class="close">&times;</span>
+<!-- SMALLER INVOICE MODAL - Same layout, smaller size -->
+<div id="invoiceModal" style="background-color: rgba(0, 0, 0, 0.72);" class="hidden fixed inset-0 z-50 bg-opacity-75 flex items-center justify-center p-4">
+  <div class="bg-white rounded shadow-sm max-w-lg w-full max-h-[85vh] flex flex-col">
+    
+    <!-- HEADER (Smaller) -->
+    <div class="modal-header flex justify-between items-center px-3 py-2 border-b border-gray-200 bg-gray-50">
+      <h2 class="m-0 text-xs font-semibold text-gray-800">Invoice No. <span id="invoiceNumber" class="text-indigo-600"></span></h2>
+      <span class="close text-base cursor-pointer text-gray-500 leading-none">&times;</span>
     </div>
 
-    <div class="modal-scrollable">
-      <div class="bill-container">
+    <!-- SCROLLABLE CONTENT -->
+    <div class="modal-scrollable flex-1 overflow-y-auto">
+      <div class="bill-container p-3">
 
-        <!-- COMPANY HEADER -->
-        <div class="bill-header">
-          <h1 id="companyName"></h1>
-          <p id="companyAddress"></p>
-          <p id="companyPhone"></p>
+        <!-- COMPANY HEADER (Smaller) -->
+        <div class="bill-header text-center mb-3 pb-2 border-b border-gray-200">
+          <h1 id="companyName" class="m-0 mb-0.5 text-base font-bold text-gray-900"></h1>
+          <p id="companyAddress" class="my-0.5 text-gray-500 text-xs"></p>
+          <p id="companyPhone" class="my-0.5 text-gray-500 text-xs"></p>
         </div>
 
-        <!-- BODY -->
-        <div class="bill-body">
-          <div class="top-row">
-
+        <!-- BODY (Same layout, smaller spacing) -->
+        <div class="bill-body mb-3">
+          <div class="top-row flex justify-between gap-4 flex-wrap">
             <!-- LEFT : CUSTOMER -->
-            <div class="left-info">
-              <div class="info-line">
-                <span class="label">Buyer’s Name:</span>
-                <span class="value" id="customerName"></span>
+            <div class="left-info flex-1 min-w-[180px]">
+              <div class="info-line flex mb-1 items-center">
+                <span class="label font-medium text-gray-600 w-20 flex-shrink-0 text-xs">Buyer:</span>
+                <span class="value text-gray-800 text-xs" id="customerName"></span>
               </div>
-
-              <div id="customer_add" class="info-line">
-                <span class="label">Address:</span>
-                <span class="value" id="customerAddress"></span>
+              <div id="customer_add" class="info-line flex mb-1 items-center">
+                <span class="label font-medium text-gray-600 w-20 flex-shrink-0 text-xs">Address:</span>
+                <span class="value text-gray-800 text-xs" id="customerAddress"></span>
               </div>
-
-              <div class="info-line">
-                <span class="label">Phone No:</span>
-                <span class="value" id="customerPhone"></span>
+              <div class="info-line flex mb-1 items-center">
+                <span class="label font-medium text-gray-600 w-20 flex-shrink-0 text-xs">Phone No:</span>
+                <span class="value text-gray-800 text-xs" id="customerPhone"></span>
               </div>
-
-              <div id= "Panid" class="info-line">
-                <span class="label">PAN No:</span>
-                <span class="value" id="customerPAN"></span>
+              <div id="Panid" class="info-line flex mb-1 items-center">
+                <span class="label font-medium text-gray-600 w-20 flex-shrink-0 text-xs">PAN No:</span>
+                <span class="value text-gray-800 text-xs" id="customerPAN"></span>
               </div>
             </div>
 
             <!-- RIGHT : INVOICE META -->
-            <div class="right-info">
-              <div class="info-line">
-                <span class="label">Invoice No:</span>
-                <span class="value" id="invoiceNumbers"></span>
+            <div class="right-info flex-1 min-w-[180px]">
+              <div class="info-line flex mb-1 items-center">
+                <span class="label font-medium text-gray-600 w-20 flex-shrink-0 text-xs">Invoice No:</span>
+                <span class="value text-gray-800 text-xs" id="invoiceNumbers"></span>
               </div>
-
-              <div class="info-line">
-                <span class="label">Invoice Date:</span>
-                <span class="value" id="invoiceDate"></span>
+              <div class="info-line flex mb-1 items-center">
+                <span class="label font-medium text-gray-600 w-20 flex-shrink-0 text-xs">Invoice Date:</span>
+                <span  id="invoiceDate" class="value text-gray-800 text-xs" id="invoiceDate"></span>
               </div>
-
-              <div class="info-line">
-                <span class="label">Payment Mode:</span>
-                <span class="value">Cash</span>
+              <div class="info-line flex mb-1 items-center">
+                <span class="label font-medium text-gray-600 w-20 flex-shrink-0 text-xs">Payment:</span>
+                <span class="value text-gray-800 text-xs">Cash</span>
               </div>
             </div>
-
           </div>
         </div>
 
-        <!-- ITEMS TABLE -->
-        <div class="info-table">
-          <table class="items-table" border="1">
-            <thead>
+        <!-- ITEMS TABLE (Same structure, smaller) -->
+        <div class="info-table mb-3 overflow-x-auto">
+          <table class="items-table w-full border-collapse border border-gray-300 text-xs">
+            <thead class="bg-gray-100">
               <tr>
-                <th>S.N.</th>
-                <th>Name</th>
-                <th>Quantity</th>
-                <th>Rate</th>
-                <th>Discount</th>
-                <th>Amount</th>
+                <th class="p-1 text-left font-semibold text-gray-700 border border-gray-300">S.N.</th>
+                <th class="p-1 text-left font-semibold text-gray-700 border border-gray-300">Name</th>
+                <th class="p-1 text-left font-semibold text-gray-700 border border-gray-300">Quantity</th>
+                <th class="p-1 text-left font-semibold text-gray-700 border border-gray-300">Rate</th>
+                <th class="p-1 text-left font-semibold text-gray-700 border border-gray-300">Discount</th>
+                <th class="p-1 text-left font-semibold text-gray-700 border border-gray-300">Amount</th>
               </tr>
             </thead>
             <tbody id="itemsBody">
@@ -143,59 +79,60 @@
           </table>
         </div>
 
-        <!-- BOTTOM -->
-        <div class="bill-bottom">
-
+        <!-- BOTTOM (Same layout, smaller) -->
+        <div class="bill-bottom flex justify-between flex-wrap gap-4">
           <!-- REMARKS -->
-          <div class="bill-remarks">
-            <h2 id = "rem" >Remarks</h2>
-            <h3 id="remarksText"></h3>
+          <div class="bill-remarks flex-1 min-w-[160px]">
+            <h2 id="rem" class="m-0 mb-1 text-xs text-gray-700">Remarks</h2>
+            <h3 id="remarksText" class="m-0 text-xs font-normal text-gray-500"></h3>
           </div>
 
           <!-- AMOUNTS -->
-          <ul class="bill-amounts">
-            <li>
-              <span class="label">Sub Total:</span>
-              <span class="value" id="subTotal">Rs.</span>
+          <ul class="bill-amounts flex-1 min-w-[160px] list-none p-0 m-0 text-xs">
+            <li class="flex justify-between mb-1">
+              <span class="label text-gray-500">Sub Total:</span>
+              <span class="value font-medium" id="subTotal">Rs.</span>
             </li>
-
-            <li id="dislabel">
-              <span class="label" id="discountLabel"></span>
-              <span class="value" id="discount">Rs.</span>
+            <li id="dislabel" class="flex justify-between mb-1">
+              <span class="label text-gray-500" id="discountLabel"></span>
+              <span class="value font-medium" id="discount">Rs.</span>
             </li>
-
-            <li id="taxlabel">
-              <span class="label" id="taxLabel">Tax:</span>
-              <span class="value" id="tax">Rs.</span>
+            <li id="taxlabel" class="flex justify-between mb-1">
+              <span class="label text-gray-500" id="taxLabel">Tax:</span>
+              <span class="value font-medium" id="tax">Rs.</span>
             </li>
-            <li>
-              <span class="label">Total Amount:</span>
-              <span class="value" id="totalAmount">Rs.</span>
+            <li class="flex justify-between mb-1 pt-1 border-t border-gray-200">
+              <span class="label text-gray-600 font-semibold">Total Amount:</span>
+              <span class="value font-semibold text-gray-800" id="totalAmount">Rs.</span>
             </li>
-            <li>
-              <span class="label">Received Amount:</span>
-              <span class="value" id="receivedAmount">Rs.</span>
+            <li class="flex justify-between mb-1">
+              <span class="label text-gray-500">Received Amount:</span>
+              <span class="value font-medium" id="receivedAmount">Rs.</span>
             </li>
-            <li class="bordered" id="dueam">
-              <strong class="labelAmount">Amount Due:</strong>
-              <strong class="valueAmount" id="amountDue">Rs.</strong>
+            <!-- Amount Due with custom top border -->
+            <li class="flex justify-between mt-1 pt-1 border-t-2 border-indigo-500" id="dueam">
+              <strong class="labelAmount font-semibold text-gray-800 text-xs">Amount Due:</strong>
+              <strong class="valueAmount font-semibold text-indigo-600 text-xs" id="amountDue">Rs.</strong>
             </li>
           </ul>
-
         </div>
       </div>
     </div>
 
-    <!-- FOOTER BUTTONS -->
-    <div class="bill-footer">
-      <button class="delete-btn"><i class="fa fa-trash"></i></button>
-      <button class="edit-btn"><i class="fa fa-edit"></i></button>
-      <button class="print-btn"><i class="fa fa-print"></i> Print PDF</button>
-      <button class="download-btn"><i class="fa fa-download"></i> Download PDF</button>
+    <!-- FOOTER BUTTONS (Smaller) -->
+    <div class="bill-footer flex justify-end gap-2 px-3 py-2 border-t border-gray-200 bg-gray-50">
+      <button class="delete-btn p-1.5 rounded text-xs cursor-pointer border border-red-200 transition-opacity duration-200 hover:opacity-90 bg-red-50 text-red-600">
+        <i class="fa fa-trash"></i>
+      </button>
+      <button class="edit-btn p-1.5 rounded text-xs cursor-pointer border border-blue-200 transition-opacity duration-200 hover:opacity-90 bg-blue-50 text-blue-600">
+        <i class="fa fa-edit"></i>
+      </button>
+      <button class="print-btn px-2 py-1 rounded text-xs cursor-pointer border border-gray-300 transition-opacity duration-200 hover:opacity-90 bg-gray-100 text-gray-700">
+        <i class="fa fa-print mr-1"></i> Print PDF
+      </button>
+      <button class="download-btn px-2 py-1 rounded text-xs cursor-pointer border border-indigo-600 transition-opacity duration-200 hover:opacity-90 bg-indigo-600 text-white">
+        <i class="fa fa-download mr-1"></i> Download PDF
+      </button>
     </div>
-
   </div>
 </div>
-
-</body>
-</html>
