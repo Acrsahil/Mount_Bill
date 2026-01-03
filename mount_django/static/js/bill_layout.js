@@ -98,75 +98,58 @@ for(let i = 0; i<len; i++){
 
     let sn = document.createElement("td")
     sn.innerHTML = i+1;
-    sn.style.cssText = "padding: 4px 8px; text-align: center; color: #64748b; font-size: 12px;";
     tr.appendChild(sn)
 
     let product_name = document.createElement("td")
     product_name.innerHTML = data.invoice.items[i].product_name
-    product_name.style.cssText = "padding: 8px; color: #1f2937; font-size: 12px;";
     tr.appendChild(product_name)
 
     let qty = document.createElement("td")
     qty.innerHTML = data.invoice.items[i].quantity
-    qty.style.cssText = "padding: 8px; text-align: center; color: #1f2937; font-size: 12px;";
     tr.appendChild(qty)
 
     let price = document.createElement("td")
     price.innerHTML = data.invoice.items[i].product_price
-    price.style.cssText = "padding: 8px; text-align: center; color: #1f2937; font-size: 12px;";
     tr.appendChild(price)
 
-    let discount = document.createElement("td")
-    discount.innerHTML = data.invoice.items[i].discount_amount
-    discount.style.cssText = "padding: 8px; text-align: center; color: #dc2626; font-size: 12px;";
-    tr.appendChild(discount)
+    let discount_percent = document.createElement("td")
+    discount_percent.innerHTML = data.invoice.items[i].discount_amount
+    tr.appendChild(discount_percent)
+
 
     let amount = document.createElement("td")
     amount.innerHTML = data.invoice.items[i].line_total 
-    amount.style.cssText = "padding: 8px; text-align: center; color: #1f2937; font-size: 12px; font-weight: 600;";
     tr.appendChild(amount)
 }
 
 // Bottom total related data
 
 document.getElementById("subTotal").innerHTML = "Rs. " + data.invoice.amounts.subtotal
-document.getElementById("subTotal").style.cssText = "font-weight: 500; color: #1f2937; font-size: 12px;";
 
 if(data.invoice.amounts.global_discount_percent != '0'){
     document.getElementById("discountLabel").innerHTML = `Discount (${data.invoice.amounts.global_discount_percent}%):`
-    document.getElementById("discountLabel").style.cssText = "color: #64748b; font-size: 12px;";
     document.getElementById("discount").innerHTML ="Rs. " + data.invoice.amounts.global_discount_amount
-    document.getElementById("discount").style.cssText = "font-weight: 500; color: #dc2626; font-size: 12px;";
 }else{
     document.getElementById("dislabel").style.display = "none"
 }
 
 if(data.invoice.amounts.global_tax_percent != '0'){
     document.getElementById("taxLabel").innerHTML = `Tax (${data.invoice.amounts.global_tax_percent}%):`
-    document.getElementById("taxLabel").style.cssText = "color: #64748b; font-size: 12px;";
     document.getElementById("tax").innerHTML ="Rs. " + data.invoice.amounts.global_tax_amount
-    document.getElementById("tax").style.cssText = "font-weight: 500; color: #059669; font-size: 12px;";
 }else{
     document.getElementById("taxlabel").style.display = "none"
 }
 
 document.getElementById("totalAmount").innerHTML = "Rs. " + data.invoice.amounts.total_amount
-document.getElementById("totalAmount").style.cssText = "font-weight: 600; color: #1f2937; font-size: 13px;";
 
 document.getElementById("receivedAmount").innerHTML = "Rs. " + data.invoice.amounts.received_amount
-document.getElementById("receivedAmount").style.cssText = "font-weight: 500; color: #1f2937; font-size: 12px;";
 
 if(data.invoice.amounts.amount_due != '0'){
     document.getElementById("amountDue").innerHTML = "Rs. " + data.invoice.amounts.amount_due
-    document.getElementById("amountDue").style.cssText = "font-weight: 600; color: #4f46e5; font-size: 13px;";
 }else{
     document.getElementById("dueam").style.display = "none"
 }
 
-// Also style the label elements for consistency
-document.querySelectorAll('.bill-amounts .label').forEach(label => {
-    label.style.cssText = "color: #64748b; font-size: 12px;";
-});
 
 
 

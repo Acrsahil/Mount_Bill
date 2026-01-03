@@ -1,11 +1,18 @@
 import { getData } from './bill_layout.js';
 
+
+function presstab(input){
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    input.dispatchEvent(new Event('change', { bubbles: true }));
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', code: 'Tab', keyCode: 9 }));
+}
+
 export function editInvoiceSection(orderId){
     document.getElementById('create_new_invoice').innerText = "Edit Sales Invoice"
     document.getElementById("saveInvoiceBtn").style.display = 'none'
     document.getElementById("updateInvoiceBtn").style.display = 'flex'
     document.getElementById("invoiceNumber").removeAttribute('readonly')
-    
+
 
     console.log("window is ready xa!?")
 
@@ -13,7 +20,7 @@ export function editInvoiceSection(orderId){
     const url = `/dashboard/invoice-layout/${orderId}/`;  // Add trailing slash
 
 
-    
+
     getData(url).then(data => {
         if (data && data.success) {
             console.log(data)
@@ -30,7 +37,7 @@ export function editInvoiceSection(orderId){
             }
 
 
-            
+
 
 
 
@@ -39,13 +46,7 @@ export function editInvoiceSection(orderId){
 
                 const input = document.getElementsByClassName("product-search-input")[i];
                 input.value = data.invoice.items[i].product_name;
-
-                input.dispatchEvent(new Event('input', { bubbles: true }));
-                input.dispatchEvent(new Event('change', { bubbles: true }));
-                input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', code: 'Tab', keyCode: 9 }));
-
-
-
+                presstab(input)
 
                 document.getElementsByClassName("item-quantity")[i].value = data.invoice.items[i].quantity
                 document.getElementsByClassName("item-price")[i].value = data.invoice.items[i].rate
@@ -53,11 +54,9 @@ export function editInvoiceSection(orderId){
             }
             document.getElementsByClassName("remove-item-btn")[data.invoice.items.length].click()
 
-
-
-
-
-
+            const input =  document.getElementById("receivedAmount")
+            input.value = data.invoice.amounts.received_amount
+            presstab(input)
         }
     }).catch(error =>{
             console.error("Error fetching invoice:", error);
