@@ -23,7 +23,7 @@ document.addEventListener("keydown", function(event) {
         }
     });
 
-async function getData(api_url) {
+export async function getData(api_url) {
   try {
     const response = await fetch(api_url);
     const data = await response.json();
@@ -33,6 +33,7 @@ async function getData(api_url) {
     console.error('Error:', error);
   }
 }
+
 export function openModal(invoiceId) {
      
     modal.style.display = "flex";
@@ -45,6 +46,8 @@ export function openModal(invoiceId) {
     
     getData(url).then(data => {
         if (data && data.success) {
+
+            console.log(window.isready)
             console.log("Invoice:", data.invoice);
             console.log("Customer:", data.invoice.customer.name);
             console.log("Total:", data.invoice.amounts.total_amount);
@@ -169,12 +172,13 @@ document.querySelectorAll('.bill-amounts .label').forEach(label => {
 
         const invoice_editbtn = document.getElementById('editbtn')
 
-
             if(invoice_editbtn){
                 invoice_editbtn.addEventListener('click',()=>{
-                    window.location.href = `/dashboard/invoices/${data.invoice.order_id}`;
 
-                    
+                    const temp = document.getElementById("create_new_invoice")
+
+                    window.location.href = `/dashboard/invoices/${data.invoice.order_id}`
+                     
 
 
                 })
@@ -186,6 +190,8 @@ document.querySelectorAll('.bill-amounts .label').forEach(label => {
             console.error("Error fetching invoice:", error);
         });
 }
+
+
 
 
 
