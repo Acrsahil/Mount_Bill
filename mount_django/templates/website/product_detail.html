@@ -33,7 +33,7 @@
         </div>
         <div class="modal-body">
             <div class="form-group">
-                <label for="stockQuantity">Quantity To Add</label>
+                <label for="stockQuantity" class="stock-label">Quantity To Add</label>
                 <input type="text" id="stockQuantity" class="form-control stock-quantity" required>
             </div>
             <div class="productPrices">
@@ -56,7 +56,10 @@
         </div>
 
         <div class="modal-footer">
+            <button class="btn btn-light" id="deleteStockBtn">Delete</button>
+            <button class="btn btn-primary" id="editStockBtn">Edit Stock</button>
             <button class="btn btn-light" id="cancelStockBtn">Cancel</button>
+            <button class="btn btn-primary" id="UpdateStockBtn">Update</button>
             <button class="btn btn-primary" id="saveStockBtn">Add Stock</button>
         </div>
 

@@ -1,3 +1,9 @@
+.activityRow{
+  cursor: pointer;
+}
+.activityRow:hover{
+  background-color:rgb(197, 192, 192) ;
+}
 .stock-popup {
     position: absolute;
     display: none;

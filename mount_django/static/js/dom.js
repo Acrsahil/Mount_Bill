@@ -298,7 +298,7 @@ export function loadInvoices(invoices, invoicesTableBody, csrfToken = '') {
 
         });
 
-        invoicesTableBody.appendChild(row);
+        invoicesTableBody.prepend(row);
     });
 
 
