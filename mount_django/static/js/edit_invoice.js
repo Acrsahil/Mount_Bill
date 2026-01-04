@@ -7,6 +7,8 @@ function presstab(input){
     input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', code: 'Tab', keyCode: 9 }));
 }
 
+
+
 export function editInvoiceSection(orderId){
     document.getElementById('create_new_invoice').innerText = "Edit Sales Invoice"
     document.getElementById("saveInvoiceBtn").style.display = 'none'
@@ -57,6 +59,58 @@ export function editInvoiceSection(orderId){
             const input =  document.getElementById("receivedAmount")
             input.value = data.invoice.amounts.received_amount
             presstab(input)
+
+
+            const global_discount = data.invoice.amounts.global_discount_percent
+            const global_tax = data.invoice.amounts.global_tax_percent
+            const notes = data.invoice.remarks
+
+            const additionalcharge = data.invoice.additional_charges
+
+            if(global_discount){
+                console.log("discount xa haiiii")
+                document.getElementById("addDiscountBtn").click()
+                const input = document.getElementById("globalDiscount")
+                input.value = data.invoice.amounts.global_discount_percent
+                presstab(input)
+            }
+
+            if(global_tax){
+                document.getElementById("addTaxBtn").click()
+                const input = document.getElementById("globalTax")
+                input.value = global_tax
+                presstab(input)
+            }
+
+
+            if(notes){
+                document.getElementById("addnoteBtn").click()
+                const note = document.getElementById("note")
+                note.value = notes
+                presstab(input)
+            }
+
+
+            if(additionalcharge){
+                const len = additionalcharge.length
+                for(let i = 0; i<len; i++){
+                    document.getElementById("addChargeBtn").click()
+                    document.getElementsByClassName('form-control additional-chargename-section')[i].value = additionalcharge[i].charge_name;
+                    const charge = document.getElementsByClassName('form-control additional-chargeamt-section')[i];
+                    charge.value = additionalcharge[i].charge_amount;
+                    presstab(charge)
+                }
+            }
+
+
+
+
+
+
+
+
+
+
         }
     }).catch(error =>{
             console.error("Error fetching invoice:", error);
