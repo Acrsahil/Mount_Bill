@@ -321,13 +321,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const textInput = document.createElement('input');
         textInput.type = 'text';
-        textInput.classList.add('form-control');
+        textInput.classList.add('form-control', 'additional-chargename-section');
         textInput.placeholder = 'Enter charge name';
         textInput.required = true;
 
         const numberInput = document.createElement('input');
         numberInput.type = 'number';
-        numberInput.classList.add('form-control');
+        numberInput.classList.add('form-control', 'additional-chargeamt-section');
         numberInput.value = 0;
         numberInput.min = 0;
         numberInput.step = 0.01;
