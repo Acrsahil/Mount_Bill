@@ -22,9 +22,24 @@ const csrfToken = getCookie('csrftoken');
 
 
 //for stock filter
+document.addEventListener('DOMContentLoaded',() =>{
+    const slidercheck = document.getElementById('statusToggle');
+    const lowStockConstraint = document.getElementById('lowStockConstraint')
+    lowStockConstraint.style.display = 'none';
+    slidercheck.addEventListener('change',()=>{
+        if (slidercheck.checked == true){
+        lowStockConstraint.style.display = 'flex';
+        }
+        else{
+            lowStockConstraint.style.display = 'none';
+        }
+    })
+    
+})
+
+
 
 const stocklistpopup = document.querySelector('.stocklist-popup');
-
 let currentCategory = null; // store the currently selected category
 let currentStock = "";      // store the currently selected stock filter
 
@@ -93,6 +108,23 @@ stocklistpopup.addEventListener('click', async(e) => {
 });
 })
 
+//category on the addProductModal
+const categoryDB = document.getElementById('categoryDB');
+const productCategories = document.getElementById('productCategory')
+productCategories.addEventListener('click',(e) => {
+    e.stopPropagation();
+    console.log("i am supposed to be here")
+    const rect = productCategories.getBoundingClientRect();
+    categoryDB.style.top = rect.bottom + window.scrollX + 'px';
+    categoryDB.style.left = rect.left + window.scrollY + 'px';
+    
+
+    categoryDB.style.display = 'block';
+})
+//hide popup when clicked outside 
+document.addEventListener('click', () => {
+    categoryDB.style.display = 'none';
+});
 
 
 document.addEventListener('DOMContentLoaded',() => {
@@ -366,6 +398,8 @@ export async function editAddAcitivity(activityId) {
     cancelStockBtn.style.display = 'none';
     updateStockBtn.style.display = 'none';
     saveStockBtn.style.display = 'none';
+    if (deleteStockBtn) deleteStockBtn.style.display = 'flex';
+    if (editStockBtn) editStockBtn.style.display = 'flex';
 
     //edit button to make the readonly into write
     editStockBtn.addEventListener('click',() =>{
@@ -599,6 +633,7 @@ export async function saveProduct(addProductModal) {
     const productPrice = document.getElementById('productPrice')?.value; // Fallback for old field name
     const productCategory = document.getElementById('productCategory').value.trim();
     const quantity = document.getElementById('productQuantity').value;
+    const lowStockQuantity = document.getElementById('lowStockQuantity')?.value || 0;
     // Client-side validation
     if (!productName) {
         showAlert('Please enter product name', 'error');
@@ -626,6 +661,7 @@ export async function saveProduct(addProductModal) {
             selling_price: parseFloat(productSellingPrice || productPrice),
             category: productCategory,
             quantity: quantity,
+            lowStockQuantity:lowStockQuantity,
         };
         console.log('Saving product:', productData);
         console.log('Sending this data:', productData);
@@ -897,11 +933,14 @@ function resetAddStockModal() {
     const deleteBtn = document.getElementById('deleteStockBtn');
     const editBtn = document.getElementById('editStockBtn');
     const updateBtn = document.getElementById('UpdateStockBtn');
-
+    const cancelStockBtn = document.getElementById('cancelStockBtn')
+    const saveStockBtn = document.getElementById('saveStockBtn')
 
     if (deleteBtn) deleteBtn.style.display = 'none';
     if (editBtn) editBtn.style.display = 'none';
     if (updateBtn) updateBtn.style.display = 'none';
+    if (cancelStockBtn) cancelStockBtn.style.display = 'flex';
+    if (saveStockBtn) saveStockBtn.style.display = 'flex';
 
     // Reset input fields
     const stockQuantity = document.getElementById('stockQuantity');

@@ -109,6 +109,7 @@ class Product(models.Model):
         blank=True,
         related_name="products",
     )
+    low_stock_bar = models.IntegerField(default=0)
     date_added = models.DateTimeField(default=timezone.now)
 
     class Meta:
@@ -279,7 +280,7 @@ class ItemActivity(models.Model):
         Product, on_delete=models.PROTECT, null=True, related_name="activities"
     )
     type = models.CharField(max_length=200)
-    date = models.DateField(auto_now=True)
+    date = models.DateField(auto_now_add=True)
     change = models.CharField()
     quantity = models.IntegerField()
     remarks = models.CharField(max_length=200, blank=True)

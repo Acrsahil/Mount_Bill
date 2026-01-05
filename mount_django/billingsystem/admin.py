@@ -164,6 +164,7 @@ class ProductAdmin(admin.ModelAdmin):
         "category",
         "company",
         "date_added",
+        "low_stock_bar",
     )
     list_filter = ("company", "category", "date_added")
     search_fields = ("name", "company__name", "category__name")
