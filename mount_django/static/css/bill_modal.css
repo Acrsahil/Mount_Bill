@@ -1,6 +1,6 @@
  * { margin: 0; padding: 0; box-sizing: border-box; }
     /* body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f1f5f9; display: flex; justify-content: center; align-items: center; min-height: 100vh; } */
-    .modal { background: rgba(0,0,0,0.05); padding: 20px; }
+    .modal { background: rgba(65, 63, 63, 0.5); padding: 20px;}
     .modal-content { background: white; border-radius: 4px; box-shadow: 0 1px 8px rgba(0,0,0,0.06); max-width: 760px; overflow: hidden; }
     .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border-bottom: 1px solid #e2e8f0; background: #f8fafc; }
     .modal-header h2 { margin: 0; font-size: 14px; font-weight: 600; color: #1f2937; }

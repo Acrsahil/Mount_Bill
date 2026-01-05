@@ -12,6 +12,7 @@ from django.utils import timezone
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
+from django.db.models import F
 
 from .models import (
     AdditionalCharges,
@@ -24,7 +25,6 @@ from .models import (
     ProductCategory,
     RemainingAmount,
 )
-
 
 def filtered_products(request):
     user = request.user
@@ -43,10 +43,9 @@ def filtered_products(request):
     if stock_status == "instock":
         products = products.filter(product_quantity__gt=0).order_by('-date_added')
     elif stock_status == "lowstock":
-        products = products.filter(product_quantity__lte=10).order_by('-date_added')
+        products = products.filter(product_quantity__lte=F('low_stock_bar')).order_by('-date_added')
     elif stock_status == "outstock":
         products = products.filter(product_quantity__lte=0).order_by('-date_added')
-
     products_data = [
         {
             "id": p.id,
@@ -210,8 +209,9 @@ def save_product(request):
         cost_price = data.get("cost_price")
         selling_price = data.get("selling_price")
         quantity = data.get("quantity")
+        lowStockQuantity = data.get("lowStockQuantity")
         user = request.user
-
+        print("low stock quantity",lowStockQuantity)
         company = None
         company = user.owned_company or user.active_company
 
@@ -291,6 +291,7 @@ def save_product(request):
             category=category,
             product_quantity=quantity,
             company=company,
+            low_stock_bar=lowStockQuantity,
         )
 
         item_activity = ItemActivity(
@@ -312,11 +313,13 @@ def save_product(request):
             )
         item_activity = [
             {
+                "id": item_activity.id,
                 "type": item_activity.type,
                 "date": item_activity.date.isoformat(),
                 "change": f"+{item_activity.change}",
                 "quantity": item_activity.quantity,
                 "remarks": item_activity.remarks,
+                "order_id": item_activity.order.id if item_activity.order else None,
             }
         ]
         return JsonResponse(
