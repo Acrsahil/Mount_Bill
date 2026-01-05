@@ -313,11 +313,13 @@ def save_product(request):
             )
         item_activity = [
             {
+                "id": item_activity.id,
                 "type": item_activity.type,
                 "date": item_activity.date.isoformat(),
                 "change": f"+{item_activity.change}",
                 "quantity": item_activity.quantity,
                 "remarks": item_activity.remarks,
+                "order_id": item_activity.order.id if item_activity.order else None,
             }
         ]
         return JsonResponse(

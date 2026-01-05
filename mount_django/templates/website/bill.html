@@ -451,9 +451,9 @@
                         <label for="productCategory">Category</label>
                         <input type="text" id="productCategory" class="form-control product-category-search-input" 
                                placeholder="Type category name (Tab to complete)...">
-                        <div class="search-hint" id="product-category-search-hint" style="display: none; position: absolute; background: white; border: 1px solid #ddd; max-height: 150px; overflow-y: auto; z-index: 1000; width: 100%;">
+                        {% comment %} <div class="search-hint" id="product-category-search-hint" style="display: none; position: absolute; background: white; border: 1px solid #ddd; max-height: 150px; overflow-y: auto; z-index: 1000; width: 100%;">
                             <!-- Category suggestions will appear here -->
-                        </div>
+                        </div> {% endcomment %}
                     </div>
                 </div>
             </div>
@@ -510,6 +510,12 @@
             <button class="btn btn-light" id="cancelProductBtn">Cancel</button>
             <button class="btn btn-primary" id="saveProductBtn">Save Product</button>
             <button class="btn btn-primary" id="updateProductBtn">Update Product</button>
+        </div>
+        <div class="category-db" id="categoryDB">
+            <ul id="catelists">
+                <!-- dynamically all the list are here -->
+                <li id="general">General</li>
+            </ul>
         </div>
     </div>
 </div>

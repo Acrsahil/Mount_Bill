@@ -118,13 +118,31 @@ productCategories.addEventListener('click',(e) => {
     categoryDB.style.top = rect.bottom + window.scrollX + 'px';
     categoryDB.style.left = rect.left + window.scrollY + 'px';
     
-
+    loadCategories()
     categoryDB.style.display = 'block';
 })
 //hide popup when clicked outside 
 document.addEventListener('click', () => {
     categoryDB.style.display = 'none';
 });
+
+//putting the value from popup to input 
+document.addEventListener('DOMContentLoaded',()=>{
+productCategories.value = 'General';
+categoryDB.addEventListener('click',(e) => {
+    const li = e.target;
+    if(li.tagName === 'LI'){
+        productCategories.value = li.textContent
+    }
+})
+productCategories.addEventListener('input',()=>{
+const searchTerm = productCategories.value.toLowerCase();
+console.log("esko k xa tw",categories)
+const filtered = categories.filter(category => category.name.toLowerCase().includes(searchTerm))
+renderCategory(filtered)
+})
+loadCategories()
+})
 
 
 document.addEventListener('DOMContentLoaded',() => {
@@ -205,9 +223,35 @@ async function loadCategories(){
         console.log("yaa print garxu ma ",data)
        
         categories = data.categories
+        renderCategory(categories)
         renderCategories(categories)
     }catch(error){
         console.error("Error loading categories",error)
+    }
+}
+
+
+//to render category inside the addproductmodal
+
+function renderCategory(categoryArray){
+    const catelists = document.getElementById('catelists');
+    const general = document.getElementById('general');
+    catelists.querySelectorAll('li.categoryProductModal').forEach(li => li.remove());
+
+    categoryArray.forEach(category => {
+        const li = document.createElement('li');
+        li.classList.add('categoryProductModal');
+        li.textContent = category.name;
+        li.dataset.id = category.id;
+        li.style.fontSize = '20px';
+
+        catelists.insertBefore(li,general)
+    });
+      // Show or hide 'general' in dropdown
+    if (categoryArray.length === 0) {
+        general.style.display = 'none';
+    } else {
+        general.style.display = 'block';
     }
 }
 
