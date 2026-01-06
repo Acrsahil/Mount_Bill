@@ -269,74 +269,74 @@
 
 <div class="flex h-screen bg-gray-50">
     <!-- Sidebar - Purple Gradient (Fixed Width) -->
-    <div class="sidebar bg-[#F7F5EE] text-[#87847F] w-64 flex-shrink-0 h-screen overflow-auto">
+    <div class="sidebar bg-[#F7F5EE] text-[#000] w-64 flex-shrink-0 h-screen overflow-auto">
         <div class="logo flex items-center p-5 border-b border-white/20">
             <img src="{% static 'assets/logo.png' %}" class="w-7 h-7 mr-3" alt="CHALAYO Logo">
-            <h1 class="text-blue-500 text-xl font-bold tracking-tight">CHALAYO</h1>
+            <h1 class="text-[#4361ee] text-xl font-bold tracking-tight">CHALAYO</h1>
         </div>
         <ul class="menu p-3 space-y-0.5">
-            <li class="menu-item flex items-center p-3 rounded-lg hover:text-white hover:bg-blue-500 transition-all duration-200 cursor-pointer {% if active_tab == 'dashboard' %}bg-blue-500 border-l-4 border-white text-white{% endif %}" data-tab="dashboard">
+            <li class="menu-item flex items-center p-3 rounded-lg hover:text-white hover:bg-[#4361ee] transition-all duration-200 cursor-pointer {% if active_tab == 'dashboard' %}bg-[#4361ee] border-l-4 border-white text-white{% endif %}" data-tab="dashboard">
                 <i class="fas fa-home w-5 text-center mr-3 text-balck"></i>
                 <span class="font-medium text-sm">Dashboard</span>
             </li>
 
-            <li class="menu-item flex items-center p-3 rounded-lg hover:text-white hover:bg-blue-500 transition-all duration-200 cursor-pointer {% if active_tab == 'clients' %}bg-blue-500 border-l-4 border-white  text-gray-100{% endif %}" data-tab="clients">
+            <li class="menu-item flex items-center p-3 rounded-lg hover:text-white hover:bg-[#4361ee] transition-all duration-200 cursor-pointer {% if active_tab == 'clients' %}bg-[#4361ee] border-l-4 border-white  text-gray-100{% endif %}" data-tab="clients">
                 <i class="fas fa-users w-5 text-center mr-3 text-balck"></i>
                 <span class="font-medium text-sm">Customers</span>
             </li>
 
-            <li class="menu-item flex items-center p-3 rounded-lg hover:text-white hover:bg-blue-500 transition-all duration-200 cursor-pointer {% if active_tab == 'products' %}bg-blue-500 border-l-4 border-white  text-gray-100{% endif %}" data-tab="products">
+            <li class="menu-item flex items-center p-3 rounded-lg hover:text-white hover:bg-[#4361ee] transition-all duration-200 cursor-pointer {% if active_tab == 'products' %}bg-[#4361ee] border-l-4 border-white  text-gray-100{% endif %}" data-tab="products">
                 <i class="fas fa-box w-5 text-center mr-3 text-balck"></i>
                 <span class="font-medium text-sm">Products</span>
             </li>
 
-            <li class="menu-item flex items-center p-3 rounded-lg hover:text-white hover:bg-blue-500 transition-all duration-200 cursor-pointer {% if active_tab == 'invoices' %}bg-blue-500 border-l-4 border-white  text-gray-100{% endif %}" data-tab="invoices">
+            <li class="menu-item flex items-center p-3 rounded-lg hover:text-white hover:bg-[#4361ee] transition-all duration-200 cursor-pointer {% if active_tab == 'invoices' %}bg-[#4361ee] border-l-4 border-white  text-gray-100{% endif %}" data-tab="invoices">
                 <i class="fas fa-receipt w-5 text-center mr-3 text-balck"></i>
                 <span class="font-medium text-sm">Sales</span>
             </li>
 
             <!-- Other menu items remain the same -->
-            <li class="menu-item flex items-center p-3 rounded-lg hover:text-white hover:bg-blue-500 transition-all duration-200 cursor-pointer {% if active_tab == 'categories' %}bg-blue-500 border-l-4 border-white  text-gray-100{% endif %}" data-tab="categories">
+            <li class="menu-item flex items-center p-3 rounded-lg hover:text-white hover:bg-[#4361ee] transition-all duration-200 cursor-pointer {% if active_tab == 'categories' %}bg-[#4361ee] border-l-4 border-white  text-gray-100{% endif %}" data-tab="categories">
                 <i class="fas fa-tags w-5 text-center mr-3 text-balck"></i>
                 <span class="font-medium text-sm">Categories</span>
             </li>
 
-            <li class="menu-item flex items-center p-3 rounded-lg hover:text-white hover:bg-blue-500 transition-all duration-200 cursor-pointer {% if active_tab == 'stock' %}bg-blue-500 border-l-4 border-white text-white{% endif %}" data-tab="stock">
+            <li class="menu-item flex items-center p-3 rounded-lg hover:text-white hover:bg-[#4361ee] transition-all duration-200 cursor-pointer {% if active_tab == 'stock' %}bg-[#4361ee] border-l-4 border-white text-white{% endif %}" data-tab="stock">
                 <i class="fas fa-warehouse w-5 text-center mr-3 text-balck"></i>
                 <span class="font-medium text-sm">Stock / Inventory</span>
             </li>
 
-            <li class="menu-item flex items-center p-3 rounded-lg hover:text-white hover:bg-blue-500 transition-all duration-200 cursor-pointer {% if active_tab == 'suppliers' %}bg-blue-500 border-l-4 border-white text-white{% endif %}" data-tab="suppliers">
+            <li class="menu-item flex items-center p-3 rounded-lg hover:text-white hover:bg-[#4361ee] transition-all duration-200 cursor-pointer {% if active_tab == 'suppliers' %}bg-[#4361ee] border-l-4 border-white text-white{% endif %}" data-tab="suppliers">
                 <i class="fas fa-truck w-5 text-center mr-3 text-balck"></i>
                                 <span class="font-medium text-sm">Suppliers</span>
             </li>
 
-            <li class="menu-item flex items-center p-3 rounded-lg hover:text-white hover:bg-blue-500 transition-all duration-200 cursor-pointer {% if active_tab == 'expenses' %}bg-blue-500 border-l-4 border-white text-white{% endif %}" data-tab="expenses">
+            <li class="menu-item flex items-center p-3 rounded-lg hover:text-white hover:bg-[#4361ee] transition-all duration-200 cursor-pointer {% if active_tab == 'expenses' %}bg-[#4361ee] border-l-4 border-white text-white{% endif %}" data-tab="expenses">
                 <i class="fas fa-money-bill-wave w-5 text-center mr-3 text-balck"></i>
                 <span class="font-medium text-sm">Expenses</span>
             </li>
 
-            <li class="menu-item flex items-center p-3 rounded-lg hover:text-white hover:bg-blue-500 transition-all duration-200 cursor-pointer {% if active_tab == 'reports' %}bg-blue-500 border-l-4 border-white text-white{% endif %}" data-tab="reports">
+            <li class="menu-item flex items-center p-3 rounded-lg hover:text-white hover:bg-[#4361ee] transition-all duration-200 cursor-pointer {% if active_tab == 'reports' %}bg-[#4361ee] border-l-4 border-white text-white{% endif %}" data-tab="reports">
                 <i class="fas fa-chart-bar w-5 text-center mr-3 text-balck"></i>
                 <span class="font-medium text-sm">Reports</span>
             </li>
 
-            <li class="menu-item flex items-center p-3 rounded-lg hover:text-white hover:bg-blue-500 transition-all duration-200 cursor-pointer {% if active_tab == 'returns' %}bg-blue-500 border-l-4 border-white text-white{% endif %}" data-tab="returns">
+            <li class="menu-item flex items-center p-3 rounded-lg hover:text-white hover:bg-[#4361ee] transition-all duration-200 cursor-pointer {% if active_tab == 'returns' %}bg-[#4361ee] border-l-4 border-white text-white{% endif %}" data-tab="returns">
                 <i class="fas fa-undo-alt w-5 text-center mr-3 text-balck"></i>
                 <span class="font-medium text-sm">Returns</span>
             </li>
 
-            <li class="menu-item flex items-center p-3 rounded-lg hover:text-white hover:bg-blue-500 transition-all duration-200 cursor-pointer {% if active_tab == 'trash' %}bg-blue-500 border-l-4 border-white text-white{% endif %}" data-tab="trash">
+            <li class="menu-item flex items-center p-3 rounded-lg hover:text-white hover:bg-[#4361ee] transition-all duration-200 cursor-pointer {% if active_tab == 'trash' %}bg-[#4361ee] border-l-4 border-white text-white{% endif %}" data-tab="trash">
                 <i class="fa-solid fa-trash-arrow-up w-5 text-center mr-3 text-balck"></i>
                 <span class="font-medium text-sm">Trash Recover</span>
             </li>
 
-            <li class="menu-item flex items-center p-3 rounded-lg hover:text-white hover:bg-blue-500 transition-all duration-200 cursor-pointer {% if active_tab == 'ai' %}bg-blue-500 border-l-4 border-white{% endif %}" data-tab="ai-assistant-dashboard">
+            <li class="menu-item flex items-center p-3 rounded-lg hover:text-white hover:bg-[#4361ee] transition-all duration-200 cursor-pointer {% if active_tab == 'ai' %}bg-[#4361ee] border-l-4 border-white{% endif %}" data-tab="ai-assistant-dashboard">
                 <i class="fa-solid fa-robot w-5 text-center mr-3 text-balck"></i>
                 <span class="font-medium text-sm">AI Assistant</span>
             </li>
 
-            <li class="menu-item flex items-center p-3 rounded-lg hover:text-white hover:bg-blue-500 transition-all duration-200 cursor-pointer {% if active_tab == 'settings' %}bg-blue-500 border-l-4 border-white text-white{% endif %}" data-tab="settings">
+            <li class="menu-item flex items-center p-3 rounded-lg hover:text-white hover:bg-[#4361ee] transition-all duration-200 cursor-pointer {% if active_tab == 'settings' %}bg-[#4361ee] border-l-4 border-white text-white{% endif %}" data-tab="settings">
                 <i class="fas fa-cog w-5 text-center mr-3 text-balck"></i>
                 <span class="font-medium text-sm">Settings</span>
             </li>
@@ -409,7 +409,7 @@
                                     <h3 class="text-lg font-bold text-gray-800" id="pendingAmount">Rs. 7,23,820</h3>
                                 </div>
                                 <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                                    <i class="text-blue-500 fa-solid fa-cart-shopping mr-1 text-xs"></i>
+                                    <i class="text-[#4361ee] fa-solid fa-cart-shopping mr-1 text-xs"></i>
                                 </div>
                             </div>
                             
@@ -847,7 +847,7 @@
                                 <h3 class="text-2xl font-bold text-gray-800" id="totalClients">0</h3>
                             </div>
                             <div class="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
-                                <i class="fas fa-users text-blue-500"></i>
+                                <i class="fas fa-users text-[#4361ee]"></i>
                             </div>
                         </div>
                     </div>
@@ -1375,9 +1375,9 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Update active menu item
         menuItems.forEach(item => {
-            item.classList.remove('bg-blue-500', 'border-l-4', 'border-white');
+            item.classList.remove('bg-[#4361ee]', 'border-l-4', 'border-white');
             if (item.dataset.tab === tabName) {
-                item.classList.add('bg-blue-500', 'border-l-4', 'border-white');
+                item.classList.add('bg-[#4361ee]', 'border-l-4', 'border-white');
             }
         });
     }
