@@ -233,32 +233,98 @@ export function fillProductDetails(product) {
 
 
 // Load clients
+// Load clients
 export function loadClients(clients, clientsTableBody) {
     if (!clientsTableBody) return;
     
     clientsTableBody.innerHTML = '';
     
-    clients.forEach(client => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${client.name}</td>
-            <td>${client.email || '-'}</td>
-            <td>${client.phone || '-'}</td>
-            <td class="action-cell">
-                <div class="action-btn action-view">
-                    <i class="fas fa-eye"></i>
+    clients.forEach((client, index) => {
+    const row = document.createElement('tr');
+    row.classList.add('border-b', 'border-gray-200', 'hover:bg-gray-50', 'transition-colors');
+    
+    // Generate initials for avatar
+    const initials = client.name 
+        ? client.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2)
+        : 'NA';
+    
+    // Format currency
+    const formatCurrency = (amount) => {
+        if (!amount && amount !== 0) return '$0.00';
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD'
+        }).format(amount);
+    };
+    
+    // Determine client activity status
+    const totalInvoices = client.total_invoices || client.totalInvoices || 0;
+    const totalSpent = client.total_spent || client.totalSpent || 0;
+    const statusClass = totalInvoices > 10 ? 'bg-green-100 text-green-800' :
+                       totalInvoices > 0 ? 'bg-blue-100 text-blue-800' :
+                       'bg-gray-100 text-gray-800';
+    const statusText = totalInvoices > 10 ? 'Premium' :
+                      totalInvoices > 0 ? 'Active' : 'New';
+    
+    row.innerHTML = `
+        <td class="py-2 px-4 text-sm text-gray-600">${client.id || client.uid || 'N/A'}</td>
+        <td class="py-2 px-4">
+            <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 bg-gradient-to-r from-blue-100 to-blue-50 rounded-full flex items-center justify-center">
+                    <span class="text-blue-600 font-medium text-xs">${initials}</span>
                 </div>
-                <div class="action-btn action-edit" data-id="${client.id}">
-                    <i class="fas fa-edit"></i>
+                <div>
+                    <div class="font-medium text-gray-800 text-sm">${client.name || 'N/A'}</div>
+                    <span class="inline-flex px-1.5 py-0.5 rounded text-xs font-medium ${statusClass}">
+                        ${statusText}
+                    </span>
                 </div>
-                <div class="action-btn action-delete" data-id="${client.id}">
-                    <i class="fas fa-trash"></i>
+            </div>
+        </td>
+        <td class="py-2 px-4 text-sm text-gray-700">
+            <div class="flex items-center space-x-1">
+                <i class="fas fa-envelope text-gray-400 text-xs"></i>
+                <span class="truncate max-w-[120px]">${client.email || 'N/A'}</span>
+            </div>
+        </td>
+        <td class="py-2 px-4 text-sm text-gray-700">
+            <div class="flex items-center space-x-1">
+                <i class="fas fa-phone text-gray-400 text-xs"></i>
+                <span>${client.phone || 'N/A'}</span>
+            </div>
+        </td>
+        <td class="py-2 px-4">
+            <div class="flex items-center space-x-1">
+                <span class="text-sm font-medium text-gray-800">${totalInvoices}</span>
+                <span class="text-xs text-gray-500">invoices</span>
+            </div>
+        </td>
+        <td class="py-2 px-4">
+            <div class="text-sm font-bold text-green-600">${formatCurrency(totalSpent)}</div>
+            ${totalInvoices > 0 ? `
+                <div class="text-xs text-gray-500">
+                    Avg: ${formatCurrency(totalSpent / totalInvoices)}
                 </div>
-            </td>
-        `;
-        clientsTableBody.appendChild(row);
-    });
+            ` : ''}
+        </td>
+        <td class="py-2 px-4">
+            <div class="flex items-center space-x-1">
+                <button class="text-blue-600 hover:text-blue-800 p-1.5 rounded hover:bg-blue-50 transition-colors" title="View">
+                    <i class="fas fa-eye text-xs"></i>
+                </button>
+                <button class="text-gray-600 hover:text-gray-800 p-1.5 rounded hover:bg-gray-100 transition-colors action-edit" data-id="${client.id || client.uid}" title="Edit">
+                    <i class="fas fa-edit text-xs"></i>
+                </button>
+                <button class="text-red-600 hover:text-red-800 p-1.5 rounded hover:bg-red-50 transition-colors action-delete" data-id="${client.id || client.uid}" title="Delete">
+                    <i class="fas fa-trash text-xs"></i>
+                </button>
+            </div>
+        </td>
+    `;
+    clientsTableBody.appendChild(row);
+});
 }
+
 
 // Load invoices - FIXED VERSION
 export function loadInvoices(invoices, invoicesTableBody, csrfToken = '') {

@@ -11,401 +11,1034 @@
 <link rel="stylesheet" href="{%static 'css/ai.css'%}">
 
 <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+    body {
+        font-family: 'Poppins', sans-serif;
+    }
+    .thin-scrollbar::-webkit-scrollbar {
+        width: 4px;
+    }
+    .thin-scrollbar::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+    .thin-scrollbar::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 10px;
+    }
+    /* Tab visibility control */
+    .tab-content {
+        display: none;
+    }
+    .tab-content.active {
+        display: block;
+    }
+    
+    /* MODAL STYLES - Scoped to avoid conflicts */
+    .app-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 9999;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .app-modal.active {
+        display: flex;
+    }
+    
+    .app-modal-content {
+        background: white;
+        border-radius: 12px;
+        width: 90%;
+        max-width: 500px;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        animation: modalSlideIn 0.3s ease-out;
+    }
+    
+    @keyframes modalSlideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .app-modal-header {
+        padding: 20px 24px;
+        border-bottom: 1px solid #e5e7eb;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .app-modal-header h3 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+        color: #111827;
+    }
+    
+    .app-modal-close {
+        background: none;
+        border: none;
+        font-size: 24px;
+        color: #6b7280;
+        cursor: pointer;
+        padding: 0;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+    }
+    
+    .app-modal-close:hover {
+        background-color: #f3f4f6;
+        color: #374151;
+    }
+    
+    .app-modal-body {
+        padding: 24px;
+    }
+    
+    .app-modal-footer {
+        padding: 20px 24px;
+        border-top: 1px solid #e5e7eb;
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+    }
+    
+    .app-modal-choice {
+        display: flex;
+        border-bottom: 1px solid #e5e7eb;
+        padding: 0 24px;
+        gap: 8px;
+    }
+    
+    .app-tab-link {
+        padding: 12px 0;
+        background: none;
+        border: none;
+        font-size: 14px;
+        color: #6b7280;
+        cursor: pointer;
+        position: relative;
+        margin: 0 8px;
+        font-weight: 500;
+    }
+    
+    .app-tab-link.active {
+        color: #4361ee;
+    }
+    
+    .app-tab-link.active::after {
+        content: '';
+        position: absolute;
+        bottom: -1px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background-color: #4361ee;
+        border-radius: 2px;
+    }
+    
+    .app-tab-content {
+        display: none;
+    }
+    
+    .app-tab-content.active {
+        display: block;
+    }
+    
+    /* Form Styles */
+    .app-form-group {
+        margin-bottom: 20px;
+    }
+    
+    .app-form-group label {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        color: #374151;
+    }
+    
+    .app-form-control {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: all 0.2s;
+        background-color: white;
+    }
+    
+    .app-form-control:focus {
+        outline: none;
+        border-color: #4361ee;
+        box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+    }
+    
+    .app-form-row {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 16px;
+    }
+    
+    .app-form-col {
+        flex: 1;
+    }
+    
+    /* Button Styles */
+    .app-btn {
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: none;
+    }
+    
+    .app-btn-primary {
+        background: linear-gradient(to right, #4361ee, #3a0ca3);
+        color: white;
+    }
+    
+    .app-btn-primary:hover {
+        background: linear-gradient(to right, #3a0ca3, #2a007a);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(67, 97, 238, 0.2);
+    }
+    
+    .app-btn-light {
+        background-color: white;
+        color: #374151;
+        border: 1px solid #d1d5db;
+    }
+    
+    .app-btn-light:hover {
+        background-color: #f9fafb;
+        border-color: #9ca3af;
+    }
+    
+    /* Product Quantities */
+    .product-quantities {
+        margin-bottom: 20px;
+    }
+    
+    /* Search Hint */
+    .search-hint {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        max-height: 200px;
+        overflow-y: auto;
+        z-index: 100;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        display: none;
+    }
+    
+    .search-hint-item {
+        padding: 10px 12px;
+        cursor: pointer;
+        font-size: 14px;
+        color: #374151;
+        transition: background-color 0.2s;
+    }
+    
+    .search-hint-item:hover {
+        background-color: #f3f4f6;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
 
-<div class="container">
-    <!-- Sidebar -->
-    <div class="sidebar"  style="overflow: auto; height: 100vh;">
-        <div class="logo">
-            <img src="{% static 'assets/logo.png' %}" style="width: 32px; height: 32px; margin-right: 10px;" alt="CHALAYO Logo">
-            <h1 class="text-3xl">CHALAYO</h1>
+<div class="flex h-screen bg-gray-50">
+    <!-- Sidebar - Purple Gradient (Fixed Width) -->
+    <div class="sidebar bg-[#F7F5EE] text-[#000] w-64 flex-shrink-0 h-screen overflow-auto">
+        <div class="logo flex items-center p-5 border-b border-white/20">
+            <img src="{% static 'assets/logo.png' %}" class="w-7 h-7 mr-3" alt="CHALAYO Logo">
+            <h1 class="text-[#4361ee] text-xl font-bold tracking-tight">CHALAYO</h1>
         </div>
-        <ul class="menu">
-            <li class="menu-item {% if active_tab == 'dashboard' %}active{% endif %}" data-tab="dashboard">
-                <i class="fas fa-home"></i>
-                <span>Dashboard</span>
+        <ul class="menu p-3 space-y-0.5">
+            <li class="menu-item flex items-center p-3 rounded-lg hover:text-white hover:bg-[#4361ee] transition-all duration-200 cursor-pointer {% if active_tab == 'dashboard' %}bg-[#4361ee] border-l-4 border-white text-white{% endif %}" data-tab="dashboard">
+                <i class="fas fa-home w-5 text-center mr-3 text-balck"></i>
+                <span class="font-medium text-sm">Dashboard</span>
             </li>
 
-            <li class="menu-item {% if active_tab == 'clients' %}active{% endif %}" data-tab="clients">
-                <i class="fas fa-users"></i>
-                <span>Customers</span>
+            <li class="menu-item flex items-center p-3 rounded-lg hover:text-white hover:bg-[#4361ee] transition-all duration-200 cursor-pointer {% if active_tab == 'clients' %}bg-[#4361ee] border-l-4 border-white  text-gray-100{% endif %}" data-tab="clients">
+                <i class="fas fa-users w-5 text-center mr-3 text-balck"></i>
+                <span class="font-medium text-sm">Customers</span>
             </li>
 
-            <li class="menu-item {% if active_tab == 'products' %}active{% endif %}" data-tab="products">
-                <i class="fas fa-box"></i>
-                <span>Products</span>
+            <li class="menu-item flex items-center p-3 rounded-lg hover:text-white hover:bg-[#4361ee] transition-all duration-200 cursor-pointer {% if active_tab == 'products' %}bg-[#4361ee] border-l-4 border-white  text-gray-100{% endif %}" data-tab="products">
+                <i class="fas fa-box w-5 text-center mr-3 text-balck"></i>
+                <span class="font-medium text-sm">Products</span>
             </li>
 
-            <li class="menu-item {% if active_tab == 'invoices' %}active{% endif %}" data-tab="invoices">
-                <i class="fas fa-receipt"></i>
-                <span>Sales</span>
+            <li class="menu-item flex items-center p-3 rounded-lg hover:text-white hover:bg-[#4361ee] transition-all duration-200 cursor-pointer {% if active_tab == 'invoices' %}bg-[#4361ee] border-l-4 border-white  text-gray-100{% endif %}" data-tab="invoices">
+                <i class="fas fa-receipt w-5 text-center mr-3 text-balck"></i>
+                <span class="font-medium text-sm">Sales</span>
             </li>
 
-            
-
-            <li class="menu-item {% if active_tab == 'categories' %}active{% endif %}" data-tab="categories">
-                <i class="fas fa-tags"></i>
-                <span>Categories</span>
+            <!-- Other menu items remain the same -->
+            <li class="menu-item flex items-center p-3 rounded-lg hover:text-white hover:bg-[#4361ee] transition-all duration-200 cursor-pointer {% if active_tab == 'categories' %}bg-[#4361ee] border-l-4 border-white  text-gray-100{% endif %}" data-tab="categories">
+                <i class="fas fa-tags w-5 text-center mr-3 text-balck"></i>
+                <span class="font-medium text-sm">Categories</span>
             </li>
 
-            <li class="menu-item {% if active_tab == 'stock' %}active{% endif %}" data-tab="stock">
-                <i class="fas fa-warehouse"></i>
-                <span>Stock / Inventory</span>
+            <li class="menu-item flex items-center p-3 rounded-lg hover:text-white hover:bg-[#4361ee] transition-all duration-200 cursor-pointer {% if active_tab == 'stock' %}bg-[#4361ee] border-l-4 border-white text-white{% endif %}" data-tab="stock">
+                <i class="fas fa-warehouse w-5 text-center mr-3 text-balck"></i>
+                <span class="font-medium text-sm">Stock / Inventory</span>
             </li>
 
-             
-
-            <li class="menu-item {% if active_tab == 'suppliers' %}active{% endif %}" data-tab="suppliers">
-                <i class="fas fa-truck"></i>
-                <span>Suppliers</span>
+            <li class="menu-item flex items-center p-3 rounded-lg hover:text-white hover:bg-[#4361ee] transition-all duration-200 cursor-pointer {% if active_tab == 'suppliers' %}bg-[#4361ee] border-l-4 border-white text-white{% endif %}" data-tab="suppliers">
+                <i class="fas fa-truck w-5 text-center mr-3 text-balck"></i>
+                                <span class="font-medium text-sm">Suppliers</span>
             </li>
 
-            <li class="menu-item {% if active_tab == 'expenses' %}active{% endif %}" data-tab="expenses">
-                <i class="fas fa-money-bill-wave"></i>
-                <span>Expenses</span>
+            <li class="menu-item flex items-center p-3 rounded-lg hover:text-white hover:bg-[#4361ee] transition-all duration-200 cursor-pointer {% if active_tab == 'expenses' %}bg-[#4361ee] border-l-4 border-white text-white{% endif %}" data-tab="expenses">
+                <i class="fas fa-money-bill-wave w-5 text-center mr-3 text-balck"></i>
+                <span class="font-medium text-sm">Expenses</span>
             </li>
 
-            <li class="menu-item {% if active_tab == 'reports' %}active{% endif %}" data-tab="reports">
-                <i class="fas fa-chart-bar"></i>
-                <span>Reports</span>
+            <li class="menu-item flex items-center p-3 rounded-lg hover:text-white hover:bg-[#4361ee] transition-all duration-200 cursor-pointer {% if active_tab == 'reports' %}bg-[#4361ee] border-l-4 border-white text-white{% endif %}" data-tab="reports">
+                <i class="fas fa-chart-bar w-5 text-center mr-3 text-balck"></i>
+                <span class="font-medium text-sm">Reports</span>
             </li>
 
-            <li class="menu-item {% if active_tab == 'returns' %}active{% endif %}" data-tab="returns">
-                <i class="fas fa-undo-alt"></i>
-                <span>Returns</span>
+            <li class="menu-item flex items-center p-3 rounded-lg hover:text-white hover:bg-[#4361ee] transition-all duration-200 cursor-pointer {% if active_tab == 'returns' %}bg-[#4361ee] border-l-4 border-white text-white{% endif %}" data-tab="returns">
+                <i class="fas fa-undo-alt w-5 text-center mr-3 text-balck"></i>
+                <span class="font-medium text-sm">Returns</span>
             </li>
 
-            <li class="menu-item {% if active_tab == 'trash' %}active{% endif %}" data-tab="trash">
-                <i class="fa-solid fa-trash-arrow-up"></i>
-                <span>Trash Recover</span>
+            <li class="menu-item flex items-center p-3 rounded-lg hover:text-white hover:bg-[#4361ee] transition-all duration-200 cursor-pointer {% if active_tab == 'trash' %}bg-[#4361ee] border-l-4 border-white text-white{% endif %}" data-tab="trash">
+                <i class="fa-solid fa-trash-arrow-up w-5 text-center mr-3 text-balck"></i>
+                <span class="font-medium text-sm">Trash Recover</span>
             </li>
 
-            <li class="menu-item {% if active_tab == 'ai' %}active{% endif %}" data-tab="ai-assistant-dashboard">
-                <i class="fa-solid fa-robot"></i>
-                <span>AI Assistant</span>
+            <li class="menu-item flex items-center p-3 rounded-lg hover:text-white hover:bg-[#4361ee] transition-all duration-200 cursor-pointer {% if active_tab == 'ai' %}bg-[#4361ee] border-l-4 border-white{% endif %}" data-tab="ai-assistant-dashboard">
+                <i class="fa-solid fa-robot w-5 text-center mr-3 text-balck"></i>
+                <span class="font-medium text-sm">AI Assistant</span>
             </li>
 
-            <li class="menu-item {% if active_tab == 'settings' %}active{% endif %}" data-tab="settings">
-                <i class="fas fa-cog"></i>
-                <span>Settings</span>
+            <li class="menu-item flex items-center p-3 rounded-lg hover:text-white hover:bg-[#4361ee] transition-all duration-200 cursor-pointer {% if active_tab == 'settings' %}bg-[#4361ee] border-l-4 border-white text-white{% endif %}" data-tab="settings">
+                <i class="fas fa-cog w-5 text-center mr-3 text-balck"></i>
+                <span class="font-medium text-sm">Settings</span>
             </li>
-
         </ul>
     </div>
 
-    <!-- Main Content -->
-    <div class="main-content">
+    <!-- Main Content Area -->
+    <div class="flex-1 flex flex-col overflow-hidden">
+        <!-- Top Header -->
+        <div class="bg-white border-b border-gray-200 px-5 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <h2 id="page-title" class="text-lg font-semibold text-gray-800">
+                    {% if active_tab == 'dashboard' %}Dashboard Overview
+                    {% elif active_tab == 'invoices' %}Invoices
+                    {% elif active_tab == 'products' %}Products
+                    {% elif active_tab == 'clients' %}Customers
+                    {% else %}{{ active_tab|title }}{% endif %}
+                </h2>
+                <span class="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded-full">Today: {% now "F j, Y" %}</span>
+            </div>
+            <div class="flex items-center space-x-3">
+                <div class="flex items-center space-x-2 text-sm text-gray-600">
+                    <i class="fas fa-clock"></i>
+                    <span>{% now "h:i A" %}</span>
+                </div>
+                <div class="w-8 h-8 bg-gradient-to-r from-[#4361ee] to-[#3a0ca3] text-white rounded-full flex items-center justify-center font-bold text-sm">
+                    {{ request.user.username.0 | upper }}
+                </div>
+            </div>
+        </div>
+
         <!-- Dashboard Tab -->
-        <div class="tab-content {% if active_tab == 'dashboard' %}active{% endif %}" id="dashboard">
-            <div class="header">
-                <h2>Dashboard</h2>
-                <div class="user-info">
-                    <div class="user-avatar">{{ request.user.username.0 | upper  }}</div>
-                    <div>
-                        <div>{{ request.user.username }}</div>
-                        <div style="font-size: 12px; color: var(--gray);">Administrator</div>
+        <div id="dashboard" class="tab-content {% if active_tab == 'dashboard' %}active{% else %}{% endif %} flex-1 overflow-auto p-4">
+            <!-- Main Content Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                <!-- Left Column - Main Content -->
+                <div class="lg:col-span-2">
+                    <!-- Quick Stats Cards -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                        <div class="bg-green-100 rounded-lg border border-gray-200 p-3 hover:shadow-sm transition-shadow">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-xs text-gray-500 mb-1">To Receive</p>
+                                    <h3 class="text-lg font-bold text-gray-800" id="totalInvoices">0</h3>
+                                </div>
+                                <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                                    <i class="text-green-500 bg-transparent fas fa-arrow-down mr-1 text-xs"></i>
+                                </div>
+                            </div>
+                           
+                        </div>
+
+                        <div class="bg-red-100 rounded-lg border border-gray-200 p-3 hover:shadow-sm transition-shadow">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-xs text-gray-500 mb-1">To Give</p>
+                                    <h3 class="text-lg font-bold text-gray-800" id="paidAmount">0</h3>
+                                </div>
+                                <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+                                    <i class="text-red-500 fas fa-arrow-up mr-1 text-xs"></i>
+                                </div>
+                            </div>
+                            
+                        </div>
+
+                        <div class="bg-blue-100 rounded-lg border border-gray-200 p-3 hover:shadow-sm transition-shadow">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-xs text-gray-500 mb-1">Purchese (Poush)</p>
+                                    <h3 class="text-lg font-bold text-gray-800" id="pendingAmount">Rs. 7,23,820</h3>
+                                </div>
+                                <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                                    <i class="text-[#4361ee] fa-solid fa-cart-shopping mr-1 text-xs"></i>
+                                </div>
+                            </div>
+                            
+                        </div>
+
+                        <div class="bg-red-100 rounded-lg border border-gray-200 p-3 hover:shadow-sm transition-shadow">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-xs text-gray-500 mb-1">Expense (Poush)</p>
+                                    <h3 class="text-lg font-bold text-gray-800" id="overdueAmount">0</h3>
+                                </div>
+                                <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+                                    <i class="text-red-500 fa-solid fa-wallet mr-1 text-xs"></i>
+                                </div>
+                            </div>
+                            
+                        </div>
+                    </div>
+
+                    <!-- Income vs Expense Chart -->
+                    <div class="bg-white rounded-lg border border-gray-200 p-4 mb-4">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="text-sm font-semibold text-gray-800">Income vs Expense</h3>
+                            <select class="text-xs border border-gray-300 rounded-lg px-2 py-1 focus:outline-none">
+                                <option>This Week</option>
+                                <option>This Month</option>
+                                <option>This Year</option>
+                            </select>
+                        </div>
+                        <div class="h-40 flex items-end space-x-1 pt-4">
+                            <!-- Income bars (Green) -->
+                            <div class="flex-1 flex flex-col items-center">
+                                <div class="text-xs text-gray-500 mb-1">M</div>
+                                <div class="w-full flex justify-center space-x-1">
+                                    <div class="w-3 bg-green-400 rounded-t" style="height: 80%"></div>
+                                    <div class="w-3 bg-red-400 rounded-t" style="height: 40%"></div>
+                                </div>
+                            </div>
+                            <div class="flex-1 flex flex-col items-center">
+                                <div class="text-xs text-gray-500 mb-1">T</div>
+                                <div class="w-full flex justify-center space-x-1">
+                                    <div class="w-3 bg-green-400 rounded-t" style="height: 70%"></div>
+                                    <div class="w-3 bg-red-400 rounded-t" style="height: 45%"></div>
+                                </div>
+                            </div>
+                            <div class="flex-1 flex flex-col items-center">
+                                <div class="text-xs text-gray-500 mb-1">W</div>
+                                <div class="w-full flex justify-center space-x-1">
+                                    <div class="w-3 bg-green-400 rounded-t" style="height: 90%"></div>
+                                    <div class="w-3 bg-red-400 rounded-t" style="height: 35%"></div>
+                                </div>
+                            </div>
+                            <div class="flex-1 flex flex-col items-center">
+                                <div class="text-xs text-gray-500 mb-1">T</div>
+                                <div class="w-full flex justify-center space-x-1">
+                                    <div class="w-3 bg-green-400 rounded-t" style="height: 75%"></div>
+                                    <div class="w-3 bg-red-400 rounded-t" style="height: 50%"></div>
+                                </div>
+                            </div>
+                            <div class="flex-1 flex flex-col items-center">
+                                <div class="text-xs text-gray-500 mb-1">F</div>
+                                <div class="w-full flex justify-center space-x-1">
+                                    <div class="w-3 bg-green-400 rounded-t" style="height: 85%"></div>
+                                    <div class="w-3 bg-red-400 rounded-t" style="height: 30%"></div>
+                                </div>
+                            </div>
+                            <div class="flex-1 flex flex-col items-center">
+                                <div class="text-xs text-gray-500 mb-1">S</div>
+                                <div class="w-full flex justify-center space-x-1">
+                                    <div class="w-3 bg-green-400 rounded-t" style="height: 65%"></div>
+                                    <div class="w-3 bg-red-400 rounded-t" style="height: 55%"></div>
+                                </div>
+                            </div>
+                            <div class="flex-1 flex flex-col items-center">
+                                <div class="text-xs text-gray-500 mb-1">S</div>
+                                <div class="w-full flex justify-center space-x-1">
+                                    <div class="w-3 bg-green-400 rounded-t" style="height: 50%"></div>
+                                    <div class="w-3 bg-red-400 rounded-t" style="height: 40%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-center space-x-4 mt-4">
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 bg-green-400 rounded-full mr-2"></div>
+                                <span class="text-xs text-gray-600">Income</span>
+                            </div>
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 bg-red-400 rounded-full mr-2"></div>
+                                <span class="text-xs text-gray-600">Expense</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Bills Table -->
+                    <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                        <div class="p-3 border-b border-gray-200 flex items-center justify-between">
+                            <h3 class="text-sm font-semibold text-gray-800">Recent Bills</h3>
+                            <div class="flex items-center space-x-2">
+                                <div class="relative">
+                                    <i class="fas fa-search absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400 text-xs"></i>
+                                    <input type="text" placeholder="Search..." class="pl-7 pr-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-[#4361ee] focus:border-[#4361ee] outline-none w-40">
+                                </div>
+                                <button class="text-xs text-[#4361ee] hover:text-[#3a0ca3] font-medium px-2 py-1">
+                                    View All
+                                </button>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-xs">
+                                <thead class="bg-gray-50">
+                                    <tr class="text-gray-500">
+                                        <th class="py-2 px-3 text-left font-medium">Bill #</th>
+                                        <th class="py-2 px-3 text-left font-medium">Client</th>
+                                        <th class="py-2 px-3 text-left font-medium">Date</th>
+                                        <th class="py-2 px-3 text-left font-medium">Amount</th>
+                                        <th class="py-2 px-3 text-left font-medium">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="border-t border-gray-100 hover:bg-gray-50">
+                                        <td class="py-2 px-3 font-medium">#INV-001</td>
+                                        <td class="py-2 px-3">John Doe</td>
+                                        <td class="py-2 px-3">Jan 15</td>
+                                        <td class="py-2 px-3">$1,250.00</td>
+                                        <td class="py-2 px-3">
+                                            <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">Paid</span>
+                                        </td>
+                                    </tr>
+                                    <tr class="border-t border-gray-100 hover:bg-gray-50">
+                                        <td class="py-2 px-3 font-medium">#INV-002</td>
+                                        <td class="py-2 px-3">Sarah Smith</td>
+                                        <td class="py-2 px-3">Jan 14</td>
+                                        <td class="py-2 px-3">$850.00</td>
+                                        <td class="py-2 px-3">
+                                            <span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">Pending</span>
+                                        </td>
+                                    </tr>
+                                    <tr class="border-t border-gray-100 hover:bg-gray-50">
+                                        <td class="py-2 px-3 font-medium">#INV-003</td>
+                                        <td class="py-2 px-3">Mike Johnson</td>
+                                        <td class="py-2 px-3">Jan 13</td>
+                                        <td class="py-2 px-3">$2,150.00</td>
+                                        <td class="py-2 px-3">
+                                            <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">Paid</span>
+                                        </td>
+                                    </tr>
+                                    <tr class="border-t border-gray-100 hover:bg-gray-50">
+                                        <td class="py-2 px-3 font-medium">#INV-004</td>
+                                        <td class="py-2 px-3">Emma Davis</td>
+                                        <td class="py-2 px-3">Jan 12</td>
+                                        <td class="py-2 px-3">$650.00</td>
+                                        <td class="py-2 px-3">
+                                            <span class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800">Overdue</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
+
+                <!-- Right Column - Notifications & Quick Actions -->
+                <div class="space-y-3">
+                    <!-- Product Quick Buttons -->
+                    <div class="bg-white rounded-lg border border-gray-200 p-3">
+                        <h4 class="text-xs font-semibold text-gray-800 mb-2">Quick Actions</h4>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button class="text-xs bg-[#4361ee] hover:bg-[#3a0ca3] text-white p-2 rounded flex items-center justify-center space-x-1 transition-colors">
+                                <i class="fas fa-plus text-xs"></i>
+                                <span>Add Product</span>
+                            </button>
+                            <button class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-800 p-2 rounded flex items-center justify-center space-x-1 transition-colors">
+                                <i class="fas fa-box text-xs"></i>
+                                <span>View Stock</span>
+                            </button>
+                            <button class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-800 p-2 rounded flex items-center justify-center space-x-1 transition-colors">
+                                <i class="fas fa-tags text-xs"></i>
+                                <span>Categories</span>
+                            </button>
+                            <button class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-800 p-2 rounded flex items-center justify-center space-x-1 transition-colors">
+                                <i class="fas fa-chart-line text-xs"></i>
+                                <span>Analytics</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Today's Summary Card -->
+                    <div class="bg-white rounded-lg border border-gray-200 p-3">
+                        <div class="flex items-center justify-between mb-2">
+                            <h4 class="text-xs font-semibold text-gray-800">Today's Summary</h4>
+                            <span class="text-xs text-green-600 font-medium">+12%</span>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs text-gray-600">Revenue</span>
+                                <span class="text-xs font-medium text-green-600">$4,850</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs text-gray-600">Expenses</span>
+                                <span class="text-xs font-medium text-red-600">$1,230</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs text-gray-600">Profit</span>
+                                <span class="text-xs font-medium text-green-600">$3,620</span>
+                            </div>
+                            
+                        </div>
+                    </div>
+
+                    <!-- Notifications Card -->
+                    <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                        <div class="p-3 border-b border-gray-200 flex items-center justify-between">
+                            <h3 class="text-sm font-semibold text-gray-800">Recent Activity</h3>
+                            <span class="text-xs px-2 py-0.5 bg-green-100 text-green-800 rounded-full">Live</span>
+                        </div>
+                        <div class="divide-y divide-gray-100 max-h-80 overflow-y-auto thin-scrollbar">
+                            <!-- Notification items -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Invoices Tab -->
+        <div id="invoices-tab" class="tab-content {% if active_tab == 'invoices' %}active{% else %}{% endif %}">
+            <!-- Invoice Action Buttons -->
+            <div class="action-buttons flex flex-wrap gap-3 px-6 py-4">
+                <button class="btn btn-primary bg-gradient-to-r from-[#4361ee] to-[#3a0ca3] hover:from-[#3a0ca3] hover:to-[#2a007a] text-white px-4 py-2.5 rounded-lg font-medium transition-all duration-200 flex items-center space-x-2" id="createInvoiceBtnTab">
+                    <i class="fas fa-plus"></i>
+                    <span>Create Invoice</span>
+                </button>
+                <button class="btn btn-light bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 flex items-center space-x-2">
+                    <i class="fas fa-filter"></i>
+                    <span>Filter</span>
+                </button>
+                <button class="btn btn-light bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 flex items-center space-x-2">
+                    <i class="fas fa-print"></i>
+                    <span>Print</span>
+                </button>
             </div>
 
-            <!-- Stats Cards -->
-            <div class="stats-container">
-                <div class="stat-card stat-1">
-                    <div class="stat-icon">
-                        <i class="fas fa-file-invoice"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3 id="totalInvoices">Loading</h3>
-                        <p>Total Invoices</p>
+            <!-- Invoice Table -->
+            <div class="invoice-section bg-white mx-6 rounded-xl border border-gray-200 overflow-hidden">
+                <div class="section-header flex justify-between items-center p-6 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-800">All Invoices</h3>
+                    <div class="search-box relative">
+                        <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                        <input type="text" placeholder="Search invoices..." class="pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4361ee] focus:border-[#4361ee] outline-none transition-colors duration-200">
                     </div>
                 </div>
-                <div class="stat-card stat-2">
-                    <div class="stat-icon">
-                        <i class="fas fa-check-circle"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3 id="paidAmount">Loading</h3>
-                        <p>Paid Invoices</p>
-                    </div>
-                </div>
-                <div class="stat-card stat-3">
-                    <div class="stat-icon">
-                        <i class="fas fa-clock"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3 id="pendingAmount">Loading</h3>
-                        <p>Pending Invoices</p>
-                    </div>
-                </div>
-                <div class="stat-card stat-4">
-                    <div class="stat-icon">
-                        <i class="fas fa-exclamation-circle"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3 id="overdueAmount">Loading</h3>
-                        <p>Overdue Invoices</p>
-                    </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full" id="invoicesTable">
+                        <thead class="bg-gray-50">
+                            <tr class="text-gray-500">
+                                <th class="py-3 px-6 text-left text-xs font-medium uppercase tracking-wider">Bill No #</th>
+                                <th class="py-3 px-6 text-left text-xs font-medium uppercase tracking-wider">Client</th>
+                                <th class="py-3 px-6 text-left text-xs font-medium uppercase tracking-wider">Date</th>
+                                <th class="py-3 px-6 text-left text-xs font-medium uppercase tracking-wider">Amount</th>
+                                <th class="py-3 px-6 text-left text-xs font-medium uppercase tracking-wider">Status</th>
+                                <th class="py-3 px-6 text-left text-xs font-medium uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200" id="invoicesTableBody">
+                            <!-- Invoices will be dynamically added here -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
+        </div>
+
+         <!-- Products Tab -->
+        <div class="tab-content {% if active_tab == 'products' %}active{% endif %}" id="products">
+            
 
             <!-- Action Buttons -->
-            <div class="action-buttons">
-                <button class="btn btn-primary" id="createInvoiceBtn">
-                    <i class="fas fa-plus"></i> Create Invoice
-                </button>
-                <button class="btn btn-success" id="addProductBtn">
-                    <i class="fas fa-plus-circle"></i> Add Product
-                </button>
-                <button class="btn btn-warning" id="filterInvoicesBtn">
-                    <i class="fas fa-filter"></i> Filter Invoices
-                </button>
-                <button class="btn btn-danger" id="bulkDeleteBtn">
-                    <i class="fas fa-trash"></i> Bulk Delete
-                </button>
-                <button class="btn btn-light" id="printBtn">
-                    <i class="fas fa-print"></i> Print
-                </button>
-                <button class="btn btn-light" id="refreshBtn">
-                    <i class="fas fa-sync"></i> Refresh
-                </button>
-            </div>
-
-            <!-- Invoice Table -->
-            <div class="invoice-section">
-                <div class="section-header">
-                    <h3>Recent Bills</h3>
-                    <div class="search-box">
-                        <i class="fas fa-search"></i>
-                        <input type="text" id="searchInput" placeholder="Search invoices...">
-                    </div>
-                </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Bill No #</th>
-                            <th>Client</th>
-                            <th>Date</th>
-                            <th>Amount</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Invoices will be dynamically added here -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-
-        
-        <!-- Invoices Tab -->
-        <div class="tab-content {% if active_tab == 'invoices' %}active{% endif %}" id="invoices-tab">
-            <div class="header">
-                <h2>Invoices</h2>
-                <div class="user-info">
-                    <div class="user-avatar">{{ request.user.username.0 | upper  }}</div>
-                    <div>
-                        <div>{{ request.user.username }}</div>
-                        <div style="font-size: 12px; color: var(--gray);">Administrator</div>
+            <div class="bg-white border-b border-gray-200 px-5 py-3">
+                <div class="flex items-center gap-2">
+                    <button  class="text-sm bg-[#4361ee] hover:bg-[#3a0ca3] text-white px-3 py-2 rounded-lg font-medium flex items-center transition-colors" id="addNewProductBtn">
+                        <i class="fas fa-plus text-xs mr-1.5"></i>
+                        Add New
+                    </button>
+                    <button class="text-sm bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-3 py-2 rounded-lg font-medium flex items-center transition-colors" id="importProductsBtn">
+                        <i class="fas fa-file-import text-xs mr-1.5"></i>
+                        Import
+                    </button>
+                    <button class="text-sm bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-3 py-2 rounded-lg font-medium flex items-center transition-colors" id="exportProductsBtn">
+                        <i class="fas fa-file-export text-xs mr-1.5"></i>
+                        Export
+                    </button>
+                    
+                    <div class="ml-auto flex items-center space-x-3">
+                        <div class="relative">
+                            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm"></i>
+                            <input type="text" id="productSearchInput" placeholder="Search products..." class="pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4361ee] focus:border-[#4361ee] outline-none w-48">
+                        </div>
+                        <select class="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#4361ee] focus:border-[#4361ee] outline-none bg-white">
+                            <option>All Categories</option>
+                            <option>Electronics</option>
+                            <option>Clothing</option>
+                        </select>
                     </div>
                 </div>
             </div>
 
-            <!-- Invoice Action Buttons -->
-            <div class="action-buttons">
-                <button class="btn btn-primary" id="createInvoiceBtnTab">
-                    <i class="fas fa-plus"></i> Create Invoice
-                </button>
-                <button class="btn btn-light">
-                    <i class="fas fa-filter"></i> Filter
-                </button>
-                <button class="btn btn-light">
-                    <i class="fas fa-print"></i> Print
-                </button>
-            </div>
+            
 
-            <!-- Invoice Table -->
-            <div class="invoice-section">
-                <div class="section-header">
-                    <h3>All Invoices</h3>
-                    <div class="search-box">
-                        <i class="fas fa-search"></i>
-                        <input type="text" placeholder="Search invoices...">
+            <!-- Products Table -->
+            <div class="flex-1 overflow-auto p-4">
+                <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                    <div class="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
+                        <h3 class="text-sm font-semibold text-gray-800">Products List</h3>
+                        <div class="flex items-center space-x-2">
+                            <button class="text-xs text-gray-600 hover:text-gray-800 px-2 py-1 rounded hover:bg-gray-100 transition-colors">
+                                <i class="fas fa-sync-alt mr-1"></i>
+                                Refresh
+                            </button>
+                            <button class="text-xs text-gray-600 hover:text-gray-800 px-2 py-1 rounded hover:bg-gray-100 transition-colors">
+                                <i class="fas fa-cog mr-1"></i>
+                                Settings
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm" id="productsTable">
+                            <thead class="bg-gray-50">
+                                <tr class="text-gray-500">
+                                    <th class="py-2 px-4 text-left font-medium">
+                                        <input type="checkbox" class="rounded border-gray-300 text-[#4361ee] focus:ring-2 focus:ring-[#4361ee]">
+                                    </th>
+                                    <th class="py-2 px-4 text-left font-medium">Product</th>
+                                    <th class="py-2 px-4 text-left font-medium">Category</th>
+                                    <th class="py-2 px-4 text-left font-medium">Cost</th>
+                                    <th class="py-2 px-4 text-left font-medium">Price</th>
+                                    <th class="py-2 px-4 text-left font-medium">Quantity</th>
+                                    <th class="py-2 px-4 text-left font-medium">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200" id="productsTableBody">
+                                <!-- Products will be dynamically added here -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="px-4 py-2.5 border-t border-gray-200 flex items-center justify-between">
+                        <div class="text-sm text-gray-500">
+                            Showing <span class="font-medium">3</span> of <span class="font-medium">{{product_number}}</span> products
+                        </div>
+                        <div class="flex items-center space-x-1">
+                            <button class="text-sm border border-gray-300 rounded-lg px-2.5 py-1 hover:bg-gray-50 transition-colors">
+                                Previous
+                            </button>
+                            <button class="text-sm bg-[#4361ee] text-white rounded-lg px-2.5 py-1 hover:bg-[#3a0ca3] transition-colors">
+                                1
+                            </button>
+                            <button class="text-sm border border-gray-300 rounded-lg px-2.5 py-1 hover:bg-gray-50 transition-colors">
+                                2
+                            </button>
+                            <button class="text-sm border border-gray-300 rounded-lg px-2.5 py-1 hover:bg-gray-50 transition-colors">
+                                Next
+                            </button>
+                        </div>
                     </div>
                 </div>
-                <table id="invoicesTable">
-                    <thead>
-                        <tr>
-                            <th>Bill No #</th>
-                            <th>Client</th>
-                            <th>Date</th>
-                            <th>Amount</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="invoicesTableBody">
-                        <!-- Invoices will be dynamically added here -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
 
-        <!-- Products Tab -->
-        <div class="tab-content {% if active_tab == 'products' %}active{% endif %}" id="products">
-            <div class="header">
-                <h2>Product Management</h2>
-                <div class="user-info">
-                    <div class="user-avatar">{{ request.user.username.0 | upper  }}</div>
-                    <div>
-                        <div>{{ request.user.username }}</div>
-                        <div style="font-size: 12px; color: var(--gray);">Administrator</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="action-buttons">
-                <button class="btn btn-primary" id="addNewProductBtn">
-                    <i class="fas fa-plus"></i> Add New Product
-                </button>
-                <button class="btn btn-light" id="importProductsBtn">
-                    <i class="fas fa-file-import"></i> Import Products
-                </button>
-                <button class="btn btn-light" id="exportProductsBtn">
-                    <i class="fas fa-file-export"></i> Export Products
-                </button>
-            </div>
-
-            <div class="invoice-section">
-                <div class="section-header">
-                    <h3 id ="productCount">All Products({{product_number}})</h3>
-                    <div class="search-box">
-                        <i class="fas fa-search"></i>
-                        <input type="text" id="productSearchInput" placeholder="Search products...">
-                    </div>
-                </div>
-                    <table id="productsTable">
-                    <thead>
-                        <tr>
-                            <th>S.N.</th>
-                            <th>Product Name</th>
-                            <th>Category</th>
-                            <th>Purchase Price</th>
-                            <th>Selling Price</th>
-                            <th>Quantity</th>
-                        </tr>
-                    </thead>
-                    <tbody id="productsTableBody">
-                        <!-- products will be dynamically added here -->
-                    </tbody>
-                </table>
-                {% comment %} </div> {% endcomment %}
+               
             </div>
         </div>
 
         <!-- Clients Tab -->
         <div class="tab-content {% if active_tab == 'clients' %}active{% endif %}" id="clients">
-            <div class="header">
-                <h2>Client Management</h2>
-                <div class="user-info">
-                    <div class="user-avatar">{{ request.user.username.0 | upper  }}</div>
-                    <div>
-                        <div>{{ request.user.username }}</div>
-                        <div style="font-size: 12px; color: var(--gray);">Administrator</div>
+           
+
+            <!-- Action Buttons -->
+            <div class="bg-white border-b border-gray-200 px-5 py-3">
+                <div class="flex items-center gap-2">
+                    <button class="text-sm bg-[#4361ee] hover:bg-[#3a0ca3] text-white px-3 py-2 rounded-lg font-medium flex items-center transition-colors" id="addClientBtn">
+                        <i class="fas fa-plus text-xs mr-1.5"></i>
+                        Add New
+                    </button>
+                    <button class="text-sm bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-3 py-2 rounded-lg font-medium flex items-center transition-colors" id="importClientsBtn">
+                        <i class="fas fa-file-import text-xs mr-1.5"></i>
+                        Import
+                    </button>
+                    <button class="text-sm bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-3 py-2 rounded-lg font-medium flex items-center transition-colors" id="exportClientsBtn">
+                        <i class="fas fa-file-export text-xs mr-1.5"></i>
+                        Export
+                    </button>
+                    <button class="text-sm bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-2 rounded-lg font-medium flex items-center transition-colors" id="bulkClientActionBtn">
+                        <i class="fas fa-cog text-xs mr-1.5"></i>
+                        Bulk Actions
+                    </button>
+                    
+                    <div class="ml-auto flex items-center space-x-3">
+                        <div class="relative">
+                            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm"></i>
+                            <input type="text" id="clientSearchInput" placeholder="Search clients..." class="pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4361ee] focus:border-[#4361ee] outline-none w-48">
+                        </div>
+                        <select class="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#4361ee] focus:border-[#4361ee] outline-none bg-white">
+                            <option>All Clients</option>
+                            <option>Active</option>
+                            <option>Inactive</option>
+                        </select>
                     </div>
                 </div>
             </div>
 
-            <!-- Client Action Buttons -->
-            <div class="action-buttons">
-                <button class="btn btn-primary" id="addClientBtn">
-                    <i class="fas fa-plus"></i> Add New Client
-                </button>
-                <button class="btn btn-light" id="importClientsBtn">
-                    <i class="fas fa-file-import"></i> Import Clients
-                </button>
-                <button class="btn btn-light" id="exportClientsBtn">
-                    <i class="fas fa-file-export"></i> Export Clients
-                </button>
-                <button class="btn btn-warning" id="bulkClientActionBtn">
-                    <i class="fas fa-cog"></i> Bulk Actions
-                </button>
-            </div>
+            <!-- Stats Cards -->
+            <div class="bg-gray-50 border-b border-gray-200 px-5 py-4">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="bg-white rounded-lg border border-gray-200 p-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-xs text-gray-500 mb-1">Total Clients</p>
+                                <h3 class="text-2xl font-bold text-gray-800" id="totalClients">0</h3>
+                            </div>
+                            <div class="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-users text-[#4361ee]"></i>
+                            </div>
+                        </div>
+                    </div>
 
-            <!-- Client Stats -->
-            <div class="stats-container">
-                <div class="stat-card stat-1">
-                    <div class="stat-icon">
-                        <i class="fas fa-users"></i>
+                    <div class="bg-white rounded-lg border border-gray-200 p-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-xs text-gray-500 mb-1">Active Clients</p>
+                                <h3 class="text-2xl font-bold text-gray-800" id="activeClients">0</h3>
+                            </div>
+                            <div class="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-star text-green-500"></i>
+                            </div>
+                        </div>
                     </div>
-                    <div class="stat-info">
-                        <h3 id="totalClients">0</h3>
-                        <p>Total Clients</p>
+
+                    <div class="bg-white rounded-lg border border-gray-200 p-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-xs text-gray-500 mb-1">Total Invoices</p>
+                                <h3 class="text-2xl font-bold text-gray-800" id="clientInvoices">0</h3>
+                            </div>
+                            <div class="w-10 h-10 bg-purple-50 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-file-invoice text-purple-500"></i>
+                            </div>
+                        </div>
                     </div>
-                </div>
-                <div class="stat-card stat-2">
-                    <div class="stat-icon">
-                        <i class="fas fa-star"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3 id="activeClients">0</h3>
-                        <p>Active Clients</p>
-                    </div>
-                </div>
-                <div class="stat-card stat-3">
-                    <div class="stat-icon">
-                        <i class="fas fa-file-invoice"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3 id="clientInvoices">0</h3>
-                        <p>Total Invoices</p>
-                    </div>
-                </div>
-                <div class="stat-card stat-4">
-                    <div class="stat-icon">
-                        <i class="fas fa-dollar-sign"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3 id="clientRevenue">$0</h3>
-                        <p>Total Revenue</p>
+
+                    <div class="bg-white rounded-lg border border-gray-200 p-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-xs text-gray-500 mb-1">Total Revenue</p>
+                                <h3 class="text-2xl font-bold text-gray-800" id="clientRevenue">$0</h3>
+                            </div>
+                            <div class="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-dollar-sign text-green-500"></i>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Client List Section -->
-            <div class="invoice-section">
-                <div class="section-header">
-                    <h3>All Clients</h3>
-                    <div class="search-box">
-                        <i class="fas fa-search"></i>
-                        <input type="text" id="clientSearchInput" placeholder="Search clients...">
+            <!-- Clients Table -->
+            <div class="flex-1 overflow-auto p-4">
+                <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                    <div class="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
+                        <h3 class="text-sm font-semibold text-gray-800">All Clients</h3>
+                        <div class="flex items-center space-x-2">
+                            <button class="text-xs text-gray-600 hover:text-gray-800 px-2 py-1 rounded hover:bg-gray-100 transition-colors">
+                                <i class="fas fa-sync-alt mr-1"></i>
+                                Refresh
+                            </button>
+                            <button class="text-xs text-gray-600 hover:text-gray-800 px-2 py-1 rounded hover:bg-gray-100 transition-colors">
+                                <i class="fas fa-cog mr-1"></i>
+                                Settings
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm" id="clientsTable">
+                            <thead class="bg-gray-50">
+                                <tr class="text-gray-500">
+                                    <th class="py-2 px-4 text-left font-medium">Client ID</th>
+                                    <th class="py-2 px-4 text-left font-medium">Name</th>
+                                    <th class="py-2 px-4 text-left font-medium">Email</th>
+                                    <th class="py-2 px-4 text-left font-medium">Phone</th>
+                                    <th class="py-2 px-4 text-left font-medium">Total Invoices</th>
+                                    <th class="py-2 px-4 text-left font-medium">Total Spent</th>
+                                    <th class="py-2 px-4 text-left font-medium">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200" id="clientsTableBody">
+                               
+                                <!-- More rows will be dynamically added here -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Table Footer -->
+                    <div class="px-4 py-2.5 border-t border-gray-200 flex items-center justify-between">
+                        <div class="text-sm text-gray-500">
+                            Showing <span class="font-medium">1</span> of <span class="font-medium">50</span> clients
+                        </div>
+                        <div class="flex items-center space-x-1">
+                            <button class="text-sm border border-gray-300 rounded-lg px-2.5 py-1 hover:bg-gray-50 transition-colors">
+                                Previous
+                            </button>
+                            <button class="text-sm bg-[#4361ee] text-white rounded-lg px-2.5 py-1 hover:bg-[#3a0ca3] transition-colors">
+                                1
+                            </button>
+                            <button class="text-sm border border-gray-300 rounded-lg px-2.5 py-1 hover:bg-gray-50 transition-colors">
+                                2
+                            </button>
+                            <button class="text-sm border border-gray-300 rounded-lg px-2.5 py-1 hover:bg-gray-50 transition-colors">
+                                Next
+                            </button>
+                        </div>
                     </div>
                 </div>
-                <table id="clientsTable">
-                    <thead>
-                        <tr>
-                            <th>Client ID</th>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Address</th>
-                            <th>Phone</th>
-                            <th>Total Invoices</th>
-                            <th>Total Spent</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="clientsTableBody">
-                        <!-- Clients will be dynamically added here -->
-                    </tbody>
-                </table>
+
+                
             </div>
         </div>
+        
+    </div>
 
-        <div class="footer">
-            <p>InvoicePro Billing System &copy; 2023. All rights reserved.</p>
+
+    
+</div>
+
+<!-- INVOICE VIEW MODAL (Added this section) -->
+
+<!-- Add Product Modal - WITH SUGGESTIONS -->
+<div id="addProductModal" class="app-modal fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 hidden" id="addProductModal">
+    <div class="relative top-10 mx-auto p-0 w-full max-w-2xl">
+        <div class="relative bg-white rounded-lg shadow-lg">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t border-gray-200">
+                <h3 class="text-xl font-semibold text-gray-900">Add New Product</h3>
+                <button class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-2xl p-1.5 ml-auto inline-flex items-center" id="closeProductModal">
+                    &times;
+                </button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="p-4 md:p-5 space-y-4">
+                <!-- Product Name -->
+                <div class="relative">
+                    <label for="productName" class="block mb-2 text-sm font-medium text-gray-900">Product Name *</label>
+                    <input type="text" id="productName" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                </div>
+
+                <!-- Product Quantity -->
+                <div class="productQuantities">
+                    <div class="grid grid-cols-1 gap-4">
+                        <div>
+                            <label for="productQuantity" class="block mb-2 text-sm font-medium text-gray-900">Product Quantity</label>
+                            <input type="number" id="productQuantity" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="0.00" min="0" step="0.01" required>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Price and Category Row -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Cost Price -->
+                    <div>
+                        <label for="productCostPrice" class="block mb-2 text-sm font-medium text-gray-900">Cost Price ($) *</label>
+                        <input type="number" id="productCostPrice" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="0.00" min="0" step="0.01" required>
+                    </div>
+
+                    <!-- Selling Price -->
+                    <div>
+                        <label for="productSellingPrice" class="block mb-2 text-sm font-medium text-gray-900">Selling Price ($) *</label>
+                        <input type="number" id="productSellingPrice" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="0.00" min="0" step="0.01" required>
+                    </div>
+
+                    <!-- Category -->
+                    <div class="relative">
+                        <label for="productCategory" class="block mb-2 text-sm font-medium text-gray-900">Category</label>
+                        <input type="text" id="productCategory" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="Type category name (Tab to complete)...">
+                    </div>
+                </div>
+
+                <!-- Low Stock Alert -->
+                <div class="flex justify-between items-center w-full mb-4 pt-4 border-t border-gray-200">
+                    <h2 class="flex items-center gap-2 text-lg font-medium text-gray-900">
+                        Low Stock Alert
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z" />
+                        </svg>
+                    </h2>
+
+                    <label class="relative inline-flex w-[45px] h-[28px] cursor-pointer">
+                        <input type="checkbox" class="sr-only peer" />
+                        <!-- Track -->
+                        <span class="absolute inset-0 bg-gray-300 rounded-full transition peer-checked:bg-blue-500"></span>
+                        <!-- Knob -->
+                        <span class="absolute left-[3px] top-[3px] w-[22px] h-[22px] bg-white rounded-full transition-transform duration-300 peer-checked:translate-x-[9px]"></span>
+                    </label>
+                </div>
+
+                <!-- Low Stock Quantity (Hidden by default) -->
+                <div id="lowStockConstraint" class="flex flex-col gap-2 hidden">
+                    <div class="flex flex-col w-full">
+                        <label class="block mb-2 text-sm font-medium text-gray-900">Low Stock Quantity</label>
+                        <input id="lowStockQuantity" type="text" placeholder="Enter Stock Quantity" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="flex items-center justify-end p-4 md:p-5 border-t border-gray-200 rounded-b gap-3">
+                <button class="px-5 py-2.5 text-sm font-medium text-gray-900 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200" id="cancelProductBtn">Cancel</button>
+                <button class="px-5 py-2.5 text-sm font-medium text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-300" id="saveProductBtn">Save Product</button>
+                <button class="px-5 py-2.5 text-sm font-medium text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-300 hidden" id="updateProductBtn">Update Product</button>
+            </div>
+
+            <!-- Category Database (Hidden by default) -->
+            <div class="category-db absolute z-10 bg-white border border-gray-300 rounded-lg shadow-lg hidden" id="categoryDB">
+                <ul id="catelists" class="py-2 text-sm text-gray-700">
+                    <!-- dynamically all the list are here -->
+                    <li id="general" class="px-4 py-2 hover:bg-gray-100 cursor-pointer">General</li>
+                </ul>
+            </div>
         </div>
     </div>
 </div>
@@ -420,30 +1053,42 @@
             <h3>Add New Product</h3>
             <button class="close-btn" id="closeProductModal">&times;</button>
         </div>
-        <div class="modal-body">
-            <div class="form-group" style="position: relative;">
-                <label for="productName">Product Name *</label>
-                <input type="text" id="productName" class="form-control ">
-            </div>
-            <div class = "productQuantities">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="productQuantity" class="updateProduct">Product Quantity</label>
-                        <input type="number" id="productQuantity" class="form-control" placeholder="0.00" min="0" step="0.01" required>
+        <div class="app-modal-choice">
+            <button type="button" class="app-tab-link active" data-tab="client-info">Client Info</button>
+            <button type="button" class="app-tab-link" data-tab="additional-info">Additional Info</button>
+        </div>
+        <div class="app-modal-body">
+            <div id="client-info" class="app-tab-content active">
+                <div class="app-form-group">
+                    <label for="clientNameInput">Client Name *</label>
+                    <input type="text" id="clientNameInput" class="app-form-control" placeholder="Enter client name" required>
+                </div>
+                <div class="app-form-row">
+                    <div class="app-form-col">
+                        <div class="app-form-group">
+                            <label for="clientPhoneInput">Phone Number *</label>
+                            <input type="tel" id="clientPhoneInput" class="app-form-control" placeholder="Enter phone number" required>
+                        </div>
+                    </div>
+                    <div class="app-form-col">
+                        <div class="app-form-group">
+                            <label for="clientEmailInput">Email</label>
+                            <input type="email" id="clientEmailInput" class="app-form-control" placeholder="Enter email">
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="form-row">
-                <div class="form-col">
-                    <div class="form-group">
-                        <label for="productCostPrice">Cost Price ($) *</label>
-                        <input type="number" id="productCostPrice" class="form-control" placeholder="0.00" min="0" step="0.01" required>
-                    </div>
+            <div id="additional-info" class="app-tab-content">
+                <div class="app-form-group">
+                    <label for="clientAddressInput">Address</label>
+                    <textarea id="clientAddressInput" class="app-form-control" rows="2" placeholder="Enter address"></textarea>
                 </div>
-                <div class="form-col">
-                    <div class="form-group">
-                        <label for="productSellingPrice">Selling Price ($) *</label>
-                        <input type="number" id="productSellingPrice" class="form-control" placeholder="0.00" min="0" step="0.01" required>
+                <div class="app-form-row">
+                    <div class="app-form-col">
+                        <div class="app-form-group">
+                            <label for="clientPanNoInput">PAN Number</label>
+                            <input type="text" id="clientPanNoInput" class="app-form-control" placeholder="Enter PAN Number">
+                        </div>
                     </div>
                 </div>
                 <div class="form-col">
@@ -506,10 +1151,9 @@
             </div>
 
         </div>
-        <div class="modal-footer">
-            <button class="btn btn-light" id="cancelProductBtn">Cancel</button>
-            <button class="btn btn-primary" id="saveProductBtn">Save Product</button>
-            <button class="btn btn-primary" id="updateProductBtn">Update Product</button>
+        <div class="app-modal-footer">
+            <button class="app-btn app-btn-light" id="cancelClientBtn">Cancel</button>
+            <button class="app-btn app-btn-primary" id="saveClientBtn">Save Client</button>
         </div>
         <div class="category-db" id="categoryDB">
             <ul id="catelists">
@@ -520,63 +1164,315 @@
     </div>
 </div>
 
-{% comment %} <!--stock buttons-->
-<div class="stock-popup" id="addStockPopup">
-    <button class="popup-btn" id="addStock">Add Stock</button>
-    <button class="popup-btn" id="removeStock">Remove Stock</button>
-</div> {% endcomment %}
-
-<!-- Add Client Modal - SIMPLIFIED -->
-<div class="modal" id="addClientModal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3>Add New Client</h3>
-            <button class="close-btn" id="closeClientModal">&times;</button>
+<!-- Create Invoice Modal -->
+<div class="app-modal" id="createInvoiceModal">
+    <div class="app-modal-content" style="max-width: 800px;">
+        <div class="app-modal-header">
+            <h3>Create New Invoice</h3>
+            <button class="app-modal-close" id="closeInvoiceModal">&times;</button>
         </div>
-        <div class = "modal-choice">
-            <button type="button" class="tab-links active" data-tab="client-info">Client Info</button>
-            <button type="button" class="tab-links" data-tab="additional-info">Additional Info</button>
-        </div>
-        <div class="modal-body">
-            <!--Client info-->
-            <div id="client-info" class="tab-contents active">
-            <div class="form-group">
-                <label for="clientNameInput">Client Name *</label>
-                <input type="text" id="clientNameInput" class="form-control" placeholder="Enter client name" required>
-            </div>
-            
-            <div class="form-row">
-                <div class="form-col">
-                    <div class="form-group">
-                        <label for="clientPhoneInput">Phone Number *</label>
-                        <input type="number" id="clientPhoneInput" class="form-control" placeholder="Enter phone number" required>
+        <div class="app-modal-body">
+            <div class="app-form-row">
+                <div class="app-form-col">
+                    <div class="app-form-group">
+                        <label for="invoiceClient">Client *</label>
+                        <select id="invoiceClient" class="app-form-control" required>
+                            <option value="">Select a client</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="app-form-col">
+                    <div class="app-form-group">
+                        <label for="invoiceDate">Invoice Date *</label>
+                        <input type="date" id="invoiceDate" class="app-form-control" required>
                     </div>
                 </div>
             </div>
-        </div>
-        
-        <!--Additional info-->
-        <div id="additional-info" class="tab-contents">
-            <div class="form-group">
-                <label for="clientAddressInput">Address </label>
-                <input type="text" id="clientAddressInput" class="form-control" placeholder="Enter address">
+            <div class="app-form-group">
+                <label>Add Products</label>
+                <div style="position: relative;">
+                    <input type="text" id="invoiceProductSearch" class="app-form-control" placeholder="Search products...">
+                    <div class="search-hint" id="invoice-product-search-hint"></div>
+                </div>
             </div>
-            <div class="form-group">
-                <label for="clientEmailInput">Email </label>
-                <input type="email" id="clientEmailInput" class="form-control" placeholder="Enter email">
-            </div>
-            <div class="form-group">
-                <label for="clientPanNoInput">Pan No </label>
-                <input type="number" id="clientPanNoInput" class="form-control" placeholder="Enter Pan Number">
+            <div class="app-form-group">
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background-color: #f9fafb;">
+                                <th style="padding: 10px; text-align: left;">Product</th>
+                                <th style="padding: 10px; text-align: left;">Price</th>
+                                <th style="padding: 10px; text-align: left;">Quantity</th>
+                                <th style="padding: 10px; text-align: left;">Total</th>
+                                <th style="padding: 10px; text-align: left;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="invoiceItems">
+                            <!-- Invoice items will be added here -->
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="3" style="text-align: right; padding: 10px; font-weight: bold;">Total:</td>
+                                <td id="invoiceTotal" style="padding: 10px; font-weight: bold;">$0.00</td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
             </div>
         </div>
-        </div>
-        <div class="modal-footer">
-            <button class="btn btn-light" id="cancelClientBtn">Cancel</button>
-            <button class="btn btn-primary" id="saveClientBtn">Save Client</button>
+        <div class="app-modal-footer">
+            <button class="app-btn app-btn-light" id="cancelInvoiceBtn">Cancel</button>
+            <button class="app-btn app-btn-primary" id="saveInvoiceBtn">Create Invoice</button>
         </div>
     </div>
 </div>
+
+<!-- Modals Javascripts -->
+ <script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Modal functionality
+    const modals = {
+        product: document.getElementById('addProductModal'),
+        client: document.getElementById('addClientModal'),
+        invoice: document.getElementById('createInvoiceModal')
+    };
+
+    const modalButtons = {
+        product: document.getElementById('addNewProductBtn'),
+        client: document.getElementById('addClientBtn'),
+        invoice: document.getElementById('createInvoiceBtnTab')
+    };
+
+    const closeButtons = {
+        product: document.getElementById('closeProductModal'),
+        client: document.getElementById('closeClientModal'),
+        invoice: document.getElementById('closeInvoiceModal')
+    };
+
+    const cancelButtons = {
+        product: document.getElementById('cancelProductBtn'),
+        client: document.getElementById('cancelClientBtn'),
+        invoice: document.getElementById('cancelInvoiceBtn')
+    };
+
+    // Function to open modal
+    function openModal(modal) {
+        if (modal) {
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        }
+    }
+
+    // Function to close modal
+    function closeModal(modal) {
+        if (modal) {
+            modal.classList.remove('active');
+            document.body.style.overflow = 'auto'; // Restore scrolling
+        }
+    }
+
+    // Set up event listeners for opening modals
+    if (modalButtons.product) {
+        modalButtons.product.addEventListener('click', () => openModal(modals.product));
+    }
+    
+    if (modalButtons.client) {
+        modalButtons.client.addEventListener('click', () => openModal(modals.client));
+    }
+    
+    if (modalButtons.invoice) {
+        modalButtons.invoice.addEventListener('click', () => openModal(modals.invoice));
+    }
+
+    // Set up event listeners for closing modals
+    Object.keys(closeButtons).forEach(key => {
+        if (closeButtons[key]) {
+            closeButtons[key].addEventListener('click', () => closeModal(modals[key]));
+        }
+    });
+
+    Object.keys(cancelButtons).forEach(key => {
+        if (cancelButtons[key]) {
+            cancelButtons[key].addEventListener('click', () => closeModal(modals[key]));
+        }
+    });
+
+    // Close modal when clicking outside the modal content
+    Object.values(modals).forEach(modal => {
+        if (modal) {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeModal(modal);
+                }
+            });
+        }
+    });
+
+    // Tab functionality for modals
+    const tabLinks = document.querySelectorAll('.app-tab-link');
+    tabLinks.forEach(link => {
+        link.addEventListener('click', function() {
+            const tabName = this.getAttribute('data-tab');
+            const tabContainer = this.closest('.app-modal-content');
+            
+            // Remove active class from all tabs in this modal
+            tabContainer.querySelectorAll('.app-tab-link').forEach(t => t.classList.remove('active'));
+            tabContainer.querySelectorAll('.app-tab-content').forEach(t => t.classList.remove('active'));
+            
+            // Add active class to clicked tab
+            this.classList.add('active');
+            tabContainer.querySelector(`#${tabName}`).classList.add('active');
+        });
+    });
+
+    // Set current date for invoice date input
+    const invoiceDateInput = document.getElementById('invoiceDate');
+    if (invoiceDateInput) {
+        const today = new Date().toISOString().split('T')[0];
+        invoiceDateInput.value = today;
+        invoiceDateInput.min = today;
+    }
+
+    // Search functionality for product category
+    const categoryInput = document.getElementById('productCategory');
+    const categoryHint = document.getElementById('product-category-search-hint');
+    
+    if (categoryInput && categoryHint) {
+        categoryInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const categories = window.djangoData.product_cat || [];
+            
+            if (searchTerm.length > 0) {
+                const filtered = categories.filter(cat => 
+                    cat.name.toLowerCase().includes(searchTerm)
+                );
+                
+                if (filtered.length > 0) {
+                    categoryHint.innerHTML = filtered.map(cat => 
+                        `<div class="search-hint-item" data-value="${cat.name}">${cat.name}</div>`
+                    ).join('');
+                    categoryHint.style.display = 'block';
+                } else {
+                    categoryHint.innerHTML = '<div class="search-hint-item">No categories found</div>';
+                    categoryHint.style.display = 'block';
+                }
+            } else {
+                categoryHint.style.display = 'none';
+            }
+        });
+
+        // Handle click on category suggestion
+        categoryHint.addEventListener('click', function(e) {
+            if (e.target.classList.contains('search-hint-item')) {
+                categoryInput.value = e.target.getAttribute('data-value');
+                categoryHint.style.display = 'none';
+            }
+        });
+
+        // Hide hint when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!categoryInput.contains(e.target) && !categoryHint.contains(e.target)) {
+                categoryHint.style.display = 'none';
+            }
+        });
+    }
+
+    // Keyboard shortcuts for modals
+    document.addEventListener('keydown', function(e) {
+        // Close modal on Escape key
+        if (e.key === 'Escape') {
+            Object.values(modals).forEach(modal => {
+                if (modal && modal.classList.contains('active')) {
+                    closeModal(modal);
+                }
+            });
+        }
+    });
+});
+</script>
+
+<!-- End Modal Javascript -->
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded, initializing tabs...');
+    
+    // Get all menu items
+    const menuItems = document.querySelectorAll('.menu-item');
+    const pageTitle = document.getElementById('page-title');
+    
+    // Debug: Log all tab contents
+    const tabContents = document.querySelectorAll('.tab-content');
+    console.log('Found tab contents:', tabContents.length);
+    tabContents.forEach(tab => {
+        console.log('Tab id:', tab.id, 'active class:', tab.classList.contains('active'));
+    });
+    
+    // Function to switch tabs
+    function switchTab(tabName) {
+        console.log('Switching to tab:', tabName);
+        
+        // Hide all tabs
+        document.querySelectorAll('.tab-content').forEach(tab => {
+            tab.classList.remove('active');
+            console.log('Hiding tab:', tab.id);
+        });
+        
+        // Show selected tab
+        const selectedTab = document.getElementById(tabName + '-tab');
+        if (selectedTab) {
+            selectedTab.classList.add('active');
+            console.log('Showing tab:', selectedTab.id);
+        } else {
+            console.error('Tab not found:', tabName + '-tab');
+        }
+        
+        // Update page title
+        if (tabName === 'dashboard') {
+            pageTitle.textContent = 'Dashboard Overview';
+        } else if (tabName === 'invoices') {
+            pageTitle.textContent = 'Invoices';
+        } else if (tabName === 'products') {
+            pageTitle.textContent = 'Products';
+        } else if (tabName === 'clients') {
+            pageTitle.textContent = 'Customers';
+        } else {
+            pageTitle.textContent = tabName.charAt(0).toUpperCase() + tabName.slice(1);
+        }
+        
+        // Update active menu item
+        menuItems.forEach(item => {
+            item.classList.remove('bg-[#4361ee]', 'border-l-4', 'border-white');
+            if (item.dataset.tab === tabName) {
+                item.classList.add('bg-[#4361ee]', 'border-l-4', 'border-white');
+            }
+        });
+    }
+    
+    // Add click event listeners to menu items
+    menuItems.forEach(item => {
+        item.addEventListener('click', function() {
+            const tabName = this.dataset.tab;
+            console.log('Menu item clicked:', tabName);
+            switchTab(tabName);
+        });
+    });
+    
+    // Initialize with current active tab from Django
+    const initialTab = "{{ active_tab|default:'dashboard' }}";
+    console.log('Initial tab from Django:', initialTab);
+    switchTab(initialTab);
+});
+</script>
+
+
+
+<!-- INVOICE VIEW MODAL (Added this section) -->
+{% include "website/bill_layout.html" %}
+{% comment %} {% include "website/product.html" %} {% endcomment %}
+
 
 {% endblock %}
 {% block extra_js %}
@@ -590,10 +1486,8 @@ window.djangoData = {
     csrfToken: "{{ csrf_token }}",
     active_tab: "{{ active_tab|default:'dashboard' }}"
 };
-</script>
 
-<script>
-// SAFETY CHECK - Add this right before loading bill.js
+// SAFETY CHECK
 if (typeof window.djangoData === 'undefined') {
     window.djangoData = {
         products: [],
@@ -605,7 +1499,7 @@ if (typeof window.djangoData === 'undefined') {
     };
 }
 
-console.log('Active tab from Django:', window.djangoData.active_tab);
+console.log('Active tab:', window.djangoData.active_tab);
 </script>
 
 <script>const csrfToken = "{{ csrf_token }}";</script>
