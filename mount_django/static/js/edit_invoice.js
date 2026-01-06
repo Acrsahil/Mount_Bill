@@ -50,9 +50,19 @@ export function editInvoiceSection(orderId){
                 input.value = data.invoice.items[i].product_name;
                 presstab(input)
 
-                document.getElementsByClassName("item-quantity")[i].value = data.invoice.items[i].quantity
+                const qty = document.getElementsByClassName("item-quantity")[i]
+                qty.value = data.invoice.items[i].quantity
+                presstab(qty)
+
+
+
+                const discount = document.getElementsByClassName("discount-percent-input")[i]
+                discount.value = data.invoice.items[i].discount
+                presstab(discount)
+
                 document.getElementsByClassName("item-price")[i].value = data.invoice.items[i].rate
                 document.getElementsByClassName("discount-percent-input")[i].value = data.invoice.items[i].discount_percent
+                console.log("item-quantity ho haii yoooo",data.invoice.items[i].quantity)
             }
             document.getElementsByClassName("remove-item-btn")[data.invoice.items.length].click()
 

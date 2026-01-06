@@ -273,10 +273,13 @@ export function openAddProductModal(addProductModal) {
     document.getElementById('updateProductBtn').style.display = 'none';
     
     // reset modal title and button after edit 
-    document.querySelector('#addProductModal .modal-header h3').textContent = 'Add New Product';
+    
+    if(document.querySelector('#addProductModal .modal-header h3')){
+        document.querySelector('#addProductModal .modal-header h3').textContent = 'Add New Product';
+    }
     document.getElementById('saveProductBtn').style.display = 'flex';
     const quantity = document.querySelector('.productQuantities');
-        quantity.style.display = 'flex';
+    quantity.style.display = 'flex';
 
     // Show modal
     addProductModal.style.display = 'flex';
@@ -307,7 +310,7 @@ export function addInvoiceItem(invoiceItemsBody) {
     };
 
     window.invoiceItems.push(newItem);
-    
+
     renderInvoiceItems(
         window.invoiceItems,
         invoiceItemsBody,
@@ -322,7 +325,7 @@ export function addInvoiceItem(invoiceItemsBody) {
         // Only scroll the modal content, not the entire page
         const modalBody = document.querySelector('.modal-body');
         const invoiceTable = document.querySelector('.invoice-items-table');
-        
+
         if (modalBody) {
             // Smoothly scroll modal body to bottom
             modalBody.scrollTo({
@@ -337,7 +340,7 @@ export function addInvoiceItem(invoiceItemsBody) {
                 inline: 'nearest'
             });
         }
-        
+
         // Focus on the new input WITHOUT aggressive scrolling
         const newSearchInput = document.querySelector(`.product-search-input[data-id="${itemId}"]`);
         if (newSearchInput) {
@@ -369,13 +372,13 @@ export function handleItemUpdate(e) {
         item.price = Number(value) || 0;
     }
     else if (field === 'discount-percent-input') {
-     item.discountPercent = Number(value) || 0;
+        item.discountPercent = Number(value) || 0;
     }
 
-// Recalculate discount on change
+    // Recalculate discount on change
     item.discountAmount = Number(item.price) * Number(item.quantity) * (Number(item.discountPercent) / 100);
 
-     // Update discount amount in UI
+    // Update discount amount in UI
     const discountAmountCell = document.querySelector(`.discount-amount[data-id="${itemId}"]`);
     if (discountAmountCell) {
         discountAmountCell.textContent = `Rs. ${item.discountAmount.toFixed(2)}`;
@@ -410,7 +413,7 @@ export function selectClientFromHint(hintElement) {
     if (client) {
         fillClientDetails(client);
         hideClientSearchHint();
-        
+
         // Move focus to next field for better UX
         setTimeout(() => {
             const addItemBtn = document.getElementById('addItemBtn');
@@ -425,9 +428,9 @@ export function selectClientFromHint(hintElement) {
 export function setupProductNameSearch() {
     const productNameInput = document.getElementById('productName');
     const productNameSearchHint = document.getElementById('product-name-search-hint');
-    
+
     if (!productNameInput || !productNameSearchHint) return;
-    
+
     // Event listeners for product name search
     productNameInput.addEventListener('focus', () => handleProductNameSearchFocus());
     productNameInput.addEventListener('input', (e) => handleProductNameSearch(e));
@@ -439,7 +442,7 @@ function handleProductNameSearchFocus() {
     const hintContainer = document.getElementById('product-name-search-hint');
     if (hintContainer) {
         showProductNameSuggestions(window.products, '', fillProductDetails);
-        
+
         // Add click event to hints
         hintContainer.querySelectorAll('.hint-item').forEach(item => {
             item.addEventListener('mousedown', function(e) {
@@ -471,10 +474,10 @@ function handleProductNameSearchKeydown(e) {
 
     const hintItems = hintContainer.querySelectorAll('.hint-item');
     const visibleHintItems = Array.from(hintItems).filter(item => item.style.display !== 'none');
-    
+
     if (e.key === 'Tab' || e.key === 'Enter') {
         e.preventDefault();
-        
+
         if (currentSelectedProductNameHintIndex >= 0 && currentSelectedProductNameHintIndex < visibleHintItems.length) {
             // Select the currently highlighted hint
             const item = visibleHintItems[currentSelectedProductNameHintIndex];
@@ -536,7 +539,7 @@ function updateProductNameHintSelection(visibleHintItems) {
         item.style.backgroundColor = '';
         item.style.color = '';
     });
-    
+
     // Add selection to current item
     if (currentSelectedProductNameHintIndex >= 0 && currentSelectedProductNameHintIndex < visibleHintItems.length) {
         visibleHintItems[currentSelectedProductNameHintIndex].style.backgroundColor = '#007bff';
@@ -554,9 +557,9 @@ function handleProductNameSearchBlur(e) {
 export function setupCategorySearch() {
     const categoryInput = document.getElementById('productCategory');
     const categorySearchHint = document.getElementById('product-category-search-hint');
-    
+
     if (!categoryInput || !categorySearchHint) return;
-    
+
     // Event listeners for category search
     categoryInput.addEventListener('focus', () => handleCategorySearchFocus());
     categoryInput.addEventListener('input', (e) => handleCategorySearch(e));
@@ -568,7 +571,7 @@ function handleCategorySearchFocus() {
     const hintContainer = document.getElementById('product-category-search-hint');
     if (hintContainer) {
         showCategorySuggestions(window.productCategories, '');
-        
+
         // Add click event to hints
         hintContainer.querySelectorAll('.hint-item').forEach(item => {
             item.addEventListener('mousedown', function(e) {
@@ -594,10 +597,10 @@ function handleCategorySearchKeydown(e) {
 
     const hintItems = hintContainer.querySelectorAll('.hint-item');
     const visibleHintItems = Array.from(hintItems).filter(item => item.style.display !== 'none');
-    
+
     if (e.key === 'Tab' || e.key === 'Enter') {
         e.preventDefault();
-        
+
         if (currentSelectedCategoryHintIndex >= 0 && currentSelectedCategoryHintIndex < visibleHintItems.length) {
             // Select the currently highlighted hint
             const categoryName = visibleHintItems[currentSelectedCategoryHintIndex].getAttribute('data-category-name');
@@ -652,7 +655,7 @@ function updateCategoryHintSelection(visibleHintItems) {
         item.style.backgroundColor = '';
         item.style.color = '';
     });
-    
+
     // Add selection to current item
     if (currentSelectedCategoryHintIndex >= 0 && currentSelectedCategoryHintIndex < visibleHintItems.length) {
         visibleHintItems[currentSelectedCategoryHintIndex].style.backgroundColor = '#007bff';

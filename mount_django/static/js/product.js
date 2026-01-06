@@ -1397,10 +1397,13 @@ export async function editProduct(productId) {
         document.getElementById('productCostPrice').value = product.cost_price;
         document.getElementById('productQuantity').value = product.quantity;
         document.getElementById('productSellingPrice').value = product.selling_price;
-        document.getElementById('productCategory').value = product.
+        document.getElementById('productCategory').value = product.category
 
         // Change modal title and button
-        document.querySelector('#addProductModal .modal-header h3').textContent = 'Edit Product';
+        const editProductmodal = document.querySelector('#addProductModal .modal-header h3')
+        if(editProductmodal){
+        editProductmodal.textContent = 'Edit Product';
+        }
         document.getElementById('saveProductBtn').style.display = 'none';
         document.getElementById('updateProductBtn').style.display = 'flex';
         const quantity = document.querySelector('.productQuantities');

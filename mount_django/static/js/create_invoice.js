@@ -1015,6 +1015,7 @@ export async function saveInvoice() {
                 description: item.description || '',
                 quantity: item.quantity || 1,
                 price: item.price || 0,
+                discount: item.discount || 0,
                 discountPercent: item.discountPercent || 0,
             })),
             globalDiscountPercent: globalDiscount,

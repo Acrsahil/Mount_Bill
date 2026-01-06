@@ -176,7 +176,7 @@ class Bill(models.Model):
 
     product_price = models.DecimalField(max_digits=10, decimal_places=2)
     quantity = models.PositiveIntegerField(default=1)
-
+    discount = models.PositiveIntegerField(default=0)
     # NEW: Description for simple invoice items
     description = models.TextField(blank=True, null=True)
 
