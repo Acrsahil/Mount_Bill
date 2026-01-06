@@ -4,13 +4,17 @@ from . import views
 
 urlpatterns = [
     path("", views.dashboard, name="dashboard"),
-    path("product-detail/",views.product_detail,name="product_detail"),
+   
+    path("fetch-activity/<uuid:id>/", views.fetch_product_activities, name="fetch-activity"),
+    path("update-stock/<int:id>/", views.update_stock, name="update_stock"),
     path("products-json/", views.products_json, name="products_json"),
-    path("product-detail/", views.product_detail),
+    path("category-json/", views.category_json, name="category_json"),
+    path("filtered-products/", views.filtered_products, name="filtered_products"),
+    path("product-detail/", views.product_detail, name="product_detail"),
     path("product-detail/<uuid:id>/", views.product_detail, name="product_detail"),
     path("save-product/", views.save_product, name="save_product"),
     path("update-product/<int:id>/", views.update_product, name="update_product"),
-    path("delete-product/<int:id>/",views.delete_product,name="delete_product"),
+    path("delete-product/<int:id>/", views.delete_product, name="delete_product"),
     path("add-stock/<int:id>/", views.add_stock, name="add-stock"),
     path("reduce-stock/<int:id>/", views.reduce_stock, name="reduce-stock"),
     path(
@@ -23,6 +27,7 @@ urlpatterns = [
     path("delete_invoice/<int:id>/", views.delete_invoice, name="delete_invoice"),
     path("invoice-layout/<int:id>/", views.invoice_layout, name="invoice_layout"),
     path("invoices/", views.invoices, name="invoices"),
+    path("invoices/<int:id>/", views.invoices, name="invoices"),
     path(
         "products/", views.products, name="products"
     ),  # FIXED: views.products not views.Product

@@ -3,6 +3,7 @@ import { formatDate } from './utils.js';
 // RENDER INVOICE ITEMS
 import { editProduct,deleteProduct } from './product.js';
 import { openModal} from './bill_layout.js';
+import { editInvoiceSection} from './edit_invoice.js';
 // Show product suggestions
 export function showProductSuggestions(itemId, products, searchTerm = '', selectProductFromHint) {
     const hintContainer = document.getElementById(`search-hint-${itemId}`);
@@ -74,6 +75,29 @@ ${client.name} - ${client.email || 'No email'}
         hintContainer.style.display = 'none';
     }
 }
+
+
+// const createInvoicePage = document.getElementById("createInvoicePage")
+// console.log("this is edit createinvoicepage section ",createInvoicePage)
+
+
+
+
+const mycurrentUrl = window.location.href;
+const eachpart = mycurrentUrl.split('/')
+console.log(eachpart)
+const order_id = eachpart[eachpart.length-2]
+console.log(order_id)
+
+if(eachpart[eachpart.length-3] == 'invoices'){
+    editInvoiceSection(order_id)
+}
+
+
+
+
+
+
 
 // Show product name suggestions
 export function showProductNameSuggestions(products, searchTerm = '', fillProductDetails) {
@@ -209,6 +233,7 @@ export function fillProductDetails(product) {
 
 
 // Load clients
+// Load clients
 export function loadClients(clients, clientsTableBody) {
     if (!clientsTableBody) return;
     
@@ -300,21 +325,6 @@ export function loadClients(clients, clientsTableBody) {
 });
 }
 
-// Helper function to get status badge classes
-function getStatusClasses(status) {
-    switch(status?.toLowerCase()) {
-        case 'paid':
-            return 'bg-green-100 text-green-800';
-        case 'pending':
-            return 'bg-yellow-100 text-yellow-800';
-        case 'overdue':
-            return 'bg-red-100 text-red-800';
-        case 'draft':
-            return 'bg-gray-100 text-gray-800';
-        default:
-            return 'bg-gray-100 text-gray-800';
-    }
-}
 
 // Load invoices - FIXED VERSION
 export function loadInvoices(invoices, invoicesTableBody, csrfToken = '') {
@@ -322,81 +332,53 @@ export function loadInvoices(invoices, invoicesTableBody, csrfToken = '') {
 
     invoicesTableBody.innerHTML = '';
 
-    invoices.forEach((invoice, index) => {
+    invoices.forEach(invoice => {
         // Ensure amount is a valid number, use 0 as default
         const amount = invoice.amount || 0;
-        const status = invoice.status || 'pending';
-        const statusClasses = getStatusClasses(status);
         
         const row = document.createElement('tr');
-        row.classList.add('border-b', 'border-gray-200', 'hover:bg-gray-50', 'cursor-pointer', 'transition-colors');
-        
+        row.classList.add("invoicesList");
         row.innerHTML = `
-            <td class="py-2 px-4">
-                <div class="text-sm font-medium text-gray-800">${invoice.number || `INV-${invoice.id || index + 1}`}</div>
-                <div class="text-xs text-gray-500">${formatDate(invoice.issueDate || invoice.date || new Date().toISOString())}</div>
-            </td>
-            <td class="py-2 px-4">
-                <div class="text-sm text-gray-800">${invoice.client || 'Unknown Client'}</div>
-                <div class="text-xs text-gray-500">${invoice.client_email || ''}</div>
-            </td>
-            <td class="py-2 px-4 text-sm text-gray-700">
-                ${formatDate(invoice.dueDate || invoice.due_date || '') || 'No due date'}
-            </td>
-            <td class="py-2 px-4">
-                <div class="text-sm font-bold text-gray-800">$${parseFloat(amount).toFixed(2)}</div>
-                ${invoice.tax ? `<div class="text-xs text-gray-500">Tax: $${parseFloat(invoice.tax).toFixed(2)}</div>` : ''}
-            </td>
-            <td class="py-2 px-4">
-                <span class="inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${statusClasses}">
-                    <i class="fas ${
-                        status === 'paid' ? 'fa-check-circle' :
-                        status === 'pending' ? 'fa-clock' :
-                        status === 'overdue' ? 'fa-exclamation-circle' :
-                        'fa-file'
-                    } mr-1"></i>
-                    ${status.charAt(0).toUpperCase() + status.slice(1)}
-                </span>
-            </td>
-            <td class="py-2 px-4">
-                <div class="flex items-center space-x-1">
-                    <button class="action-edit text-blue-600 hover:text-blue-800 p-1.5 rounded hover:bg-blue-50 transition-colors" title="Edit">
-                        <i class="fas fa-edit text-xs"></i>
-                    </button>
-                    <button class="action-delete text-red-600 hover:text-red-800 p-1.5 rounded hover:bg-red-50 transition-colors" 
-                            data-token="${csrfToken}" 
-                            data-id="${invoice.id}" 
-                            title="Delete">
-                        <i class="fas fa-trash text-xs"></i>
-                    </button>
-                    <button class="text-green-600 hover:text-green-800 p-1.5 rounded hover:bg-green-50 transition-colors" title="Download">
-                        <i class="fas fa-download text-xs"></i>
-                    </button>
-                    <button class="text-purple-600 hover:text-purple-800 p-1.5 rounded hover:bg-purple-50 transition-colors" title="Send">
-                        <i class="fas fa-paper-plane text-xs"></i>
-                    </button>
-                </div>
-            </td>
-        `;
-        
-        // Add click event to view buttons using event delegation
-        row.addEventListener("click", (e) => {
-            // Only open modal if clicking on the row itself, not on action buttons
-            if (!e.target.closest('button')) {
-                openModal();
-            }
+<td>${invoice.number || `INV-${invoice.id}`}</td>
+<td>${invoice.client || 'Unknown Client'}</td>
+<td>${formatDate(invoice.issueDate || invoice.date || new Date().toISOString())}</td>
+<td>$${parseFloat(amount).toFixed(2)}</td>
+<td><span class="status status-${invoice.status || 'pending'}">${(invoice.status || 'pending').charAt(0).toUpperCase() + (invoice.status || 'pending').slice(1)}</span></td>
+<td class="action-cell">
+    <div class="action-btn action-edit">
+        <i class="fas fa-edit"></i>
+    </div>
+    <div class="action-btn action-delete" data-token="${csrfToken}" data-id="${invoice.id}">
+        <i class="fas fa-trash"></i>
+    </div>
+</td>
+`;
+    // Add click event to view buttons using event delegation
+    row.addEventListener("click", (event) => {
+         const row = event.target.closest('tr');
+            if (!row) return;
+            const invoiceId = row.dataset.orderId || parseInt(row.cells[0].innerText.split('-')[1]);
+            openModal(invoiceId);
+
+
+
         });
-   
-        invoicesTableBody.appendChild(row);
+
+        invoicesTableBody.prepend(row);
     });
+
+
 }
+
+
+
 
 // Filter invoices - FIXED VERSION
 export function filterInvoices(invoices, searchInput, invoicesTableBody) {
     const searchTerm = searchInput.value.toLowerCase();
     const filteredInvoices = invoices.filter(invoice => 
         (invoice.number && invoice.number.toLowerCase().includes(searchTerm)) ||
-        (invoice.client && invoice.client.toLowerCase().includes(searchTerm))
+            (invoice.client && invoice.client.toLowerCase().includes(searchTerm))
     );
 
     invoicesTableBody.innerHTML = '';
@@ -404,7 +386,7 @@ export function filterInvoices(invoices, searchInput, invoicesTableBody) {
     filteredInvoices.forEach(invoice => {
         // Ensure amount is a valid number, use 0 as default
         const amount = invoice.amount || 0;
-        
+
         const row = document.createElement('tr');
         row.innerHTML = `
 <td>${invoice.number || `INV-${invoice.id}`}</td>
@@ -438,22 +420,22 @@ export function filterProducts(products, productSearchInput, productsTableBody, 
     productsTableBody.innerHTML = '';
 
     filteredProducts.forEach((product,index) => {
-            const row = document.createElement('tr');
-            row.classList.add('filteredRow')
+        const row = document.createElement('tr');
+        row.classList.add('filteredRow')
         row.innerHTML = `
-        <td>${index+1}</td>
-        <td>${product.name}</td>
-        <td>${product.category || 'N/A'}</td>
-        <td>$${product.cost_price}</td>
-        <td>$${product.selling_price}</td>
+<td>${index+1}</td>
+<td>${product.name}</td>
+<td>${product.category || 'N/A'}</td>
+<td>$${product.cost_price}</td>
+<td>$${product.selling_price}</td>
 
-        <td>${String(product.quantity)}</td>
+<td>${String(product.quantity)}</td>
 
 `;
         row.addEventListener('click', () => {
-                window.location.href = `/dashboard/product-detail/${product.uid}`;
-            });
-    productsTableBody.appendChild(row);
+            window.location.href = `/dashboard/product-detail/${product.uid}`;
+        });
+        productsTableBody.appendChild(row);
     });
 }
 
@@ -462,8 +444,8 @@ export function filterClients(clients, clientSearchInput, clientsTableBody) {
     const searchTerm = clientSearchInput.value.toLowerCase();
     const filteredClients = clients.filter(client => 
         client.name.toLowerCase().includes(searchTerm) ||
-        (client.email && client.email.toLowerCase().includes(searchTerm)) ||
-        (client.phone && client.phone.toLowerCase().includes(searchTerm))
+            (client.email && client.email.toLowerCase().includes(searchTerm)) ||
+            (client.phone && client.phone.toLowerCase().includes(searchTerm))
     );
 
     if (!clientsTableBody) return;

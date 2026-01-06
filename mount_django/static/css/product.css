@@ -1,3 +1,44 @@
+.category-db {
+    position: absolute;
+    min-width: 200px;
+    max-width: 320px;
+
+    background: #ffffff;
+    border: 1px solid #e5e7eb; /* tailwind gray-200 */
+    border-radius: 6px;
+
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+    z-index: 9999;
+
+    margin-top: 1px;
+    padding: 6px 0;
+
+    display: none; /* hidden by default */
+}
+
+.category-db ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.category-db li {
+    padding: 8px 12px;
+    font-size: 14px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.category-db li:hover {
+    background-color: #f3f4f6; /* tailwind gray-100 */
+}
+
+.activityRow{
+  cursor: pointer;
+}
+.activityRow:hover{
+  background-color:rgb(197, 192, 192) ;
+}
 .stock-popup {
     position: absolute;
     display: none;
@@ -199,6 +240,33 @@
     pointer-events: none; /* clicks go through to input */
 }
 
+.stocklist-popup {
+  position: fixed;
+  display: none;
+  width: 150px;              /* small popup */
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  padding: 6px 0;
+}
+
+.stock-lists {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.stock-lists li {
+  padding: 8px 12px;
+  font-size: 14px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.stock-lists li:hover {
+  background-color: #f1f5f9; /* light hover */
+}
 
 
 :root {

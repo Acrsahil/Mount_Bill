@@ -96,6 +96,7 @@ class Product(models.Model):
     company = models.ForeignKey(
         Company, on_delete=models.CASCADE, related_name="products"
     )
+
     uid = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=100)
     cost_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -108,6 +109,7 @@ class Product(models.Model):
         blank=True,
         related_name="products",
     )
+    low_stock_bar = models.IntegerField(default=0)
     date_added = models.DateTimeField(default=timezone.now)
 
     class Meta:
@@ -121,6 +123,7 @@ class OrderList(models.Model):
     company = models.ForeignKey(
         Company, on_delete=models.CASCADE, related_name="orders"
     )
+
     order_date = models.DateTimeField(default=timezone.now)
     customer = models.ForeignKey(
         Customer,
@@ -267,3 +270,20 @@ class RemainingAmount(models.Model):
 
     def __str__(self):
         return f"remaining amount:{self.remaining_amount}"
+
+
+class ItemActivity(models.Model):
+    order = models.ForeignKey(
+        OrderList, on_delete=models.CASCADE, null=True, related_name="orderactivities"
+    )
+    product = models.ForeignKey(
+        Product, on_delete=models.PROTECT, null=True, related_name="activities"
+    )
+    type = models.CharField(max_length=200)
+    date = models.DateField(auto_now_add=True)
+    change = models.CharField()
+    quantity = models.IntegerField()
+    remarks = models.CharField(max_length=200, blank=True)
+
+    def __str__(self):
+        return self.product.name

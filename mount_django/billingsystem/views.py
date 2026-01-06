@@ -7,22 +7,76 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_list_or_404, get_object_or_404, render
 from django.utils import timezone
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
+from django.db.models import F
 
 from .models import (
     AdditionalCharges,
     Bill,
     Customer,
+    ItemActivity,
     OrderList,
     OrderSummary,
     Product,
     ProductCategory,
     RemainingAmount,
 )
+
+def filtered_products(request):
+    user = request.user
+    company = user.owned_company or user.active_company
+
+    if not company:
+        return JsonResponse({"products": []})
+
+    products = Product.objects.all()
+    category_id = request.GET.get("category")
+    stock_status = request.GET.get("stock")
+
+    if category_id:
+        products = products.filter(category__id=category_id).order_by('-date_added')
+
+    if stock_status == "instock":
+        products = products.filter(product_quantity__gt=0).order_by('-date_added')
+    elif stock_status == "lowstock":
+        products = products.filter(product_quantity__lte=F('low_stock_bar')).order_by('-date_added')
+    elif stock_status == "outstock":
+        products = products.filter(product_quantity__lte=0).order_by('-date_added')
+    products_data = [
+        {
+            "id": p.id,
+            "uid": str(p.uid),
+            "name": p.name,
+            "category": p.category.name if p.category else "N/A",
+            "cost_price": float(p.cost_price),
+            "selling_price": float(p.selling_price),
+            "quantity": p.product_quantity,
+        }
+        for p in products
+    ]
+    return JsonResponse({"products": products_data})
+
+
+def category_json(request):
+    user = request.user
+    company = user.owned_company or user.active_company
+
+    if not company:
+        return JsonResponse({"categories": []})
+    categories = ProductCategory.objects.filter(company=company).order_by('-id')
+    categories = [
+        {
+            "id": c.id,
+            "name": c.name,
+        }
+        for c in categories
+    ]
+
+    return JsonResponse({"categories": categories})
 
 
 @require_GET
@@ -34,7 +88,7 @@ def products_json(request):
     if not company:
         return JsonResponse({"products": [], "count": 0})
 
-    products = Product.objects.filter(company=company).select_related("category")
+    products = Product.objects.filter(company=company).select_related("category").order_by('-date_added')
 
     products_data = [
         {
@@ -81,7 +135,7 @@ def get_serialized_data(user, active_tab="dashboard"):
     products_data = [
         {
             "id": p.id,
-            "uid":str(p.uid),
+            "uid": str(p.uid),
             "name": p.name,
             "cost_price": float(p.cost_price),
             "selling_price": float(p.selling_price),
@@ -143,6 +197,7 @@ def dashboard(request):
 
 @login_required
 @require_POST
+@transaction.atomic
 def save_product(request):
     """Save new product via AJAX - COMPATIBLE VERSION"""
     try:
@@ -154,8 +209,9 @@ def save_product(request):
         cost_price = data.get("cost_price")
         selling_price = data.get("selling_price")
         quantity = data.get("quantity")
+        lowStockQuantity = data.get("lowStockQuantity")
         user = request.user
-
+        print("low stock quantity",lowStockQuantity)
         company = None
         company = user.owned_company or user.active_company
 
@@ -187,7 +243,7 @@ def save_product(request):
             selling_price = float(selling_price)
             quantity = int(quantity)
 
-            if quantity <= 0:
+            if quantity < 0:
                 return JsonResponse(
                     {
                         "success": False,
@@ -228,14 +284,44 @@ def save_product(request):
             )
 
             # Create product
-        product = Product.objects.create(
+        product = Product(
             name=name,
             cost_price=cost_price,
             selling_price=selling_price,
             category=category,
             product_quantity=quantity,
             company=company,
+            low_stock_bar=lowStockQuantity,
         )
+
+        item_activity = ItemActivity(
+            product=product,
+            type="Add Stock",
+            change=f"+{quantity}",
+            quantity=quantity,
+            remarks="Opening Stock",
+        )
+
+        try:
+            product.save()
+            item_activity.save()
+        except Exception:
+            transaction.set_rollback(True)
+            return JsonResponse(
+                {"success": False, "error": "Can't Save Data in Database"},
+                status=400,
+            )
+        item_activity = [
+            {
+                "id": item_activity.id,
+                "type": item_activity.type,
+                "date": item_activity.date.isoformat(),
+                "change": f"+{item_activity.change}",
+                "quantity": item_activity.quantity,
+                "remarks": item_activity.remarks,
+                "order_id": item_activity.order.id if item_activity.order else None,
+            }
+        ]
         return JsonResponse(
             {
                 "success": True,
@@ -249,6 +335,7 @@ def save_product(request):
                     "category": product.category.name if product.category else "",
                     "quantity": product.product_quantity,
                 },
+                "itemactivity": item_activity,
             }
         )
 
@@ -317,15 +404,34 @@ def add_stock(request, id):
         data = json.loads(request.body)
         product_id = data.get("id")
         stock = int(data.get("stock_to_add"))
+        remark = data.get("remarks")
         product = Product.objects.get(id=product_id)
         product.product_quantity += stock
         product.save()
 
+        item_activity = ItemActivity(
+            product=product,
+            type="Add Stock",
+            change=f"+{stock}",
+            quantity=product.product_quantity,
+            remarks=remark,
+        )
+        item_activity.save()
+        item_activity = [
+            {
+                "type": item_activity.type,
+                "date": item_activity.date.isoformat(),
+                "change": item_activity.change,
+                "quantity": item_activity.quantity,
+                "remarks": item_activity.remarks,
+            }
+        ]
         return JsonResponse(
             {
                 "success": True,
                 "message": "Stock updated successfully",
                 "product": {"id": product.id, "quantity": product.product_quantity},
+                "itemactivity": item_activity,
             }
         )
     except Exception as e:
@@ -343,10 +449,31 @@ def reduce_stock(request, id):
         data = json.loads(request.body)
         product_id = data.get("id")
         stock = int(data.get("stock_to_remove"))
+        remark = data.get("remarks")
         product = Product.objects.get(id=product_id)
         product.product_quantity -= stock
         product.save()
+        item_activity = ItemActivity(
+            product=product,
+            type="Reduce Stock",
+            change=-stock,
+            quantity=product.product_quantity,
+            remarks=remark,
+        )
 
+        # Product.objects.update_or_create(
+        #     id=product_id, product_quantity=product.product_quantity
+        # )
+        item_activity.save()
+        item_activity = [
+            {
+                "type": item_activity.type,
+                "date": item_activity.date.isoformat(),
+                "change": item_activity.change,
+                "quantity": item_activity.quantity,
+                "remarks": item_activity.remarks,
+            }
+        ]
         return JsonResponse(
             {
                 "success": True,
@@ -355,6 +482,7 @@ def reduce_stock(request, id):
                     "id": product.id,
                     "quantity": product.product_quantity,
                 },
+                "itemactivity": item_activity,
             }
         )
     except Exception as e:
@@ -483,6 +611,25 @@ def save_invoice(request):
             total_amount += (quantity * price) - (
                 (quantity * price) * (discountPercent / 100)
             )
+
+            print("this is negatiove qty->>> ", -quantity)
+
+            new_qty = product.product_quantity - quantity
+            ItemActivity.objects.create(
+                order=order,
+                type=f"sale invoice #{order.id}",
+                product=product,
+                change=-quantity,
+                quantity=product.product_quantity - quantity,
+                remarks=notes_here,
+            )
+
+            print("This is product Id::", product.id)
+
+            change_product = Product.objects.get(id=product.id)
+            change_product.product_quantity = new_qty
+            print("this is change_product Qty...", change_product.product_quantity)
+            change_product.save()
 
         # grand total amount
         final_amount = total_amount - (global_discount / 100) * total_amount
@@ -861,8 +1008,10 @@ def invoice_layout(request, id):
     )
 
 
-def invoices(request):
+def invoices(request, id=None):
     context = get_serialized_data(request.user, "invoices")
+    if id:
+        return render(request, "website/create_invoice.html", context)
     return render(request, "website/bill.html", context)
 
 
@@ -891,10 +1040,124 @@ def product_detail(request, id: UUID = None):
     context = get_serialized_data(request.user, "dashboard")
     if id:
         product = get_object_or_404(Product, uid=id)
-        # separate key for separate product
+        item_activity = get_list_or_404(ItemActivity, product=product)
+
         context["product_detail"] = product
+        context["item_activity"] = item_activity
+
+        for act in item_activity:
+            print("this is act.product_name ", act.product.name)
+            print("this is act.change ", act.change)
+            print("this is act.quantity ", act.quantity)
+            print("this is act.remarks ", act.remarks)
+
+            if not act.order:
+                print("this is act.remarks ", "Reduce Stock")
+            else:
+                print("this is act.remarks ", f"Sales Invoice #{act.order.id}")
+
     return render(request, "website/product_detail.html", context)
 
+
+def fetch_product_activities(request, id: UUID):
+    user = request.user
+    company = user.owned_company or user.active_company
+
+    if not company:
+        return JsonResponse({"activities": []})
+    item_activities = ItemActivity.objects.filter(product__uid=id).order_by('-id')
+    data = []
+    for act in item_activities:
+        data.append(
+            {
+                "id": act.id,
+                "product_selling_price": act.product.selling_price,
+                "product_cost_price": act.product.cost_price,
+                "type": act.type,
+                "date": act.date.isoformat(),
+                "change": act.change,
+                "quantity": act.quantity,
+                "remarks": act.remarks,
+                "order_id": act.order.id if act.order else None,
+            }
+        )
+    return JsonResponse({"success": True, "activities": data})
+
+
+@login_required
+@csrf_exempt
+@require_POST
+def update_stock(request, id):
+    try:
+        data = json.loads(request.body)
+
+        activity_id = data.get("id")
+        stock_quantity = float(data.get("stockQuantity"))
+        product_price = data.get("productPrices")
+        stock_date = data.get("stockDate")
+        stock_remarks = data.get("stockRemarks")
+        type = str(data.get("type"))
+        remark = str(data.get("remarks"))
+        print("yo kun type ho rw",type)
+        item_activity = ItemActivity.objects.get(id=activity_id)
+        product = item_activity.product
+
+        if type == 'Reduce Stock':
+            old_reduction = abs(float(item_activity.change))
+            print(f"change ma vako value paila ghataako{old_reduction}")
+            restored_stock = product.product_quantity + old_reduction
+            print(f"feri esbata ghatnu parne ho{restored_stock}")
+            new_quantity = restored_stock - stock_quantity
+
+            item_activity.change = -stock_quantity
+
+        
+        elif type == 'Add Stock' and remark =="Opening Stock":
+            item_activity.change = f"+{stock_quantity}"
+            new_quantity = stock_quantity
+
+        elif type == 'Add Stock':
+            old_addition = abs(float(item_activity.change))
+            restored_stock = product.product_quantity - old_addition
+            new_quantity = restored_stock + stock_quantity
+
+            item_activity.change = f"+{stock_quantity}"
+
+        else:
+            return JsonResponse(
+                {"success": False, "error": "Invalid stock type"},
+                status=400
+            )
+
+        product.product_quantity = new_quantity
+        product.save()
+        item_activity.date = stock_date 
+        item_activity.remarks = stock_remarks
+        item_activity.quantity = new_quantity
+        item_activity.save()
+
+        return JsonResponse(
+                {
+                    "success": True,
+                    "message": "Stock updated successfully",
+                    "updatedActivity": {
+                        "id": item_activity.id,
+                        "type": item_activity.type,
+                        "date": item_activity.date,
+                        "stock_quantity": item_activity.change,
+                        "quantity": item_activity.quantity,
+                        "remarks": item_activity.remarks,
+                        
+                    },
+                }
+            )
+
+    except Exception as e:
+            print("Update product error:", e)
+            return JsonResponse(
+                {"success": False, "error": f"Server error: {str(e)}"}, status=500
+            )
+    
 
 @login_required
 def create_invoice_page(request):

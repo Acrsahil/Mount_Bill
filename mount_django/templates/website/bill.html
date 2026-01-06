@@ -687,7 +687,7 @@
             <!-- Action Buttons -->
             <div class="bg-white border-b border-gray-200 px-5 py-3">
                 <div class="flex items-center gap-2">
-                    <button class="text-sm bg-[#4361ee] hover:bg-[#3a0ca3] text-white px-3 py-2 rounded-lg font-medium flex items-center transition-colors" id="addNewProductBtn">
+                    <button  class="text-sm bg-[#4361ee] hover:bg-[#3a0ca3] text-white px-3 py-2 rounded-lg font-medium flex items-center transition-colors" id="addNewProductBtn">
                         <i class="fas fa-plus text-xs mr-1.5"></i>
                         Add New
                     </button>
@@ -714,27 +714,7 @@
                 </div>
             </div>
 
-            <!-- Stats Row -->
-            <div class="bg-gray-50 border-b border-gray-200 px-5 py-2">
-                <div class="flex items-center space-x-6">
-                    <div class="text-center">
-                        <div class="text-lg font-bold text-gray-800">{{product_number}}</div>
-                        <div class="text-xs text-gray-500 mt-0.5">Total Products</div>
-                    </div>
-                    <div class="text-center">
-                        <div class="text-lg font-bold text-green-600">24</div>
-                        <div class="text-xs text-gray-500 mt-0.5">In Stock</div>
-                    </div>
-                    <div class="text-center">
-                        <div class="text-lg font-bold text-yellow-600">5</div>
-                        <div class="text-xs text-gray-500 mt-0.5">Low Stock</div>
-                    </div>
-                    <div class="text-center">
-                        <div class="text-lg font-bold text-red-600">2</div>
-                        <div class="text-xs text-gray-500 mt-0.5">Out of Stock</div>
-                    </div>
-                </div>
-            </div>
+            
 
             <!-- Products Table -->
             <div class="flex-1 overflow-auto p-4">
@@ -961,75 +941,102 @@
 
 <!-- INVOICE VIEW MODAL (Added this section) -->
 
-<!-- MODALS SECTION -->
-<!-- Add Product Modal -->
-<div class="app-modal" id="addProductModal">
-    <div class="app-modal-content">
-        <div class="app-modal-header">
-            <h3>Add New Product</h3>
-            <button class="app-modal-close" id="closeProductModal">&times;</button>
-        </div>
-        <div class="app-modal-choice">
-            <button type="button" class="app-tab-link active" data-tab="product-basic">Basic Info</button>
-            <button type="button" class="app-tab-link" data-tab="product-advanced">Advanced</button>
-        </div>
-        <div class="app-modal-body">
-            <div id="product-basic" class="app-tab-content active">
-                <div class="app-form-group">
-                    <label for="productName">Product Name *</label>
-                    <input type="text" id="productName" class="app-form-control" placeholder="Enter product name" required>
+<!-- Add Product Modal - WITH SUGGESTIONS -->
+<div id="addProductModal" class="app-modal fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 hidden" id="addProductModal">
+    <div class="relative top-10 mx-auto p-0 w-full max-w-2xl">
+        <div class="relative bg-white rounded-lg shadow-lg">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t border-gray-200">
+                <h3 class="text-xl font-semibold text-gray-900">Add New Product</h3>
+                <button class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-2xl p-1.5 ml-auto inline-flex items-center" id="closeProductModal">
+                    &times;
+                </button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="p-4 md:p-5 space-y-4">
+                <!-- Product Name -->
+                <div class="relative">
+                    <label for="productName" class="block mb-2 text-sm font-medium text-gray-900">Product Name *</label>
+                    <input type="text" id="productName" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
                 </div>
-                <div class="app-form-row">
-                    <div class="app-form-col">
-                        <div class="app-form-group">
-                            <label for="productCostPrice">Cost Price ($) *</label>
-                            <input type="number" id="productCostPrice" class="app-form-control" placeholder="0.00" min="0" step="0.01" required>
-                        </div>
-                    </div>
-                    <div class="app-form-col">
-                        <div class="app-form-group">
-                            <label for="productSellingPrice">Selling Price ($) *</label>
-                            <input type="number" id="productSellingPrice" class="app-form-control" placeholder="0.00" min="0" step="0.01" required>
+
+                <!-- Product Quantity -->
+                <div class="productQuantities">
+                    <div class="grid grid-cols-1 gap-4">
+                        <div>
+                            <label for="productQuantity" class="block mb-2 text-sm font-medium text-gray-900">Product Quantity</label>
+                            <input type="number" id="productQuantity" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="0.00" min="0" step="0.01" required>
                         </div>
                     </div>
                 </div>
-                <div class="app-form-row">
-                    <div class="app-form-col">
-                        <div class="app-form-group">
-                            <label for="productQuantity">Quantity *</label>
-                            <input type="number" id="productQuantity" class="app-form-control" placeholder="0" min="0" required>
-                        </div>
+
+                <!-- Price and Category Row -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Cost Price -->
+                    <div>
+                        <label for="productCostPrice" class="block mb-2 text-sm font-medium text-gray-900">Cost Price ($) *</label>
+                        <input type="number" id="productCostPrice" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="0.00" min="0" step="0.01" required>
                     </div>
-                    <div class="app-form-col">
-                        <div class="app-form-group" style="position: relative;">
-                            <label for="productCategory">Category</label>
-                            <input type="text" id="productCategory" class="app-form-control product-category-search-input" 
-                                   placeholder="Type to search...">
-                            <div class="search-hint" id="product-category-search-hint">
-                                <!-- Category suggestions will appear here -->
-                            </div>
-                        </div>
+
+                    <!-- Selling Price -->
+                    <div>
+                        <label for="productSellingPrice" class="block mb-2 text-sm font-medium text-gray-900">Selling Price ($) *</label>
+                        <input type="number" id="productSellingPrice" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="0.00" min="0" step="0.01" required>
+                    </div>
+
+                    <!-- Category -->
+                    <div class="relative">
+                        <label for="productCategory" class="block mb-2 text-sm font-medium text-gray-900">Category</label>
+                        <input type="text" id="productCategory" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="Type category name (Tab to complete)...">
+                    </div>
+                </div>
+
+                <!-- Low Stock Alert -->
+                <div class="flex justify-between items-center w-full mb-4 pt-4 border-t border-gray-200">
+                    <h2 class="flex items-center gap-2 text-lg font-medium text-gray-900">
+                        Low Stock Alert
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z" />
+                        </svg>
+                    </h2>
+
+                    <label class="relative inline-flex w-[45px] h-[28px] cursor-pointer">
+                        <input type="checkbox" class="sr-only peer" />
+                        <!-- Track -->
+                        <span class="absolute inset-0 bg-gray-300 rounded-full transition peer-checked:bg-blue-500"></span>
+                        <!-- Knob -->
+                        <span class="absolute left-[3px] top-[3px] w-[22px] h-[22px] bg-white rounded-full transition-transform duration-300 peer-checked:translate-x-[9px]"></span>
+                    </label>
+                </div>
+
+                <!-- Low Stock Quantity (Hidden by default) -->
+                <div id="lowStockConstraint" class="flex flex-col gap-2 hidden">
+                    <div class="flex flex-col w-full">
+                        <label class="block mb-2 text-sm font-medium text-gray-900">Low Stock Quantity</label>
+                        <input id="lowStockQuantity" type="text" placeholder="Enter Stock Quantity" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" />
                     </div>
                 </div>
             </div>
-            <div id="product-advanced" class="app-tab-content">
-                <div class="app-form-group">
-                    <label for="productDescription">Description</label>
-                    <textarea id="productDescription" class="app-form-control" rows="3" placeholder="Enter product description"></textarea>
-                </div>
-                <div class="app-form-group">
-                    <label for="productBarcode">Barcode/SKU</label>
-                    <input type="text" id="productBarcode" class="app-form-control" placeholder="Optional">
-                </div>
+
+            <!-- Modal Footer -->
+            <div class="flex items-center justify-end p-4 md:p-5 border-t border-gray-200 rounded-b gap-3">
+                <button class="px-5 py-2.5 text-sm font-medium text-gray-900 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200" id="cancelProductBtn">Cancel</button>
+                <button class="px-5 py-2.5 text-sm font-medium text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-300" id="saveProductBtn">Save Product</button>
+                <button class="px-5 py-2.5 text-sm font-medium text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-300 hidden" id="updateProductBtn">Update Product</button>
             </div>
-        </div>
-        <div class="app-modal-footer">
-            <button class="app-btn app-btn-light" id="cancelProductBtn">Cancel</button>
-            <button class="app-btn app-btn-primary" id="saveProductBtn">Save Product</button>
-            <button class="app-btn app-btn-primary" id="updateProductBtn" style="display: none;">Update Product</button>
+
+            <!-- Category Database (Hidden by default) -->
+            <div class="category-db absolute z-10 bg-white border border-gray-300 rounded-lg shadow-lg hidden" id="categoryDB">
+                <ul id="catelists" class="py-2 text-sm text-gray-700">
+                    <!-- dynamically all the list are here -->
+                    <li id="general" class="px-4 py-2 hover:bg-gray-100 cursor-pointer">General</li>
+                </ul>
+            </div>
         </div>
     </div>
 </div>
+
 
 <!-- Add Client Modal -->
 <div class="app-modal" id="addClientModal">

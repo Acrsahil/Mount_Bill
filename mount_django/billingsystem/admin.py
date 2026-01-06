@@ -8,6 +8,7 @@ from .models import (
     Bill,
     Company,
     Customer,
+    ItemActivity,
     OrderList,
     OrderSummary,
     Product,
@@ -159,9 +160,11 @@ class ProductAdmin(admin.ModelAdmin):
         "name",
         "cost_price",
         "selling_price",
+        "product_quantity",
         "category",
         "company",
         "date_added",
+        "low_stock_bar",
     )
     list_filter = ("company", "category", "date_added")
     search_fields = ("name", "company__name", "category__name")
@@ -244,3 +247,16 @@ class RemainingAmountAdmin(admin.ModelAdmin):
         "remaining_amount",
     )
     search_fields = ("customer",)
+
+
+@admin.register(ItemActivity)
+class ItemActivityAdmin(admin.ModelAdmin):
+    list_display = (
+        "order",
+        "product",
+        "type",
+        "date",
+        "change",
+        "quantity",
+    )
+    search_fields = ("order_id",)
