@@ -186,6 +186,7 @@ async function categoryClick(categoryId){
     const products =await fetchStockProducts(currentCategory, currentStock);
     products.forEach(product => addProductToList(product, productList))
 }
+
 categoryList.addEventListener('click', async(e) => {
         const li = e.target;
         if (li.tagName === 'LI') {
@@ -194,6 +195,7 @@ categoryList.addEventListener('click', async(e) => {
             {
                 currentCategory = null
                 const products =await fetchStockProducts(currentCategory, currentStock);
+                productList.innerHTML = '';
                 products.forEach(product => addProductToList(product, productList))
                 categoryPopup.style.display = 'none';
             }
@@ -207,6 +209,9 @@ categoryList.addEventListener('click', async(e) => {
               // hide popup
         }
     });
+
+
+
 // }
 // Close popup when clicking outside
 document.addEventListener('click', (e) => {
@@ -1037,6 +1042,7 @@ function resetAddStockModal() {
     if (updateBtn) updateBtn.style.display = 'none';
     if (cancelStockBtn) cancelStockBtn.style.display = 'flex';
     if (saveStockBtn) saveStockBtn.style.display = 'flex';
+    
 
     // Reset input fields
     const stockQuantity = document.getElementById('stockQuantity');
@@ -1046,10 +1052,16 @@ function resetAddStockModal() {
 
     if (stockQuantity) stockQuantity.value = '';
     if (productPrices) productPrices.value = '';
-    if (stockDate) stockDate.value = '';
     if (stockRemarks) stockRemarks.value = '';
+    if (stockDate) {
+            const today = new Date().toISOString().split('T')[0];
+            stockDate.value = today;
+    }
+    stockQuantity.readOnly = false;
+    productPrices.readOnly = false;
+    stockDate.readOnly = false;
+    stockRemarks.readOnly = false;
 }
-
   document.addEventListener('click', function(e) {
         const addStock = e.target.id === 'addStock';
         if(addStock){
@@ -1062,17 +1074,19 @@ function resetAddStockModal() {
         
     })
 
-     document.addEventListener('click', function(e) {
+document.addEventListener('click', function(e) {
         const reduceStock = e.target.id === 'reduceStock';
         if(reduceStock){
             const reduceStockModal = document.getElementById('reduceStockModal');
             if (reduceStockModal) {
-            reduceStockModal.style.display = 'flex';
+                const stockDates = document.getElementById('stockDates');
+                const today = new Date().toISOString().split('T')[0];
+                stockDates.value = today
+                reduceStockModal.style.display = 'flex';
         }
         }
         
     })
-
 
 //for add and reduce stock btn
 document.addEventListener('DOMContentLoaded', function () {
@@ -1159,8 +1173,8 @@ async function addStockFunc() {
     }
 
     // Button loading state
-    // const addStockBtn = document.getElementById('addStockBtn');
-    // const originalText = addStockBtn.innerHTML;
+    const addStockBtn = document.getElementById('saveStockBtn');
+    const originalText = addStockBtn.innerHTML;
 
     addStockBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
     addStockBtn.disabled = true;
@@ -1195,34 +1209,43 @@ async function addStockFunc() {
         if (result.success) {
             // Update local products array
             if (window.products && result.product) {
-                const index = window.products.findIndex(
-                    p => p.id === result.product.id
-                );
+               const index = window.products.findIndex(
+    p => String(p.uid) === String(result.product.uid)
+);
+
 
                 if (index !== -1) {
                     window.products[index].quantity = result.product.quantity;
                 }
             }
-            renderDetails(window.products);
+            if(!window.activities){
+                window.activities = []
+            }
+            
+            //to update the product quantity above the table
+              const quantityCell = document.getElementById('quantityCell'); 
+                if (quantityCell) {
+                        quantityCell.textContent = result.product.quantity;
+                        }
+            // renderDetails(window.products);
             result.itemactivity.forEach(activity => {
-    addProductActivityToTable(activity, productsactivityTableBody);
-});
+            window.activities.unshift(activity)
+            addProductActivityToTable(activity, productsactivityTableBody);
+        });
             
             
             // Refresh UI
-            if (window.loadProducts) {
-                console.log("okay here in loadproduct")
-                window.loadProducts();
-            }
+            // if (window.loadProducts) {
+            //     console.log("okay here in loadproduct")
+            //     window.loadProducts();
+            // }
 
             showAlert(result.message || 'Stock added successfully!', 'success');
 
-            // Close modal
-            setTimeout(() => {
-                if (addStockModal) {
-                    addStockModal.style.display = 'none';
-                }
-            }, 1200);
+            // WAIT a few seconds before closing modal & restoring button
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            if (modal) modal.style.display = 'none';
 
         } else {
             showAlert(result.error || 'Failed to add stock', 'error');
@@ -1234,25 +1257,16 @@ async function addStockFunc() {
 
     } finally {
         // Restore button
-        // addStockBtn.innerHTML = originalText;
-        // addStockBtn.disabled = false;
+        addStockBtn.innerHTML = originalText;
+        addStockBtn.disabled = false;
     }
 }
-
 async function reduceStockFunc() {
     // Check if button exists
     if (!reduceStockBtn) {
         console.error('reduceStockBtn not found');
         return;
     }
-    
-    // Store original button state
-    const originalHTML = reduceStockBtn.innerHTML;
-    const originalDisabled = reduceStockBtn.disabled;
-    
-    // Immediately disable and show loading
-    reduceStockBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Reducing...';
-    reduceStockBtn.disabled = true;
     
     const productsactivityTableBody = document.getElementById('productsactivityTableBody');
     const modal1 = document.getElementById('reduceStockModal');
@@ -1277,11 +1291,14 @@ async function reduceStockFunc() {
     if (!stockQuantities || Number(stockQuantities) <= 0) {
         showAlert('Please enter a valid stock quantity!', 'error');
         document.getElementById('stockQuantities')?.focus();
-        // Restore button on error
-        reduceStockBtn.innerHTML = originalHTML;
-        reduceStockBtn.disabled = originalDisabled;
         return;
     }
+    // Store original button state
+    const originalHTML = reduceStockBtn.innerHTML;
+    
+    // Immediately disable and show loading
+    reduceStockBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Reducing...';
+    reduceStockBtn.disabled = true;
 
     try {
         const productData = {
@@ -1329,8 +1346,12 @@ async function reduceStockFunc() {
                 }
             }
             
-            // Render details and activities
-            renderDetails(window.products);
+            // Render product quantity above in the detail
+                const quantityCell = document.getElementById('quantityCell'); 
+                if (quantityCell) {
+                        quantityCell.textContent = result.product.quantity;
+                        }
+            // renderDetails(window.products);
             
             if (result.itemactivity && Array.isArray(result.itemactivity)) {
                 // Clear existing table rows if needed
@@ -1340,45 +1361,28 @@ async function reduceStockFunc() {
                     addProductActivityToTable(activity, productsactivityTableBody);
                 });
             }
-            
-            // Refresh UI
-            if (window.loadProducts) {
-                window.loadProducts();
-            }
 
             showAlert(result.message || 'Stock removed successfully!', 'success');
             document.getElementById('stockQuantities').value = '';
 
             // Show success state on button briefly
-            reduceStockBtn.innerHTML = '<i class="fas fa-check"></i> Reduced!';
-            reduceStockBtn.disabled = true;
-            
-            // Close modal after delay
-            setTimeout(() => {
-                if (modal1) {
+            await new Promise(resolve => setTimeout(resolve,1200));
+            if (modal1) {
                     modal1.style.display = 'none';
                 }
-                // Reset button after modal closes
-                reduceStockBtn.innerHTML = originalHTML;
-                reduceStockBtn.disabled = false;
-            }, 1500);
 
         } else {
             showAlert(result.error || 'Failed to remove stock', 'error');
-            // Restore button on API error
-            reduceStockBtn.innerHTML = originalHTML;
-            reduceStockBtn.disabled = false;
         }
 
     } catch (error) {
         console.error('Reduce stock error:', error);
         showAlert(error.message || 'Something went wrong. Please try again.', 'error');
-        // Restore button on network/other errors
-        reduceStockBtn.innerHTML = originalHTML;
-        reduceStockBtn.disabled = false;
         
-    } 
-    // Note: Removed finally block since we handle restoration in each case
+    } finally{
+        reduceStockBtn.innerText= originalHTML
+        reduceStockBtn.disabled = false;
+    }
 }
 
 // Product edit/delete functions
@@ -1393,7 +1397,7 @@ export async function editProduct(productId) {
         document.getElementById('productCostPrice').value = product.cost_price;
         document.getElementById('productQuantity').value = product.quantity;
         document.getElementById('productSellingPrice').value = product.selling_price;
-        document.getElementById('productCategory').value = product.category || '';
+        document.getElementById('productCategory').value = product.
 
         // Change modal title and button
         document.querySelector('#addProductModal .modal-header h3').textContent = 'Edit Product';
