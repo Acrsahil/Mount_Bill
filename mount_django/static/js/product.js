@@ -25,6 +25,8 @@ const csrfToken = getCookie('csrftoken');
 document.addEventListener('DOMContentLoaded',() =>{
     const slidercheck = document.getElementById('statusToggle');
     const lowStockConstraint = document.getElementById('lowStockConstraint')
+
+    if (!slidercheck || !lowStockConstraint) return;
     lowStockConstraint.style.display = 'none';
     slidercheck.addEventListener('change',()=>{
         if (slidercheck.checked == true){
@@ -55,7 +57,7 @@ async function fetchStockProducts(category= null, stock=""){
 }
 document.addEventListener('DOMContentLoaded',() =>{
     const stocklists = document.getElementById('stocklists');
-    
+    if(!stocklists) return;
     stocklists.addEventListener('click',(e) =>
     {
         
@@ -111,38 +113,42 @@ stocklistpopup.addEventListener('click', async(e) => {
 //category on the addProductModal
 const categoryDB = document.getElementById('categoryDB');
 const productCategories = document.getElementById('productCategory')
-productCategories.addEventListener('click',(e) => {
-    e.stopPropagation();
-    console.log("i am supposed to be here")
-    const rect = productCategories.getBoundingClientRect();
-    categoryDB.style.top = rect.bottom + window.scrollX + 'px';
-    categoryDB.style.left = rect.left + window.scrollY + 'px';
-    
-    loadCategories()
-    categoryDB.style.display = 'block';
-})
-//hide popup when clicked outside 
-document.addEventListener('click', () => {
-    categoryDB.style.display = 'none';
-});
+document.addEventListener('DOMContentLoaded',() =>{
+    productCategories.addEventListener('click',(e) => {
+        e.stopPropagation();
+        console.log("i am supposed to be here")
+        const rect = productCategories.getBoundingClientRect();
+        categoryDB.style.top = rect.bottom + window.scrollX + 'px';
+        categoryDB.style.left = rect.left + window.scrollY + 'px';
+        
+        loadCategories()
+        categoryDB.style.display = 'block';
+    })
+    //hide popup when clicked outside 
+    document.addEventListener('click', () => {
+        categoryDB.style.display = 'none';
+    });
 
-//putting the value from popup to input 
-document.addEventListener('DOMContentLoaded',()=>{
-productCategories.value = 'General';
-categoryDB.addEventListener('click',(e) => {
-    const li = e.target;
-    if(li.tagName === 'LI'){
-        productCategories.value = li.textContent
-    }
+    //putting the value from popup to input 
+    productCategories.value = 'General';
+    categoryDB.addEventListener('click',(e) => {
+        const li = e.target;
+        if(li.tagName === 'LI'){
+            productCategories.value = li.textContent
+        }
+    })
+    productCategories.addEventListener('input',()=>{
+    const searchTerm = productCategories.value.toLowerCase();
+    console.log("esko k xa tw",categories)
+    const filtered = categories.filter(category => category.name.toLowerCase().includes(searchTerm))
+    renderCategory(filtered)
+    })
+    loadCategories()
 })
-productCategories.addEventListener('input',()=>{
-const searchTerm = productCategories.value.toLowerCase();
-console.log("esko k xa tw",categories)
-const filtered = categories.filter(category => category.name.toLowerCase().includes(searchTerm))
-renderCategory(filtered)
-})
-loadCategories()
-})
+
+
+
+
 
 
 document.addEventListener('DOMContentLoaded',() => {
@@ -259,6 +265,7 @@ function renderCategories(categoryArray){
     const categoryList = document.getElementById('categoryList');
     const generalCategory = document.getElementById('generalCategory');
 
+    if (!categoryList || !generalCategory) return;
     document.querySelectorAll('.categorylists').forEach(li => li.remove())
     categoryArray.forEach(category => {
             const li = document.createElement('li');
