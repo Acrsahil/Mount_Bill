@@ -198,6 +198,7 @@ class BillAdmin(admin.ModelAdmin):
         "product_price",
         "bill_date",
         "total_price",
+        "discount",
     )
     list_filter = ("bill_date", "order__company")
     search_fields = ("order__id", "product__name")

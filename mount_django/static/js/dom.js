@@ -321,6 +321,9 @@ export function loadClients(clients, clientsTableBody) {
             </div>
         </td>
     `;
+    row.addEventListener('click',()=>{
+        window.location.href='/dashboard/client-detail/';
+    })
     clientsTableBody.appendChild(row);
 });
 }

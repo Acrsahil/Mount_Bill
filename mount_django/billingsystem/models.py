@@ -176,7 +176,7 @@ class Bill(models.Model):
 
     product_price = models.DecimalField(max_digits=10, decimal_places=2)
     quantity = models.PositiveIntegerField(default=1)
-    discount = models.PositiveIntegerField(default=0)
+    discount = models.DecimalField(max_digits=10, decimal_places=2)
     # NEW: Description for simple invoice items
     description = models.TextField(blank=True, null=True)
 
@@ -209,8 +209,8 @@ class OrderSummary(models.Model):
         OrderList, on_delete=models.CASCADE, related_name="summary"
     )
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    discount = models.DecimalField(max_digits=5, decimal_places=2, default=0.0)
-    tax = models.DecimalField(max_digits=5, decimal_places=2, default=0.0)
+    discount = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
+    tax = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
     final_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     received_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     due_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -224,6 +224,7 @@ class OrderSummary(models.Model):
         - 8 integer digits + 2 decimal digits
 
         Here we enforce that same rule with a clear message BEFORE hitting DB.
+        
         """
         super().clean()
 
@@ -235,6 +236,7 @@ class OrderSummary(models.Model):
         # Check all relevant monetary field
 
         if self.total_amount is not None and self.total_amount > max_amount:
+            print("ma error ho")
             errors["total_amount"] = [
                 "Value cannot have more than 8 digits before the decimal "
                 "(maximum allowed is 99,999,999.99)."
