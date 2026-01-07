@@ -72,10 +72,24 @@ export function setupEventListeners(
     if (addNewProductBtn) addNewProductBtn.addEventListener('click', () => openAddProductModal(addProductModal));
     if (addClientBtn) addClientBtn.addEventListener('click', () => openClientModal(addClientModal));
     if (closeInvoiceModal) closeInvoiceModal.addEventListener('click', () => closeInvoiceModalFunc(createInvoiceModal));
-    if (closeProductModal) closeProductModal.addEventListener('click', () => closeProductModalFunc(addProductModal));
+    if (closeProductModal) closeProductModal.addEventListener('click', () => {
+        const slider = document.getElementById('statusToggle');
+            if(slider){
+                slider.checked = false;
+                slider.dispatchEvent(new Event('change'));
+            }
+        closeProductModalFunc(addProductModal)});
     if (closeClientModal) closeClientModal.addEventListener('click', () => closeClientModalFunc(addClientModal));
     if (cancelInvoiceBtn) cancelInvoiceBtn.addEventListener('click', () => closeInvoiceModalFunc(createInvoiceModal));
-    if (cancelProductBtn) cancelProductBtn.addEventListener('click', () => closeProductModalFunc(addProductModal));
+    if (cancelProductBtn) cancelProductBtn.addEventListener('click', () =>
+        {
+            const slider = document.getElementById('statusToggle');
+            if(slider){
+                slider.checked = false;
+                slider.dispatchEvent(new Event('change'));
+            }
+            closeProductModalFunc(addProductModal)
+        } );
     if (cancelClientBtn) cancelClientBtn.addEventListener('click', () => closeClientModalFunc(addClientModal));
     if (saveInvoiceBtn) saveInvoiceBtn.addEventListener('click', () => saveInvoice(createInvoiceModal, invoiceItemsBody));
     if (saveProductBtn) saveProductBtn.addEventListener('click', () => saveProduct(addProductModal));

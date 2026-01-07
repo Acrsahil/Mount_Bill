@@ -979,7 +979,7 @@ export async function saveInvoice() {
     const discountAmount = discountAmountInput ? parseFloat(discountAmountInput.value) || 0 : 0;
     const taxPercent = taxPercentageInput ? parseFloat(taxPercentageInput.value) || 0 : 0;
     const taxAmount = taxAmountInput ? parseFloat(taxAmountInput.value) || 0 : 0;
-
+    console.log("global discount ko value",discountPercent)
     let noteshere = "";
     if (is_addnotebtn) {
         noteshere = document.getElementById('note').value;
@@ -1018,9 +1018,9 @@ export async function saveInvoice() {
                 discount: item.discount || 0,
                 discountPercent: item.discountPercent || 0,
             })),
-            globalDiscountPercent: globalDiscount,
+            globalDiscountPercent: Number(globalDiscount).toFixed(2),
             globalDiscountAmount: discountAmount,
-            globalTaxPercent: globalTax,
+            globalTaxPercent: Number(globalTax).toFixed(2),
             globalTaxAmount: taxAmount,
             additionalCharges: window.additionalChargesTotal,
             additionalchargeName: additionalchargeName,

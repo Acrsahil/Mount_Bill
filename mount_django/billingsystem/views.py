@@ -1,6 +1,6 @@
 import json
 from datetime import datetime
-from decimal import Decimal
+from decimal import Decimal,ROUND_HALF_UP
 from uuid import UUID
 
 from django.contrib.auth.decorators import login_required
@@ -366,7 +366,9 @@ def update_product(request, id):
         category_name = data.get("category", "").strip()
         cost_price = data.get("cost_price")
         selling_price = data.get("selling_price")
+        lowStock = data.get("lowStock")
         product = Product.objects.get(id=product_id)
+
         if category_name:
             category_obj, created = ProductCategory.objects.get_or_create(
                 name=category_name, company=product.company
@@ -378,6 +380,7 @@ def update_product(request, id):
         product.name = name
         product.cost_price = cost_price
         product.selling_price = selling_price
+        product.low_stock_bar = lowStock
 
         product.save()
 
@@ -426,11 +429,13 @@ def add_stock(request, id):
         item_activity.save()
         item_activity = [
             {
+                "id": item_activity.id,
                 "type": item_activity.type,
                 "date": item_activity.date.isoformat(),
                 "change": item_activity.change,
                 "quantity": item_activity.quantity,
                 "remarks": item_activity.remarks,
+                "order_id": item_activity.order.id if item_activity.order else None,
             }
         ]
         return JsonResponse(
@@ -474,11 +479,13 @@ def reduce_stock(request, id):
         item_activity.save()
         item_activity = [
             {
+                "id":item_activity.id,
                 "type": item_activity.type,
                 "date": item_activity.date.isoformat(),
                 "change": item_activity.change,
                 "quantity": item_activity.quantity,
                 "remarks": item_activity.remarks,
+                "order_id": item_activity.order.id if item_activity.order else None
             }
         ]
         return JsonResponse(
@@ -611,7 +618,7 @@ def save_invoice(request):
                 order=order,
                 product=product,
                 quantity=quantity,
-                discount=discount,
+                discount=discountPercent,
                 product_price=Decimal(
                     str(price)
                 ),  # Convert to Decimal    quantity=quantity,
@@ -646,7 +653,7 @@ def save_invoice(request):
 
         final_amount += global_discount / 100 * final_amount
         final_amount += additional_charges
-
+        final_amount = Decimal(final_amount).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP)
         for charge in charge_name_amount:
             charge_name = charge.get("chargeName")
             charge_amount = charge.get("chargeAmount")
@@ -677,10 +684,14 @@ def save_invoice(request):
         )
 
         try:
-            order_summary.full_clean()  # validate against max_digits, etc.
+            
+            order_summary.full_clean() 
+             # validate against max_digits, etc.
+            
             order_summary.save()
         except ValidationError as e:
-            print("Validation errors:", e.message_dict)
+
+            
             transaction.set_rollback(True)
             return JsonResponse(
                 {
@@ -885,6 +896,7 @@ def invoice_layout(request, id):
                 for bill in bill_info:
                     # Check if product exists
                     if bill.product:
+                        per_discount = (Decimal((bill.quantity)  * Decimal(bill.product_price)) * Decimal((bill.discount)  / Decimal('100'))).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP) if bill.discount else 0
                         item = {
                             "id": bill.id,
                             "product_id": bill.product.id,
@@ -899,11 +911,12 @@ def invoice_layout(request, id):
                             "product_price": float(bill.product_price)
                             if bill.product_price
                             else 0,
-                            "line_total": float(bill.product_price * bill.quantity)
-                            if bill.product_price and bill.quantity
+                            "perDiscount": per_discount,
+                            "line_total": (Decimal(bill.product_price) * Decimal(bill.quantity)) - per_discount if bill.product_price and bill.quantity
                             else 0,
                             "discount_percent": 0,
                             "discount_amount": 0,
+                            
                         }
                     else:
                         item = {
@@ -1046,6 +1059,9 @@ def settings(request):
     context = get_serialized_data(request.user, "settings")
     return render(request, "website/bill.html", context)
 
+def client_detail(request):
+    context = get_serialized_data(request.user, "dashboard")
+    return render(request, "website/client_detail.html", context)
 
 def product_detail(request, id: UUID = None):
     context = get_serialized_data(request.user, "dashboard")
@@ -1156,6 +1172,7 @@ def update_stock(request, id):
                     "stock_quantity": item_activity.change,
                     "quantity": item_activity.quantity,
                     "remarks": item_activity.remarks,
+                    "order_id": item_activity.order.id if item_activity.order else None
                 },
             }
         )

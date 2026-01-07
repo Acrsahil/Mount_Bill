@@ -113,7 +113,7 @@ export function openModal(invoiceId) {
                 tr.appendChild(price)
 
                 let discount_percent = document.createElement("td")
-                discount_percent.innerHTML = data.invoice.items[i].discount_amount
+                discount_percent.innerHTML = data.invoice.items[i].perDiscount
                 tr.appendChild(discount_percent)
 
 
@@ -180,14 +180,14 @@ export function openModal(invoiceId) {
 
             if(data.invoice.amounts.global_discount_percent != '0'){
                 document.getElementById("discountLabel").innerHTML = `Discount (${data.invoice.amounts.global_discount_percent}%):`
-                document.getElementById("discount").innerHTML ="Rs. " + data.invoice.amounts.global_discount_amount
+                document.getElementById("discount").innerHTML ="Rs. " + Number(data.invoice.amounts.global_discount_amount).toFixed(2);
             }else{
                 document.getElementById("dislabel").style.display = "none"
             }
 
             if(data.invoice.amounts.global_tax_percent != '0'){
                 document.getElementById("taxLabel").innerHTML = `Tax (${data.invoice.amounts.global_tax_percent}%):`
-                document.getElementById("tax").innerHTML ="Rs. " + data.invoice.amounts.global_tax_amount
+                document.getElementById("tax").innerHTML ="Rs. " + Number(data.invoice.amounts.global_tax_amount).toFixed(2)
             }else{
                 document.getElementById("taxlabel").style.display = "none"
             }
