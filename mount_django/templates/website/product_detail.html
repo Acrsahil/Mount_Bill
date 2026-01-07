@@ -1,8 +1,12 @@
 {% extends "layout.html" %}
 {% load static %}
+
 {% block extra_css %}
+
 <script src="https://cdn.tailwindcss.com"></script>
+
 {% endblock %}
+
 {% block content %}
   <script>
         function closemodal() {
@@ -178,7 +182,7 @@
     <aside class="product-sidebar w-72 bg-white border-r flex flex-col">
         <div class="product-header flex justify-between items-center p-5 border-b">
             <h2 class="products text-lg font-semibold text-gray-900" id="itemNum">Products({{item_num}})</h2>
-            <button class="btn btn-success bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-3 rounded-md flex items-center gap-2 transition text-sm" id="addNewProductDetailBtn">
+            <button class="btn btn-success bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-3 rounded-md flex items-center gap-2 transition text-sm" id="addNewProductDetailBtn">
                 <i class="fas fa-plus-circle text-sm"></i> Add Product
             </button>
         </div>
@@ -244,7 +248,7 @@
                         <button class="btn btn-secondary bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-2 px-4 rounded-md flex items-center gap-2 transition text-sm" id="activitySortBtn">
                             <i class="fa-solid fa-sort"></i> Sort By
                         </button>
-                        <button class="btn btn-success adjust-stock-btn bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-5 rounded-md transition text-sm" data-id="${product.id}">
+                        <button class="btn btn-success adjust-stock-btn bg-blue-600 hover:bg-green-700 text-white font-medium py-2 px-5 rounded-md transition text-sm" data-id="${product.id}">
                             Adjust Stock
                         </button>
                     </div>
@@ -309,7 +313,7 @@
     </ul>
 </div>
 
-{% include "website/invoice_modal.html" %}
+<!-- {% include "website/invoice_modal.html" %} -->
 {% endblock %}
 
 {% block extra_js %}

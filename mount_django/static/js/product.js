@@ -636,43 +636,46 @@ async function fetchProductActivities(productUid,productsactivityTableBody){
 
 }
 
-function addProductActivityToTable(activity,productsactivityTableBody){
-    if(!productsactivityTableBody) return;
+function addProductActivityToTable(activity, productsactivityTableBody) {
+    if (!productsactivityTableBody) return;
+    
     const row = document.createElement('tr');
     
-    row.classList.add("activityRow");
-    if (activity.order_id) {
-            row.dataset.orderId = activity.order_id;
-            row.classList.add("clickable-row");
-        }
-    else{
-        row.dataset.activityId = activity.id;
-        console.log("id of itemactivity",row.dataset.activityId)
-    }
+    // Base row styling
+    row.classList.add(
+        "border-b", 
+        "border-gray-200", 
+        "hover:bg-gray-50", 
+        "transition-colors", 
+        "duration-150"
+    );
+    
+    // Conditional styling for activity row
+        row.dataset.orderId = activity.order_id;
+        row.classList.add("cursor-pointer", "hover:bg-blue-100");
 
+    // Table cells with proper Tailwind styling
     row.innerHTML = `
-    <td>${activity.type}</td>
-    <td>${activity.date}</td>
-    <td>${String(activity.change)}</td>
-    <td>${activity.quantity}</td>
-    <td>${activity.remarks}</td>`;
+        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${activity.type}</td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${activity.date}</td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-medium ${activity.change >= 0 ? 'text-green-600' : 'text-red-600'}">${String(activity.change)}</td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${activity.quantity}</td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 max-w-xs truncate" title="${activity.remarks}">${activity.remarks}</td>
+    `;
 
+    // Click event handler
     row.addEventListener('click', () => {
         if (row.dataset.orderId && parseInt(row.dataset.orderId) > 0) {
-            console.log("i am inside if");
+            console.log("Opening order modal");
             openModal(row.dataset.orderId);
-        } 
-
-        else if (row.dataset.activityId && (!row.dataset.orderId || row.dataset.orderId === '')) {
-            console.log("is this getting clicked");
-            editAddAcitivity(row.dataset.activityId);
+        } else if (row.dataset.activityId && (!row.dataset.orderId || row.dataset.orderId === '')) {
+            console.log("Editing activity");
+            editAddActivity(row.dataset.activityId);
         }
-})
+    });
     
     productsactivityTableBody.prepend(row);
-    
 }
-
 function loadProductActivity(activities,productsactivityTableBody){
  if(productsactivityTableBody){
     productsactivityTableBody.innerHTML=``;
@@ -845,51 +848,123 @@ export function addProductToTable(product, productsTableBody, index){
 
 export function addProductToList(product, productList) {
   if (!productList) return;
+  
   const tableBody = document.getElementById('productsactivityTableBody');
   const li = document.createElement('li');
-  li.classList.add('productlists');
+  
+  // Base Tailwind styling
+  li.classList.add(
+    'productlists',
+    'px-4', 
+    'py-3',
+    'cursor-pointer',
+    'transition-colors',
+    'duration-150',
+    'rounded-lg',
+    'mb-1',
+    'border',
+    'border-gray-100',
+    'hover:border-gray-300',
+    'hover:bg-gray-50',
+    'truncate',
+    'text-gray-700'
+  );
+  
   li.textContent = product.name;
   li.dataset.id = product.id;
   li.dataset.uid = product.uid;
   productList.appendChild(li);
 
- // Auto-select based on URL
+  // Auto-select based on URL
   const uidInUrl = selectedIdFromUrl();
   if (uidInUrl && String(uidInUrl) === String(product.uid)) {
-      li.classList.add('selected');
-      const deleteBtn = document.querySelector('.delete-product-btn');
-      if (deleteBtn) deleteBtn.dataset.productId = product.id;
-      const editBtn = document.querySelector('.edit-product-btn');
-      if (editBtn) editBtn.dataset.productId = product.id;
-      const adjustBtn = document.querySelector('.adjust-stock-btn');
-      if (adjustBtn) adjustBtn.dataset.productId = product.id;
-      fetchProductActivities(product.uid,tableBody)
+    // Remove selected state from all other items first
+    document.querySelectorAll('.productlists').forEach(item => {
+      item.classList.remove(
+        'selected',
+        'bg-blue-50',
+        'border-blue-200',
+        'text-blue-700',
+        'font-medium'
+      );
+      item.classList.add(
+        'border-gray-100',
+        'text-gray-700'
+      );
+    });
+    
+    // Add selected state to current item
+    li.classList.add(
+      'selected',
+      'bg-blue-100',
+      'border-blue-200',
+      'text-blue-700',
+      'font-medium'
+    );
+    li.classList.remove('text-gray-700', 'border-gray-100');
+    
+    const deleteBtn = document.querySelector('.delete-product-btn');
+    const editBtn = document.querySelector('.edit-product-btn');
+    const adjustBtn = document.querySelector('.adjust-stock-btn');
+    
+    if (deleteBtn) deleteBtn.dataset.productId = product.id;
+    if (editBtn) editBtn.dataset.productId = product.id;
+    if (adjustBtn) adjustBtn.dataset.productId = product.id;
+    
+    fetchProductActivities(product.uid, tableBody);
   }
 
-   li.addEventListener('click', () => {
-        //for deleting the product,we need product id
-        const deleteBtn = document.querySelector('.delete-product-btn');
-        const editBtn = document.querySelector('.edit-product-btn'); 
-        const adjustBtn = document.querySelector('.adjust-stock-btn');
-        deleteBtn.dataset.productId = product.id;
-        editBtn.dataset.productId = product.id;
-        adjustBtn.dataset.productId = product.id;
-        console.log("yo id ho haii",editBtn.dataset.productId)
-
-        history.pushState({}, '', `/dashboard/product-detail/${product.uid}`);
-        document.querySelectorAll('.productlists').forEach(item =>
-        {
-            item.classList.remove('selected');
-        }
-        )
-        li.classList.add('selected')
-        //immediately update the table
-        renderDetails(productsCache);
-
-        
-        fetchProductActivities(product.uid, tableBody);
-      });
+  li.addEventListener('click', () => {
+    // Remove selected state from ALL other items first
+    document.querySelectorAll('.productlists').forEach(item => {
+      // Check if it's NOT the clicked item
+      if (item !== li) {
+        item.classList.remove(
+          'selected',
+          'bg-blue-100',
+          'border-blue-200',
+          'text-blue-700',
+          'font-medium'
+        );
+        // Re-add base styling
+        item.classList.add(
+          'border-gray-100',
+          'text-gray-700'
+        );
+      }
+    });
+    
+    // Now add selected state to clicked item
+    li.classList.add(
+      'selected',
+      'bg-blue-100',
+      'border-blue-200',
+      'text-blue-700',
+      'font-medium'
+    );
+    li.classList.remove('text-gray-700', 'border-gray-100');
+    
+    // Update buttons
+    const deleteBtn = document.querySelector('.delete-product-btn');
+    const editBtn = document.querySelector('.edit-product-btn'); 
+    const adjustBtn = document.querySelector('.adjust-stock-btn');
+    
+    deleteBtn.dataset.productId = product.id;
+    editBtn.dataset.productId = product.id;
+    adjustBtn.dataset.productId = product.id;
+    
+    console.log("Product ID:", editBtn.dataset.productId);
+    
+    // Update URL
+    history.pushState({}, '', `/dashboard/product-detail/${product.uid}`);
+    
+    // Immediately update the table
+    renderDetails(productsCache);
+    fetchProductActivities(product.uid, tableBody);
+  });
 }
+
+
 window.addEventListener('popstate',() =>
 {
     renderDetails(productsCache);
@@ -1397,7 +1472,7 @@ export async function editProduct(productId) {
         document.getElementById('productCostPrice').value = product.cost_price;
         document.getElementById('productQuantity').value = product.quantity;
         document.getElementById('productSellingPrice').value = product.selling_price;
-        document.getElementById('productCategory').value = product.category
+        document.getElementById('productCategory').value = product.categoriy
 
         // Change modal title and button
         const editProductmodal = document.querySelector('#addProductModal .modal-header h3')
