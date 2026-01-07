@@ -1,388 +1,319 @@
 {% extends "layout.html" %}
 {% load static %}
-
 {% block extra_css %}
 <script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet" href="{% static 'css/product.css' %}">
-<link rel="stylesheet" href="{% static 'css/bill.css' %}">
-{% comment %} <link rel="stylesheet" href="{% static 'css/bill_modal.css' %}"> {% endcomment %}
-
 {% endblock %}
-
 {% block content %}
-
   <script>
-        // DEFINE FUNCTION FIRST in head or before body
         function closemodal() {
             console.log("i am clicked closeProductModal..");
             document.getElementById("addProductModal").style.display = "none";
         }
     </script>
-{% comment %} {% include "website/bill_layout.html" %} {% endcomment %}
+
 <!--addstock buttons-->
-<div class="stock-popup" id="addStockPopup">
-    <button class="popup-btn" id="addStock">Add Stock</button>
-    <button class="popup-btn" id="reduceStock">Remove Stock</button>
+<div class="stock-popup fixed bottom-6 right-6 z-50 flex flex-col gap-2" id="addStockPopup">
+    <button class="popup-btn bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-5 rounded-md shadow-md transition text-sm" id="addStock">Add Stock</button>
+    <button class="popup-btn bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-5 rounded-md shadow-md transition text-sm" id="reduceStock">Remove Stock</button>
 </div>
 
 <!--addStock popup-->
-<div class="modal" id="addStockModal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3>Add Stock</h3>
-            <button class="close-btn" id="closeStockModal">&times;</button>
+<div class="modal fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50" id="addStockModal">
+    <div class="modal-content bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
+        <div class="modal-header flex justify-between items-center p-5 border-b">
+            <h3 class="text-lg font-semibold text-gray-900">Add Stock</h3>
+            <button class="close-btn text-2xl text-gray-500 hover:text-gray-800 transition" id="closeStockModal">&times;</button>
         </div>
-        <div class="modal-body">
+        <div class="modal-body p-5 space-y-4">
             <div class="form-group">
-                <label for="stockQuantity" class="stock-label">Quantity To Add</label>
-                <input type="text" id="stockQuantity" class="form-control stock-quantity" required>
+                <label for="stockQuantity" class="stock-label block text-sm font-medium text-gray-700 mb-1">Quantity To Add</label>
+                <input type="text" id="stockQuantity" class="form-control stock-quantity w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" required>
             </div>
             <div class="productPrices">
-                <div class="form-row">
+                <div class="form-row grid grid-cols-2 gap-4">
                     <div class="form-group">
-                        <label for="productPrices" class="product-price">Cost Price</label>
-                        <input type="number" id="productPrices" class="form-control" placeholder="0.00" required>
+                        <label for="productPrices" class="product-price block text-sm font-medium text-gray-700 mb-1">Cost Price</label>
+                        <input type="number" id="productPrices" class="form-control w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" placeholder="0.00" required>
                     </div>
                     <div class="form-group">
-                        <label for="stockDate">Date</label>
-                        <input type="date" id="stockDate" class="form-control">
+                        <label for="stockDate" class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                        <input type="date" id="stockDate" class="form-control w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
                     </div>
                 </div>
             </div>
             <div class="form-group">
-                <label for="stockRemarks">Remarks</label>
-                <input type="text" id="stockRemarks" class="form-control"
+                <label for="stockRemarks" class="block text-sm font-medium text-gray-700 mb-1">Remarks</label>
+                <input type="text" id="stockRemarks" class="form-control w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                        placeholder="Enter remarks.....">
             </div>
         </div>
-
-        <div class="modal-footer">
-            <button class="btn btn-light" id="deleteStockBtn">Delete</button>
-            <button class="btn btn-primary" id="editStockBtn">Edit Stock</button>
-            <button class="btn btn-light" id="cancelStockBtn">Cancel</button>
-            <button class="btn btn-primary" id="UpdateStockBtn">Update</button>
-            <button class="btn btn-primary" id="saveStockBtn">Add Stock</button>
+        <div class="modal-footer flex flex-wrap gap-2 justify-end p-5 border-t">
+            <button class="btn btn-light bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-md transition text-sm" id="deleteStockBtn">Delete</button>
+            <button class="btn btn-primary bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition text-sm" id="editStockBtn">Edit Stock</button>
+            <button class="btn btn-light bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-md transition text-sm" id="cancelStockBtn">Cancel</button>
+            <button class="btn btn-primary bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition text-sm" id="UpdateStockBtn">Update</button>
+            <button class="btn btn-primary bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md transition text-sm" id="saveStockBtn">Add Stock</button>
         </div>
-
     </div>
 </div>
-
 
 <!--reduceStock popup-->
-<div class="modal" id="reduceStockModal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3>Reduce Stock</h3>
-            <button class="close-btn" id="closeStockModals">&times;</button>
+<div class="modal fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50" id="reduceStockModal">
+    <div class="modal-content bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
+        <div class="modal-header flex justify-between items-center p-5 border-b">
+            <h3 class="text-lg font-semibold text-gray-900">Reduce Stock</h3>
+            <button class="close-btn text-2xl text-gray-500 hover:text-gray-800 transition" id="closeStockModals">&times;</button>
         </div>
-        <div class="modal-body">
+        <div class="modal-body p-5 space-y-4">
             <div class="form-group">
-                <label for="stockQuantity">Quantity To Reduce</label>
-                <input type="text" id="stockQuantities" class="form-control stock-quantity" required>
+                <label for="stockQuantities" class="block text-sm font-medium text-gray-700 mb-1">Quantity To Reduce</label>
+                <input type="text" id="stockQuantities" class="form-control stock-quantity w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" required>
             </div>
             <div class="productPrices">
-                <div class="form-row">
+                <div class="form-row grid grid-cols-2 gap-4">
                     <div class="form-group">
-                        <label for="productPrices" class="product-price">Cost Price</label>
-                        <input type="number" id="productPricess" class="form-control" placeholder="0.00" required>
+                        <label for="productPricess" class="product-price block text-sm font-medium text-gray-700 mb-1">Cost Price</label>
+                        <input type="number" id="productPricess" class="form-control w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" placeholder="0.00" required>
                     </div>
                     <div class="form-group">
-                        <label for="stockDate">Date</label>
-                        <input type="date" id="stockDates" class="form-control">
+                        <label for="stockDates" class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                        <input type="date" id="stockDates" class="form-control w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
                     </div>
                 </div>
             </div>
             <div class="form-group">
-                <label for="stockRemarks">Remarks</label>
-                <input type="text" id="stockRemarkss" class="form-control"
+                <label for="stockRemarkss" class="block text-sm font-medium text-gray-700 mb-1">Remarks</label>
+                <input type="text" id="stockRemarkss" class="form-control w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                        placeholder="Enter remarks.....">
             </div>
         </div>
-
-        <div class="modal-footer">
-            <button class="btn btn-light" id="cancelStockBtns">Cancel</button>
-            <button class="btn btn-primary" id="reduceStockBtn">Remove Stock</button>
+        <div class="modal-footer flex gap-2 justify-end p-5 border-t">
+            <button class="btn btn-light bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-md transition text-sm" id="cancelStockBtns">Cancel</button>
+            <button class="btn btn-primary bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-md transition text-sm" id="reduceStockBtn">Remove Stock</button>
         </div>
-
     </div>
 </div>
-<!-- Add Product Modal - WITH SUGGESTIONS -->
-<div class="modal" id="addProductModal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3>Add New Product</h3>
-            <button class="close-btn" onClick="closemodal()" id="closeProductModal">&times;</button>
+
+<!-- Add Product Modal -->
+<div class="modal fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50 overflow-y-auto" id="addProductModal">
+    <div class="modal-content bg-white rounded-lg shadow-xl w-full max-w-xl mx-4 my-8">
+        <div class="modal-header flex justify-between items-center p-5 border-b">
+            <h3 class="text-xl font-semibold text-gray-900">Add New Product</h3>
+            <button class="close-btn text-2xl text-gray-500 hover:text-gray-800 transition" onClick="closemodal()" id="closeProductModal">&times;</button>
         </div>
-        <div class="modal-body">
-            <div class="form-group" style="position: relative;">
-                <label for="productName">Product Name *</label>
-                <input type="text" id="productName" class="form-control ">
+        <div class="modal-body p-5 space-y-5">
+            <div class="form-group">
+                <label for="productName" class="block text-sm font-medium text-gray-700 mb-1">Product Name *</label>
+                <input type="text" id="productName" class="form-control w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
             </div>
-            <div class = "productQuantities">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="productQuantity" class="updateProduct">Product Quantity</label>
-                        <input type="number" id="productQuantity" class="form-control" placeholder="0.00" min="0" step="0.01" required>
-                    </div>
+            <div class="productQuantities">
+                <div class="form-group">
+                    <label for="productQuantity" class="updateProduct block text-sm font-medium text-gray-700 mb-1">Product Quantity</label>
+                    <input type="number" id="productQuantity" class="form-control w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" placeholder="0.00" min="0" step="0.01" required>
                 </div>
             </div>
-            <div class="form-row">
+            <div class="form-row grid grid-cols-3 gap-4">
                 <div class="form-col">
                     <div class="form-group">
-                        <label for="productCostPrice">Cost Price ($) *</label>
-                        <input type="number" id="productCostPrice" class="form-control" placeholder="0.00" min="0" step="0.01" required>
+                        <label for="productCostPrice" class="block text-sm font-medium text-gray-700 mb-1">Cost Price ($) *</label>
+                        <input type="number" id="productCostPrice" class="form-control w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" placeholder="0.00" min="0" step="0.01" required>
                     </div>
                 </div>
                 <div class="form-col">
                     <div class="form-group">
-                        <label for="productSellingPrice">Selling Price ($) *</label>
-                        <input type="number" id="productSellingPrice" class="form-control" placeholder="0.00" min="0" step="0.01" required>
+                        <label for="productSellingPrice" class="block text-sm font-medium text-gray-700 mb-1">Selling Price ($) *</label>
+                        <input type="number" id="productSellingPrice" class="form-control w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" placeholder="0.00" min="0" step="0.01" required>
                     </div>
                 </div>
                 <div class="form-col">
                     <div class="form-group" style="position: relative;">
-                        <label for="productCategory">Category</label>
-                        <input type="text" id="productCategory" class="form-control product-category-search-input" 
+                        <label for="productCategory" class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                        <input type="text" id="productCategory" class="form-control product-category-search-input w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                                placeholder="Type category name (Tab to complete)...">
-                        {% comment %} <div class="search-hint" id="product-category-search-hint" style="display: none; position: absolute; background: white; border: 1px solid #ddd; max-height: 150px; overflow-y: auto; z-index: 1000; width: 100%;">
-                            <!-- Category suggestions will appear here -->
-                        </div> {% endcomment %}
                     </div>
                 </div>
             </div>
-            <div class="flex justify-between items-center w-full mb-4">
-    
-                <h2 class="flex items-center gap-2 text-lg font-medium">
+            <div class="flex justify-between items-center w-full">
+                <h2 class="flex items-center gap-2 text-base font-medium text-gray-800">
                     Low Stock Alert
-                    <svg xmlns="http://www.w3.org/2000/svg"
-                        class="h-5 w-5 text-black-500"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        stroke-width="2">
-                        <path stroke-linecap="round"
-                            stroke-linejoin="round"
-                            d="M12 9v2m0 4h.01M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z" />
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z" />
                     </svg>
                 </h2>
-
-                <label class="relative inline-block w-[45px] h-[28px] cursor-pointer">
-                    <input id="statusToggle" type="checkbox" class="sr-only peer" />
-
-                    <span class="absolute inset-0 bg-gray-300 rounded-full
-                                transition duration-300 peer-checked:bg-blue-500">
-                    </span>
-
-                    <span class="absolute left-[3px] bottom-[3px] top-[3px]
-                                w-[21px] h-[21px] bg-white rounded-full
-                                transition duration-300 peer-checked:translate-x-[19px]">
-                    </span>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input id="statusToggle" type="checkbox" class="sr-only peer">
+                    <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:bg-blue-600"></div>
+                    <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition peer-checked:translate-x-5"></div>
                 </label>
-
             </div>
-
-            <div id="lowStockConstraint" class="flex flex-col gap-2 hidden">
-            <div class="flex flex-col w-full">
-                <label class="mb-1">Low Stock Quantity</label>
-                <input
-                id="lowStockQuantity"
-                type="text"
-                placeholder="Enter Stock Quantity"
-                class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+            <div id="lowStockConstraint" class="hidden">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Low Stock Quantity</label>
+                <input id="lowStockQuantity" type="text" placeholder="Enter Stock Quantity" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
             </div>
-            </div>
-
-
         </div>
-        <div class="modal-footer">
-            <button class="btn btn-light" onClick="closemodal()" id="cancelProductBtn">Cancel</button>
-            <button class="btn btn-primary" id="saveProductBtn">Save Product</button>
-            <button class="btn btn-primary" id="updateProductBtn">Update Product</button>
+        <div class="modal-footer flex gap-2 justify-end p-5 border-t">
+            <button class="btn btn-light bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-md transition text-sm" onClick="closemodal()" id="cancelProductBtn">Cancel</button>
+            <button class="btn btn-primary bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-5 rounded-md transition text-sm" id="saveProductBtn">Save Product</button>
+            <button class="btn btn-primary bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-5 rounded-md transition text-sm" id="updateProductBtn">Update Product</button>
         </div>
         <div class="category-db" id="categoryDB">
             <ul id="catelists">
-                <!-- dynamically all the list are here -->
                 <li id="general">General</li>
             </ul>
         </div>
     </div>
 </div>
-<header class="product-layout-header">
-    <div class="user-info">
-        <div class="user-avatar">{{ request.user.username.0|upper }}</div>
+
+<header class="product-layout-header bg-white border-b py-3 px-6 flex justify-end">
+    <div class="user-info flex items-center gap-3">
+        <div class="user-avatar w-10 h-10 bg-indigo-600 text-white rounded-full flex items-center justify-center text-sm font-semibold">{{ request.user.username.0|upper }}</div>
         <div>
-            <div>{{ request.user.username }}</div>
-            <div class="user-role">Administrator</div>
+            <div class="text-sm font-medium text-gray-900">{{ request.user.username }}</div>
+            <div class="user-role text-xs text-gray-500">Administrator</div>
         </div>
     </div>
 </header>
 
-<div class="product-page">
-    <aside class="product-sidebar">
-        <!-- Row 1: Products + Add Product -->
-        <div class="product-header">
-            <h2 class="products" id="itemNum">Products({{item_num}})</h2>
-            <button class="btn btn-success" id="addNewProductDetailBtn">
-                <i class="fas fa-plus-circle"></i> Add Product
+<div class="product-page flex h-screen bg-gray-50">
+    <aside class="product-sidebar w-72 bg-white border-r flex flex-col">
+        <div class="product-header flex justify-between items-center p-5 border-b">
+            <h2 class="products text-lg font-semibold text-gray-900" id="itemNum">Products({{item_num}})</h2>
+            <button class="btn btn-success bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-3 rounded-md flex items-center gap-2 transition text-sm" id="addNewProductDetailBtn">
+                <i class="fas fa-plus-circle text-sm"></i> Add Product
             </button>
         </div>
-
-        <!-- Row 2: Search + Sort By -->
-        <div class="search-box-sort">
-            <div class="search-box-product">
-                <i class="fas fa-search"></i>
-                <input type="text" id="productDetailSearchInput" placeholder="Search products...">
+        <div class="search-box-sort flex flex-col gap-3 p-5 border-b">
+            <div class="search-box-product relative">
+                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                <input type="text" id="productDetailSearchInput" placeholder="Search products..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
             </div>
-
-            <button class="btn btn-secondary" id="sortProductBtn">
-                <i class="fa-solid fa-sort"></i> Sort By
+            <button class="btn btn-secondary bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-2 px-4 rounded-md flex items-center justify-center gap-2 transition text-sm" id="sortProductBtn">
+                <i class="fa-solid fa-sort text-sm"></i> Sort By
             </button>
         </div>
-
-        <!-- Row 3: Filters -->
-        <div class="filter-row">
-            <button class="btn btn-secondary all-category" id="caterorylists">All Category</button>
-            <button class="btn btn-secondary all-category" id="stocklists">All Stock</button>
-            <button class="btn btn-secondary all-category" id="itemlists">All items</button>
+        <div class="filter-row flex flex-wrap gap-2 p-5 border-b">
+            <button class="btn btn-secondary all-category bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-1.5 px-3 rounded-md transition text-sm" id="caterorylists">All Category</button>
+            <button class="btn btn-secondary all-category bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-1.5 px-3 rounded-md transition text-sm" id="stocklists">All Stock</button>
+            <button class="btn btn-secondary all-category bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-1.5 px-3 rounded-md transition text-sm" id="itemlists">All items</button>
         </div>
-
-        <!-- Product list -->
-        <div class="product-names">
-            <ul class="productList">
+        <div class="product-names flex-1 overflow-y-auto p-5">
+            <ul class="productList space-y-1">
                 <!-- products will be dynamically added here -->
             </ul>
         </div>
     </aside>
- <main class="product-main">
-  <!-- Row: name on left, edit/delete on right -->
-  <div class = "product-selected">
-  <div class="product-detail-header">
-    <div class="product-title" id="productTitle">{{product_name}}</div>
 
-    <div class="product-actions">
-      <button class="btn edit-product-btn" data-id="${product.id}">
-        <i class="fas fa-edit"></i> Edit Item
-      </button>
-      <button class="btn delete-product-btn" data-id="${product.id}">
-        <i class="fas fa-trash"></i> Delete Item
-      </button>
-    </div>
-  </div>
+    <main class="product-main flex-1 overflow-y-auto">
+        <div class="product-selected p-6">
+            <div class="product-detail-header flex justify-between items-center mb-6">
+                <div class="product-title text-2xl font-semibold text-gray-900" id="productTitle">{{product_name}}</div>
+                <div class="product-actions flex gap-3">
+                    <button class="btn edit-product-btn bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md flex items-center gap-2 transition text-sm" data-id="${product.id}">
+                        <i class="fas fa-edit"></i> Edit Item
+                    </button>
+                    <button class="btn delete-product-btn bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-md flex items-center gap-2 transition text-sm" data-id="${product.id}">
+                        <i class="fas fa-trash"></i> Delete Item
+                    </button>
+                </div>
+            </div>
 
-  <!-- Details table full width -->
-  <section class="productsDetail">
-    <table class="table table-stretch" id="productsDetailTable">
-      <thead>
-        <tr>
-          <th>Stock Quantity</th>
-          <th>Selling Price</th>
-          <th>Purchase Price</th>
-          <th>Stock Value</th>
-        </tr>
-      </thead>
-      <tbody id="productDetailTableBody">
-        <!-- dynamically added -->
-      </tbody>
-    </table>
-  </section>
+            <section class="productsDetail mb-8">
+                <table class="table table-stretch w-full bg-white rounded-lg shadow-sm overflow-hidden">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="text-left py-3 px-4 text-sm font-medium text-gray-700">Stock Quantity</th>
+                            <th class="text-left py-3 px-4 text-sm font-medium text-gray-700">Selling Price</th>
+                            <th class="text-left py-3 px-4 text-sm font-medium text-gray-700">Purchase Price</th>
+                            <th class="text-left py-3 px-4 text-sm font-medium text-gray-700">Stock Value</th>
+                        </tr>
+                    </thead>
+                    <tbody id="productDetailTableBody" class="divide-y divide-gray-200">
+                        <!-- dynamically added -->
+                    </tbody>
+                </table>
+            </section>
 
-  <!-- Activity header row: title left, controls right -->
-  <section class="productActivity">
-    <div class="activity-header">
-      <h2 class="activity-title">Activity(1)</h2>
-
-      <div class="activity-actions">
-        <div class="search-box-product">
-          <i class="fas fa-search"></i>
-          <input type="text" id="activitySearchInput" placeholder="Search activity...">
+            <section class="productActivity">
+                <div class="activity-header flex justify-between items-center mb-4">
+                    <h2 class="activity-title text-xl font-semibold text-gray-900">Activity(1)</h2>
+                    <div class="activity-actions flex items-center gap-3">
+                        <div class="search-box-product relative">
+                            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                            <input type="text" id="activitySearchInput" placeholder="Search activity..." class="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
+                        </div>
+                        <button class="btn btn-secondary bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-2 px-4 rounded-md flex items-center gap-2 transition text-sm" id="activitySortBtn">
+                            <i class="fa-solid fa-sort"></i> Sort By
+                        </button>
+                        <button class="btn btn-success adjust-stock-btn bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-5 rounded-md transition text-sm" data-id="${product.id}">
+                            Adjust Stock
+                        </button>
+                    </div>
+                </div>
+                <div class="activityDetail">
+                    <table class="table table-stretch w-full bg-white rounded-lg shadow-sm overflow-hidden">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="text-left py-3 px-4 text-sm font-medium text-gray-700">Type</th>
+                                <th class="text-left py-3 px-4 text-sm font-medium text-gray-700">Date</th>
+                                <th class="text-left py-3 px-4 text-sm font-medium text-gray-700">Change</th>
+                                <th class="text-left py-3 px-4 text-sm font-medium text-gray-700">Quantity</th>
+                                <th class="text-left py-3 px-4 text-sm font-medium text-gray-700">Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productsactivityTableBody" class="divide-y divide-gray-200">
+                            <!-- dynamically added -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
         </div>
 
-        <button class="btn btn-secondary" id="activitySortBtn">
-          <i class="fa-solid fa-sort"></i> Sort By
-        </button>
-
-        <button class="btn btn-success adjust-stock-btn" data-id="${product.id}">
-          Adjust Stock
-        </button>
-      </div>
-    </div>
-
-    <!-- Activity table full width -->
-    <div class="activityDetail">
-      <table class="table table-stretch" id="productsactivityTable">
-        <thead>
-          <tr>
-            <th>Type</th>
-            <th>Date</th>
-            <th>Change</th>
-            <th>Quantity</th>
-            <th>Remarks</th>
-          </tr>
-        </thead>
-        <tbody id="productsactivityTableBody">
-          <!-- dynamically added -->
-        </tbody>
-      </table>
-    </div>
-  </section>
-</div>
-<div class="empty-state">
-  <div class="illustration">
-    <div class="box"></div>
-    <div class="line"></div>
-    <div class="line short"></div>
-  </div>
-
-  <h2>No items found</h2>
-<p>Click any product to see their transactions</p>
-</div>
-<div class="not-found">
-  <div class="content">
-    <div class="icon">🤖</div>
-</div>
-    <h1>Not Found</h1>
-    <p>Oops! Page not Found!</p>
-    <p>The page you're looking for doesn't exist anymore or has been moved or archived.</p>
-  </div>
-</div>
-
-</main>
-</div>
-
-<!--stock buttons-->
-{% comment %} <div class="stock-popup" id="addStockPopup">
-    <button class="popup-btn" id="addStock">Add Stock</button>
-    <button class="popup-btn" id="removeStock">Remove Stock</button>
-</div>  {% endcomment %}
-<div class="category-popup" id="categoryPopup">
-  <div class="popup-content">
-            <div class="search-box-category">
-                <i class="fas fa-search"></i>
-                <input type="text" id="categorySearchInput" placeholder="Search Category">
+        <div class="empty-state hidden flex flex-col items-center justify-center h-full text-center text-gray-500 px-8">
+            <div class="illustration mb-6 opacity-50">
+                <div class="w-24 h-24 bg-gray-200 rounded-lg mx-auto"></div>
+                <div class="w-40 h-3 bg-gray-200 rounded mt-4 mx-auto"></div>
+                <div class="w-32 h-3 bg-gray-200 rounded mt-3 mx-auto"></div>
             </div>
-    <ul id="categoryList">
-    <li id="allCategories">All Category</li>
-    <!--Dynamic list for the category will be listed here-->
-    <li id="generalCategory">General</li>
-    </ul>
-</div> 
+            <h2 class="text-xl font-medium mb-2">No items found</h2>
+            <p class="text-sm">Click any product to see their transactions</p>
+        </div>
+
+        <div class="not-found hidden flex flex-col items-center justify-center h-full text-center text-gray-600">
+            <div class="icon text-6xl mb-4">🤖</div>
+            <h1 class="text-3xl font-semibold mb-3">Not Found</h1>
+            <p class="text-base mb-2">Oops! Page not Found!</p>
+            <p class="text-sm max-w-md">The page you're looking for doesn't exist anymore or has been moved or archived.</p>
+        </div>
+    </main>
 </div>
 
-<div class ="stocklist-popup" id="stockListPopup">
-  <ul class ="stock-lists">
-    <li id="allStock">All stock</li>
-    <li id="inStock">In stock</li>
-    <li id="lowStock">Low stock</li>
-    <li id="outStock">Out of stock</li>
-  </ul>
+<div class="category-popup fixed inset-0 bg-black bg-opacity-50 hidden items-start justify-end z-50" id="categoryPopup">
+    <div class="popup-content bg-white w-72 h-full shadow-xl p-5 overflow-y-auto">
+        <div class="search-box-category relative mb-4">
+            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+            <input type="text" id="categorySearchInput" placeholder="Search Category" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
+        </div>
+        <ul id="categoryList" class="space-y-1">
+            <li id="allCategories" class="py-2 px-4 rounded hover:bg-gray-100 cursor-pointer font-medium text-sm">All Category</li>
+            <li id="generalCategory" class="py-2 px-4 rounded hover:bg-gray-100 cursor-pointer text-sm">General</li>
+        </ul>
+    </div>
 </div>
+
+<div class="stocklist-popup fixed top-48 left-1/2 -translate-x-1/2 bg-white rounded-md shadow-xl py-2 z-50 hidden min-w-40" id="stockListPopup">
+    <ul class="stock-lists">
+        <li id="allStock" class="px-6 py-2 hover:bg-gray-100 cursor-pointer text-sm">All stock</li>
+        <li id="inStock" class="px-6 py-2 hover:bg-gray-100 cursor-pointer text-sm">In stock</li>
+        <li id="lowStock" class="px-6 py-2 hover:bg-gray-100 cursor-pointer text-sm">Low stock</li>
+        <li id="outStock" class="px-6 py-2 hover:bg-gray-100 cursor-pointer text-sm">Out of stock</li>
+    </ul>
+</div>
+
 {% include "website/invoice_modal.html" %}
 {% endblock %}
 
 {% block extra_js %}
 <script>
-// Simple and safe data structure
 window.djangoData = {
     products: {{ product|safe }},
     product_cat: {{ product_cat|safe }},
@@ -390,21 +321,14 @@ window.djangoData = {
     invoices: {{ invoices|safe }},
 };
 </script>
-
 <script>
-// SAFETY CHECK - Add this right before loading bill.js
 if (typeof window.djangoData === 'undefined') {
-    window.djangoData = {
-        products: [],
-        product_cat: [],
-        clients: [],
-        invoices: {{ invoices|safe }},
-    };
+    window.djangoData = { products: [], product_cat: [], clients: [], invoices: {{ invoices|safe }} };
 }
 </script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script type="module" src="{%static 'js/events.js'%}"></script>
-<script type="module" src="{%static 'js/product.js'%}"></script>
-<script type="module" src="{%static 'js/bill_layout.js'%}"></script>
+<script type="module" src="{% static 'js/events.js' %}"></script>
+<script type="module" src="{% static 'js/product.js' %}"></script>
+<script type="module" src="{% static 'js/bill_layout.js' %}"></script>
 <script type="module" src="{% static 'js/main.js' %}"></script>
-{%endblock%}
+{% endblock %}
