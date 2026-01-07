@@ -366,7 +366,9 @@ def update_product(request, id):
         category_name = data.get("category", "").strip()
         cost_price = data.get("cost_price")
         selling_price = data.get("selling_price")
+        lowStock = data.get("lowStock")
         product = Product.objects.get(id=product_id)
+
         if category_name:
             category_obj, created = ProductCategory.objects.get_or_create(
                 name=category_name, company=product.company
@@ -378,6 +380,7 @@ def update_product(request, id):
         product.name = name
         product.cost_price = cost_price
         product.selling_price = selling_price
+        product.low_stock_bar = lowStock
 
         product.save()
 
@@ -426,11 +429,13 @@ def add_stock(request, id):
         item_activity.save()
         item_activity = [
             {
+                "id": item_activity.id,
                 "type": item_activity.type,
                 "date": item_activity.date.isoformat(),
                 "change": item_activity.change,
                 "quantity": item_activity.quantity,
                 "remarks": item_activity.remarks,
+                "order_id": item_activity.order.id if item_activity.order else None,
             }
         ]
         return JsonResponse(
@@ -474,11 +479,13 @@ def reduce_stock(request, id):
         item_activity.save()
         item_activity = [
             {
+                "id":item_activity.id,
                 "type": item_activity.type,
                 "date": item_activity.date.isoformat(),
                 "change": item_activity.change,
                 "quantity": item_activity.quantity,
                 "remarks": item_activity.remarks,
+                "order_id": item_activity.order.id if item_activity.order else None
             }
         ]
         return JsonResponse(
@@ -1156,6 +1163,7 @@ def update_stock(request, id):
                     "stock_quantity": item_activity.change,
                     "quantity": item_activity.quantity,
                     "remarks": item_activity.remarks,
+                    "order_id": item_activity.order.id if item_activity.order else None
                 },
             }
         )

@@ -438,7 +438,12 @@ window.addEventListener('pageshow', (event) => {
 
 // edit stock inside the product activity list
 export async function editAddAcitivity(activityId) {
-    const activity = window.activities.find(a => String(a.id) === String(activityId));
+    console.log("yo activityId ho",activityId)
+     let activity = window.activities.find(
+        a => String(a.id) === String(activityId)
+    );
+    console.log("yo activity xa ki naii",activity)
+    console.log("yo first letter haii",(String(activity.change)[0]));
     const addStockModal = document.getElementById('addStockModal');
     let quantityInput = document.getElementById('stockQuantity')
     let productSellingPrice = document.getElementById('productPrices');
@@ -458,7 +463,7 @@ export async function editAddAcitivity(activityId) {
     if (editStockBtn) editStockBtn.style.display = 'flex';
 
     //edit button to make the readonly into write
-    editStockBtn.addEventListener('click',() =>{
+    editStockBtn.onclick = () =>{
         quantityInput.readOnly = false;
         productSellingPrice.readOnly = false;
         stockDate.readOnly = false;
@@ -468,7 +473,7 @@ export async function editAddAcitivity(activityId) {
         deleteStockBtn.style.display = 'none';
         editStockBtn.style.display = 'none';
 
-    })
+    }
 
     //to delete the itemactivity
     addStockModal.dataset.id = activityId
@@ -477,10 +482,10 @@ export async function editAddAcitivity(activityId) {
     // })
     if (activity) {
         console.log("activity vetiyo")
-        updateStockBtn.addEventListener('click',() =>{
+        updateStockBtn.onclick = () =>{
             console.log("okay here in update")
             updateActivity(activity,addStockModal)
-        })
+        }
      // Populate form with product data
         
         quantityInput.readOnly = true;
@@ -491,17 +496,18 @@ export async function editAddAcitivity(activityId) {
         
 
         stockRemarks.value= activity.remarks;
-        console.log("yo first letter haii",activity.change[0]);
-        if(activity.change[0] == '-'){
-            const afterRemovalNegation = activity.change.slice(1);
+        
+        if(String(activity.change)[0] == '-'){
+            console.log("This function is being called!!!")
+            const afterRemovalNegation = String(activity.change).slice(1);
             quantityInput.value = afterRemovalNegation;
             document.querySelector('.product-price').textContent = 'Selling Price';
             console.log('window  product ko value haii ',activity.product_selling_price)
             productSellingPrice.value = activity.product_selling_price;
             stockDate.value = activity.date;
         }
-        if(activity.change[0] == '+'){
-            const afterRemovalAdd = activity.change.slice(1);
+        if(String(activity.change)[0] == '+'){
+            const afterRemovalAdd = String(activity.change).slice(1);
             quantityInput.value = afterRemovalAdd;
             document.querySelector('.product-price').textContent = 'Cost Price';
             document.getElementById('productPrices').value = activity.product_cost_price;
@@ -595,12 +601,12 @@ export async function updateActivity(activity,addStockModal) {
 
             // Close modal after short delay
             setTimeout(() => {
-                const closeProductModalFunc = () => {
+                const closeStockModalFunc = () => {
                     if (addStockModal) {
                         addStockModal.style.display = 'none';
                     }
                 };
-                closeProductModalFunc();
+                closeStockModalFunc();
 
             //     // Reset form
             document.getElementById('stockQuantity').value = '';
@@ -764,6 +770,13 @@ export async function saveProduct(addProductModal) {
                 const priceField = document.getElementById('productSellingPrice') || document.getElementById('productPrice');
                 if (priceField) priceField.value = '';
                 document.getElementById('productCategory').value = '';
+                document.getElementById('lowStockQuantity').value = '';
+                const lowStockConstraint = document.getElementById('lowStockConstraint');
+                const slider = document.getElementById('statusToggle');
+                if(slider){
+                    slider.checked = false
+                    slider.dispatchEvent(new Event('change'));
+                }
             }, 1500);
         } else {
             showAlert('Error: ' + (result.error || 'Failed to save product'), 'error');
@@ -1345,7 +1358,9 @@ async function reduceStockFunc() {
                     window.products[index].quantity = result.product.quantity;
                 }
             }
-            
+            if(!window.activities){
+                window.activities = []
+            }
             // Render product quantity above in the detail
                 const quantityCell = document.getElementById('quantityCell'); 
                 if (quantityCell) {
@@ -1358,6 +1373,8 @@ async function reduceStockFunc() {
                 // productsactivityTableBody.innerHTML = '';
                 
                 result.itemactivity.forEach(activity => {
+                    console.log("yo itemactivity ko id kati ho??",activity.id);
+                    window.activities.unshift(activity)
                     addProductActivityToTable(activity, productsactivityTableBody);
                 });
             }
@@ -1426,6 +1443,7 @@ export async function updateProduct(addProductModal) {
     const productSellingPrice = document.getElementById('productSellingPrice')?.value;
     const productPrice = document.getElementById('productPrice')?.value; // Fallback for old field name
     const productCategory = document.getElementById('productCategory').value.trim();
+    const productLowStock = document.getElementById('lowStockQuantity').value || 0;
 
     // Client-side validation
     if (!productName) {
@@ -1457,6 +1475,8 @@ export async function updateProduct(addProductModal) {
             cost_price: productCostPrice ? parseFloat(productCostPrice) : 0,
             selling_price: parseFloat(productSellingPrice || productPrice),
             category: productCategory,
+            lowStock: productLowStock,
+
         };
         console.log('Updating product:', productData);
         console.log('Updating this data:', productData);
