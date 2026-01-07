@@ -1,6 +1,6 @@
 import json
 from datetime import datetime
-from decimal import Decimal,ROUND_HALF_UP
+from decimal import ROUND_HALF_UP, Decimal
 from uuid import UUID
 
 from django.contrib.auth.decorators import login_required
@@ -479,13 +479,13 @@ def reduce_stock(request, id):
         item_activity.save()
         item_activity = [
             {
-                "id":item_activity.id,
+                "id": item_activity.id,
                 "type": item_activity.type,
                 "date": item_activity.date.isoformat(),
                 "change": item_activity.change,
                 "quantity": item_activity.quantity,
                 "remarks": item_activity.remarks,
-                "order_id": item_activity.order.id if item_activity.order else None
+                "order_id": item_activity.order.id if item_activity.order else None,
             }
         ]
         return JsonResponse(
@@ -651,9 +651,11 @@ def save_invoice(request):
         # grand total amount
         final_amount = total_amount - (global_discount / 100) * total_amount
 
-        final_amount += global_discount / 100 * final_amount
         final_amount += additional_charges
-        final_amount = Decimal(final_amount).quantize(Decimal('0.00'), rounding=ROUND_HALF_UP)
+        final_amount = Decimal(final_amount).quantize(
+            Decimal("0.00"), rounding=ROUND_HALF_UP
+        )
+
         for charge in charge_name_amount:
             charge_name = charge.get("chargeName")
             charge_amount = charge.get("chargeAmount")
@@ -668,6 +670,7 @@ def save_invoice(request):
 
         remaining_amount = 0
         remaining_amount = Decimal(str(final_amount)) - Decimal(str(received_amount))
+        print(remaining_amount)
 
         print("this is global_discount-> ", global_discount)
 
@@ -684,14 +687,11 @@ def save_invoice(request):
         )
 
         try:
-            
-            order_summary.full_clean() 
-             # validate against max_digits, etc.
-            
+            order_summary.full_clean()
+            # validate against max_digits, etc.
+
             order_summary.save()
         except ValidationError as e:
-
-            
             transaction.set_rollback(True)
             return JsonResponse(
                 {
@@ -896,7 +896,14 @@ def invoice_layout(request, id):
                 for bill in bill_info:
                     # Check if product exists
                     if bill.product:
-                        per_discount = (Decimal((bill.quantity)  * Decimal(bill.product_price)) * Decimal((bill.discount)  / Decimal('100'))).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP) if bill.discount else 0
+                        per_discount = (
+                            (
+                                Decimal((bill.quantity) * Decimal(bill.product_price))
+                                * Decimal((bill.discount) / Decimal("100"))
+                            ).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+                            if bill.discount
+                            else 0
+                        )
                         item = {
                             "id": bill.id,
                             "product_id": bill.product.id,
@@ -912,11 +919,14 @@ def invoice_layout(request, id):
                             if bill.product_price
                             else 0,
                             "perDiscount": per_discount,
-                            "line_total": (Decimal(bill.product_price) * Decimal(bill.quantity)) - per_discount if bill.product_price and bill.quantity
+                            "line_total": (
+                                Decimal(bill.product_price) * Decimal(bill.quantity)
+                            )
+                            - per_discount
+                            if bill.product_price and bill.quantity
                             else 0,
                             "discount_percent": 0,
                             "discount_amount": 0,
-                            
                         }
                     else:
                         item = {
@@ -1059,9 +1069,11 @@ def settings(request):
     context = get_serialized_data(request.user, "settings")
     return render(request, "website/bill.html", context)
 
+
 def client_detail(request):
     context = get_serialized_data(request.user, "dashboard")
     return render(request, "website/client_detail.html", context)
+
 
 def product_detail(request, id: UUID = None):
     context = get_serialized_data(request.user, "dashboard")
@@ -1172,7 +1184,7 @@ def update_stock(request, id):
                     "stock_quantity": item_activity.change,
                     "quantity": item_activity.quantity,
                     "remarks": item_activity.remarks,
-                    "order_id": item_activity.order.id if item_activity.order else None
+                    "order_id": item_activity.order.id if item_activity.order else None,
                 },
             }
         )

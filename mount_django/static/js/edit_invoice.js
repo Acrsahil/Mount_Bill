@@ -71,10 +71,16 @@ export function editInvoiceSection(orderId){
             presstab(input)
 
 
+
+            const balancedue = document.getElementById("balanceDue")
+            if(balancedue){
+                balancedue.value = data.invoice.amounts.amount_due
+                presstab(balancedue)
+            }
+
             const global_discount = data.invoice.amounts.global_discount_percent
             const global_tax = data.invoice.amounts.global_tax_percent
             const notes = data.invoice.remarks
-
             const additionalcharge = data.invoice.additional_charges
 
             if(global_discount){

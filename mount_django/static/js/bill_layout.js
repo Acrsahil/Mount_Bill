@@ -192,7 +192,7 @@ export function openModal(invoiceId) {
                 document.getElementById("taxlabel").style.display = "none"
             }
 
-            document.getElementById("totalAmount").innerHTML = "Rs. " + data.invoice.amounts.total_amount
+            document.getElementById("totalAmount").innerHTML = "Rs. " + data.invoice.amounts.final_amount
 
             document.getElementById("receivedAmount").innerHTML = "Rs. " + data.invoice.amounts.received_amount
 
