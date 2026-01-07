@@ -1,20 +1,181 @@
-{%extends 'layout.html'%}
+{% extends 'layout.html' %}
 {% load static %}
 
 {% block extra_css %}
 <script src="https://cdn.tailwindcss.com"></script>
-{%endblock%}
-{%block content%}
-<header class="client-layout-header">
-    <span class="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded-full">Today: {% now "F j, Y" %}</span>
-   <div class="flex items-center space-x-3">
-                <div class="flex items-center space-x-2 text-sm text-gray-600">
-                    <i class="fas fa-clock"></i>
-                    <span>{% now "h:i A" %}</span>
-                </div>
-                <div class="w-8 h-8 bg-gradient-to-r from-[#4361ee] to-[#3a0ca3] text-white rounded-full flex items-center justify-center font-bold text-sm">
-                    {{ request.user.username.0 | upper }}
-                </div>
-            </div>
+{% endblock %}
+
+{% block content %}
+
+<!-- HEADER -->
+<header class="flex justify-between items-center px-6 py-3 border-b bg-white">
+    <!-- Left: Date -->
+    <span class="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded-full">
+        Today: {% now "F j, Y" %}
+    </span>
+
+    <!-- Right: Time + User -->
+    <div class="flex items-center space-x-4">
+        <div class="flex items-center space-x-2 text-sm text-gray-600">
+            <i class="fas fa-clock"></i>
+            <span>{% now "h:i A" %}</span>
+        </div>
+        <div
+            class="w-8 h-8 bg-gradient-to-r from-[#4361ee] to-[#3a0ca3] text-white rounded-full flex items-center justify-center font-bold text-sm">
+            {{ request.user.username.0|upper }}
+        </div>
+    </div>
 </header>
-{%endblock%}
+
+<!-- PAGE -->
+<div class="flex h-[calc(100vh-64px)]">
+
+    <!-- SIDEBAR -->
+    <aside class="w-96 border-r p-4 flex flex-col space-y-4">
+
+        <!-- Clients header -->
+        <div class="flex justify-between items-center">
+            <h2 class="font-semibold text-lg">
+                Clients ({{ client_num }})
+            </h2>
+            <button class="btn btn-success flex items-center gap-1" id="addNewClientDetailBtn">
+                <i class="fas fa-plus-circle"></i> Add Client
+            </button>
+        </div>
+
+        <!-- Search + Sort -->
+        <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2 border rounded px-2 py-1 flex-1">
+                <i class="fas fa-search text-gray-400"></i>
+                <input
+                    type="text"
+                    id="clientDetailSearch"
+                    placeholder="Search clients..."
+                    class="w-full outline-none text-sm"
+                >
+            </div>
+
+            <button class="btn btn-secondary whitespace-nowrap" id="sortClientBtn">
+                <i class="fa-solid fa-sort"></i> Sort By
+            </button>
+        </div>
+
+        <!-- Filters -->
+        <div class="flex gap-2">
+            <button class="btn btn-secondary flex-1 border border-gray-300 px-3 py-1 rounded" id="customers">Customer</button>
+            <button class="btn btn-secondary flex- border border-gray-300 px-3 py-1 rounded" id="suppliers">Supplier</button>
+            <button class="btn btn-secondary flex-1 border border-gray-300 px-3 py-1 rounded" id="allpayment">All Payment</button>
+        </div>
+
+        <!-- Client list -->
+        <div class="flex-1 overflow-y-auto">
+            <ul class="clientList space-y-2">
+                <!-- dynamic clients here -->
+            </ul>
+        </div>
+
+    </aside>
+<main class="client-main flex-1 w-full bg-gray-50">
+
+  <div class="p-6 space-y-3">
+
+    <!-- ROW 1 -->
+    <div class="flex items-start w-full">
+      <div class="text-lg font-semibold">Client Name
+        {{ client_name }}
+      </div>
+
+      <div class="ml-auto text-right">
+        <div class="text-sm text-gray-500">Receivable</div>
+        <div class="text-xl font-semibold text-emerald-600">-----
+          {{ client_transaction }}
+        </div>
+      </div>
+    </div>
+
+    <!-- ROW 2 -->
+    <div class="flex w-full text-gray-500">
+      <div>----{{ client_number }}</div>
+
+      <div class="ml-auto font-medium">
+        {{ client_amount }}----
+      </div>
+    </div>
+
+    <!-- ROW 3 -->
+    <div class="flex w-full items-center">
+      <div class="flex space-x-2">
+        <button class="btn flex items-center gap-1 border border-gray-300 px-3 py-1 rounded">
+          <i class="fas fa-edit"></i> Edit
+        </button>
+        <button class="btn flex items-center gap-1 border border-gray-300 px-3 py-1 rounded">
+          <i class="fas fa-trash"></i> Delete
+        </button>
+        <button class="btn border border-gray-300 px-3 py-1 rounded"><i class="fas fa-file-pdf"></i> PDF</button>
+      </div>
+
+      <div class="ml-auto border border-gray-300 px-3 py-1 rounded">
+        <button class="btn"><i class="fas fa-bell"></i> Send Reminder</button>
+      </div>
+    </div>
+<!-- Divider line -->
+<hr class="border-t border-gray-300 my-4">
+
+<!-- Transaction Header Row -->
+<div class="flex items-center w-full">
+
+  <!-- Left: title -->
+  <h2 class="text-lg font-semibold">
+    Transaction (1)
+  </h2>
+
+  <!-- Right: actions -->
+  <div class="ml-auto flex items-center gap-3">
+
+    <div class="flex items-center gap-2 border rounded px-2 py-1">
+      <i class="fas fa-search text-gray-400"></i>
+      <input 
+        type="text" 
+        id="transactionSearchInput" 
+        placeholder="Search transaction..."
+        class="outline-none text-sm"
+      >
+    </div>
+
+    <button class="btn border border-gray-300 px-3 py-1 rounded" id="transactionSortBtn">
+      <i class="fa-solid fa-sort"></i> Sort By
+    </button>
+
+    <button class="btn bg-emerald-600 text-white px-3 py-1 rounded hover:bg-emerald-700">
+      Add Transaction
+    </button>
+
+  </div>
+
+</div>
+<div class="transactionDetail w-full mt-3">
+  <table class="w-full border text-sm" id="transactionTable">
+    <thead class="bg-gray-100">
+      <tr>
+        <th class="p-2 text-left">Type</th>
+        <th class="p-2 text-left">Date</th>
+        <th class="p-2 text-left">Total</th>
+        <th class="p-2 text-left">Status</th>
+        <th class="p-2 text-left">Balance</th>
+        <th class="p-2 text-left">Remarks</th>
+      </tr>
+    </thead>
+
+    <tbody id="clientTransactionTableBody">
+    </tbody>
+  </table>
+</div>
+  </div>
+
+
+</main>
+ 
+
+</div>
+
+{% endblock %}
