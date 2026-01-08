@@ -154,12 +154,13 @@
       <i class="fa-solid fa-sort"></i> Sort By
     </button>
 
-    <button
+   <button
   class="btn px-3 py-1 text-white rounded
-         bg-gradient-to-r from-[#4361ee] to-[#3a0ca3]
-         hover:from-[#3f5bdc] hover:to-[#320b8f]"><i class="fas fa-plus-circle"></i>
-      Add Transaction
-    </button>
+         !bg-gradient-to-r !from-[#4361ee] !to-[#3a0ca3]
+         hover:!from-[#3f5bdc] hover:!to-[#320b8f]">
+  <i class="fas fa-plus-circle"></i>
+  Add Transaction
+</button>
 
   </div>
 
@@ -189,7 +190,7 @@
 
 </div>
 
-{% include "website/bill.html" %}
+{% include "website/modal/client_add_modal.html" %}
 {% endblock %}
 {% block extra_js %}
 <script>
@@ -220,5 +221,8 @@ console.log('Active tab:', window.djangoData.active_tab);
 
 <script>const csrfToken = "{{ csrf_token }}";</script>
 <script type="module" src="{%static 'js/client_detail.js'%}"></script>
+<script type="module" src="{%static 'js/client.js'%}"></script>
+<script type="module" src="{% static 'js/main.js' %}"></script>
+<script type="module" src="{% static 'js/event.js' %}"></script>
 {% endblock %}
 

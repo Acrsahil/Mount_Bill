@@ -1039,7 +1039,7 @@
 
 
 <!-- Add Client Modal -->
-<div class="app-modal" id="addClientModal">
+{% comment %} <div class="app-modal" id="addClientModal">
     <div class="app-modal-content">
         <div class="app-modal-header">
             <h3>Add New Client</h3>
@@ -1100,8 +1100,8 @@
             <button class="app-btn app-btn-primary" id="saveClientBtn">Save Client</button>
         </div>
     </div>
-</div>
-
+</div>  {% endcomment %}
+{% include "website/modal/client_add_modal.html" %}
 <!-- Create Invoice Modal -->
 <div class="app-modal" id="createInvoiceModal">
     <div class="app-modal-content" style="max-width: 800px;">

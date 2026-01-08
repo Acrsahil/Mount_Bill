@@ -112,32 +112,32 @@ def products_json(request):
 
     return JsonResponse({"products": products_data, "count": products.count()})
 
+@never_cache
+def clients_json(request):
+    user = request.user
+    company = user.owned_company or user.active_company
 
-# def clients_json(request):
-#     user = request.user
-#     company = user.owned_company or user.active_company
+    if not company:
+        return JsonResponse({"clients": [], "count": 0})
 
-#     if not company:
-#         return JsonResponse({"clients": [], "count": 0})
+    clients = (
+        Customer.objects.filter(company=company)
+    )
 
-#     clients = (
-#         Customer.objects.filter(company=company)
-#     )
+    clients_data = [
+        {
+            "id": c.id,
+            "uid": str(c.uid),
+            "name": c.name,
+            "phone": c.phone,
+            "email": c.email,
+            "pan_id": c.pan_id,
+            "address": c.address,
+        }
+        for c in clients
+    ]
 
-#     clients_data = [
-#         {
-#             "id": c.id,
-#             "uid": str(c.uid),
-#             "name": c.name,
-#             "phone": c.phone,
-#             "email": c.email,
-#             "pan_id": c.pan_id,
-#             "address": c.address,
-#         }
-#         for c in clients
-#     ]
-
-#     return JsonResponse({"clients": clients_data, "count": clients.count()})
+    return JsonResponse({"clients": clients_data, "client_count": clients.count()})
 
 
 def get_serialized_data(user, active_tab="dashboard"):
@@ -813,6 +813,7 @@ def save_client(request):
                     "success": True,
                     "message": "Client saved successfully!",
                     "client": {
+                        "uid": client.uid,
                         "id": client.id,
                         "name": client.name,
                         "phone": client.phone,

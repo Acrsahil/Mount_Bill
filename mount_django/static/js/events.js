@@ -22,6 +22,7 @@ import {
 } from './dom.js';
 import { saveInvoice,renderInvoiceItems } from './create_invoice.js';
 import { editProduct,deleteProduct,saveProduct,loadProducts } from './product.js';
+import { renderClient, addClientsToList } from './client_detail.js';
 // Track currently selected hint for keyboard navigation
 let currentSelectedHintIndex = -1;
 let currentSelectedProductHintIndex = -1;
@@ -233,6 +234,7 @@ if (clientEmail !== '') {
         if (result.success) {
             // Add the new client to the local clients array with the ID from database
             const newClient = {
+                uid: result.client.uid,
                 id: result.client.id,
                 name: result.client.name,
                 email: result.client.email,
@@ -250,9 +252,17 @@ if (clientEmail !== '') {
             
             // Update UI
             loadClients(window.clients, clientsTableBody);
+
+            const clientList = document.querySelector('.clientList');
+            if(clientList){
+                clientList.prepend(renderClient(newClient));
+                
+            }
+            else{
+                addClientsToList(window.clients)
+            }
             
             updateClientStats(window.clients);
-            
             // Show success message
             showAlert(result.message, 'success');
             // Close modal after short delay
