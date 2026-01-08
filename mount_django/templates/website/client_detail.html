@@ -20,10 +20,11 @@
             <i class="fas fa-clock"></i>
             <span>{% now "h:i A" %}</span>
         </div>
-        <div
-            class="w-8 h-8 bg-gradient-to-r from-[#4361ee] to-[#3a0ca3] text-white rounded-full flex items-center justify-center font-bold text-sm">
-            {{ request.user.username.0|upper }}
-        </div>
+       <div
+          class="w-8 h-8 !bg-gradient-to-r !from-[#4361ee] !to-[#3a0ca3] !text-white rounded-full flex items-center justify-center font-bold text-sm">
+          {{ request.user.username.0|upper }}
+      </div>
+
     </div>
 </header>
 
@@ -38,9 +39,12 @@
             <h2 class="font-semibold text-lg">
                 Clients ({{ client_num }})
             </h2>
-            <button class="btn btn-success flex items-center gap-1" id="addNewClientDetailBtn">
-                <i class="fas fa-plus-circle"></i> Add Client
+            <button class="btn flex items-center gap-1 px-3 py-1 text-white rounded
+            !bg-gradient-to-r !from-[#4361ee] !to-[#3a0ca3]
+            hover:!from-[#3f5bdc] hover:!to-[#320b8f]" id="addNewClientDetailBtn">
+              <i class="fas fa-plus-circle"></i> Add Client
             </button>
+
         </div>
 
         <!-- Search + Sort -->
@@ -81,25 +85,26 @@
 
     <!-- ROW 1 -->
     <div class="flex items-start w-full">
-      <div class="text-lg font-semibold">Client Name
-        {{ client_name }}
+      <div class="text-xl text-900 font-semibold" id = "clientName">
+        {{ customer_info.name }}
       </div>
 
       <div class="ml-auto text-right">
-        <div class="text-sm text-gray-500">Receivable</div>
-        <div class="text-xl font-semibold text-emerald-600">-----
-          {{ client_transaction }}
-        </div>
+        <div class="text-xl text-500 font-semibold">Receivable</div>
+       
       </div>
     </div>
 
     <!-- ROW 2 -->
     <div class="flex w-full text-gray-500">
-      <div>----{{ client_number }}</div>
-
-      <div class="ml-auto font-medium">
-        {{ client_amount }}----
-      </div>
+      <div id="clientPhone">{%if customer_info.phone%}
+              {{ customer_info.phone }}
+            {%else%}
+              ---
+            {%endif%}</div>
+        <div class="text-xl font-semibold text-emerald-600 ml-auto text-right">-----
+          {{ client_transaction }}
+        </div>
     </div>
 
     <!-- ROW 3 -->
@@ -114,8 +119,11 @@
         <button class="btn border border-gray-300 px-3 py-1 rounded"><i class="fas fa-file-pdf"></i> PDF</button>
       </div>
 
-      <div class="ml-auto border border-gray-300 px-3 py-1 rounded">
-        <button class="btn"><i class="fas fa-bell"></i> Send Reminder</button>
+      <div class="ml-auto">
+        <button class="btn !bg-gradient-to-r !from-[#4361ee] !to-[#3a0ca3] !text-white px-3 py-1 rounded hover:!from-[#3f5bdc] hover:!to-[#320b8f']">
+  <i class="fas fa-bell"></i> Send Reminder
+</button>
+
       </div>
     </div>
 <!-- Divider line -->
@@ -146,7 +154,10 @@
       <i class="fa-solid fa-sort"></i> Sort By
     </button>
 
-    <button class="btn bg-emerald-600 text-white px-3 py-1 rounded hover:bg-emerald-700">
+    <button
+  class="btn px-3 py-1 text-white rounded
+         bg-gradient-to-r from-[#4361ee] to-[#3a0ca3]
+         hover:from-[#3f5bdc] hover:to-[#320b8f]"><i class="fas fa-plus-circle"></i>
       Add Transaction
     </button>
 
@@ -178,4 +189,36 @@
 
 </div>
 
+{% include "website/bill.html" %}
 {% endblock %}
+{% block extra_js %}
+<script>
+// Simple and safe data structure
+window.djangoData = {
+    products: {{ product|safe }},
+    product_cat: {{ product_cat|safe }},
+    clients: {{ customer|safe }},
+    invoices: {{ invoices|safe }},
+    csrfToken: "{{ csrf_token }}",
+    active_tab: "{{ active_tab|default:'dashboard' }}"
+};
+
+// SAFETY CHECK
+if (typeof window.djangoData === 'undefined') {
+    window.djangoData = {
+        products: [],
+        product_cat: [],
+        clients: [],
+        invoices: {{ invoices|safe }},
+        csrfToken: "{{ csrf_token }}",
+        active_tab: "{{ active_tab|default:'dashboard' }}"
+    };
+}
+
+console.log('Active tab:', window.djangoData.active_tab);
+</script>
+
+<script>const csrfToken = "{{ csrf_token }}";</script>
+<script type="module" src="{%static 'js/client_detail.js'%}"></script>
+{% endblock %}
+

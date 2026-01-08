@@ -136,7 +136,7 @@ class CustomUserAdmin(UserAdmin):
 @admin.register(Customer)
 class CustomerAdmin(admin.ModelAdmin):
     # Changed: removed email, added phone
-    list_display = ("name", "phone", "company")
+    list_display = ("uid","name", "phone", "company")
     list_filter = ("company",)
     # Changed: removed email
     search_fields = ("name", "phone", "company__name")

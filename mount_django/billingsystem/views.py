@@ -113,6 +113,33 @@ def products_json(request):
     return JsonResponse({"products": products_data, "count": products.count()})
 
 
+# def clients_json(request):
+#     user = request.user
+#     company = user.owned_company or user.active_company
+
+#     if not company:
+#         return JsonResponse({"clients": [], "count": 0})
+
+#     clients = (
+#         Customer.objects.filter(company=company)
+#     )
+
+#     clients_data = [
+#         {
+#             "id": c.id,
+#             "uid": str(c.uid),
+#             "name": c.name,
+#             "phone": c.phone,
+#             "email": c.email,
+#             "pan_id": c.pan_id,
+#             "address": c.address,
+#         }
+#         for c in clients
+#     ]
+
+#     return JsonResponse({"clients": clients_data, "count": clients.count()})
+
+
 def get_serialized_data(user, active_tab="dashboard"):
     """Helper function to get serialized data for template"""
     company = None
@@ -154,6 +181,7 @@ def get_serialized_data(user, active_tab="dashboard"):
 
     customers_data = [
         {
+            "uid": str(c.uid),
             "id": c.id,
             "name": c.name,
             "phone": c.phone,
@@ -1070,8 +1098,11 @@ def settings(request):
     return render(request, "website/bill.html", context)
 
 
-def client_detail(request):
+def client_detail(request,id: UUID):
     context = get_serialized_data(request.user, "dashboard")
+    if id:
+        customer = get_object_or_404(Customer,uid=id)
+        context["customer_info"] = customer
     return render(request, "website/client_detail.html", context)
 
 

@@ -322,7 +322,8 @@ export function loadClients(clients, clientsTableBody) {
         </td>
     `;
     row.addEventListener('click',()=>{
-        window.location.href='/dashboard/client-detail/';
+        console.log("client ko uid",client.uid)
+        window.location.href=`/dashboard/client-detail/${client.uid}/`;
     })
     clientsTableBody.appendChild(row);
 });
