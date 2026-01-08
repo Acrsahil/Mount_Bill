@@ -37,6 +37,7 @@ export async function getData(api_url) {
 export function openModal(invoiceId) {
 
     modal.style.display = "flex";
+    console.log("this is invoiceId",invoiceId)
     // const row = event.target.closest('tr');
     // const invoice_id = parseInt(row.cells[0].innerText.split('-')[1]);
     // console.log("invoice ko id",invoice_id)
@@ -212,7 +213,7 @@ export function openModal(invoiceId) {
 
                     const temp = document.getElementById("create_new_invoice")
 
-                    window.location.href = `/dashboard/invoices/${data.invoice.order_id}`
+                    window.location.href = `/dashboard/invoices/${data.invoice.uuid}`
 
 
 

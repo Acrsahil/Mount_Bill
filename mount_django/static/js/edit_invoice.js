@@ -10,6 +10,7 @@ function presstab(input){
 
 
 export function editInvoiceSection(orderId){
+    console.log("this is uid section!")
     document.getElementById('create_new_invoice').innerText = "Edit Sales Invoice"
     document.getElementById("saveInvoiceBtn").style.display = 'none'
     document.getElementById("updateInvoiceBtn").style.display = 'flex'
