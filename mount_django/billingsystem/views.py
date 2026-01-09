@@ -1127,18 +1127,18 @@ def fetch_transactions(request,id:UUID):
     if not company:
         return JsonResponse({"transactions": []})
     print("error yaa aako ho")
-    transactions = OrderList.objects.filter(customer__uid = id)
+    transactions = OrderList.objects.filter(customer__uid = id).order_by('id')
     # remainingamounts = RemainingAmount.objects.filter(customer__uid = id)
     data = []
     for transaction in transactions:
         summary = getattr(transaction,"summary",None)
-        remaining = RemainingAmount.objects.get(orders=transaction)
+        remaining = transaction.remaining.remaining_amount if hasattr(transaction, "remaining") else 0
         data.append({
             "id": transaction.id,
             "date": transaction.order_date,
             "finalAmount":summary.final_amount if summary else 0,
             "remarks": transaction.notes,
-            "remainingAmount": remaining.remaining_amount if remaining else 0,
+            "remainingAmount": remaining if remaining else 0,
 
         })
     

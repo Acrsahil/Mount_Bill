@@ -129,7 +129,7 @@ async function fetchTransactions(clientUid){
     const data = await res.json()
     console.log("yaa k xa",data)
     clientTransactionTableBody.innerHTML = '';
-    data.transactions.forEach(transaction => loadTransactions(transaction,clientTransactionTableBody))
+    data.transactions.reverse().forEach(transaction => loadTransactions(transaction,clientTransactionTableBody))
 }
 
 async function loadTransactions(transaction,clientTransactionTableBody){
