@@ -1106,6 +1106,30 @@ def client_detail(request,id: UUID):
         context["customer_info"] = customer
     return render(request, "website/client_detail.html", context)
 
+def fetch_transactions(request,id:UUID):
+    user = request.user
+    company = user.owned_company or user.active_company
+
+    if not company:
+        return JsonResponse({"transactions": []})
+    print("error yaa aako ho")
+    transactions = OrderList.objects.filter(customer__uid = id)
+    remainingamount = RemainingAmount.objects.get(customer__uid = id)
+    data = []
+    for transaction in transactions:
+        summary = getattr(transaction,"summary",None)
+        data.append({
+            "id": transaction.id,
+            "date": transaction.order_date,
+            "finalAmount":summary.final_amount if summary else 0,
+            "remarks": transaction.notes,
+
+        })
+
+    
+    return JsonResponse({"success":True,
+                         "transactions":data,
+                         "remainingBalance":remainingamount.remaining_amount})
 
 def product_detail(request, id: UUID = None):
     context = get_serialized_data(request.user, "dashboard")

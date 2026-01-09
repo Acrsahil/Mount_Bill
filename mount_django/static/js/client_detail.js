@@ -99,6 +99,7 @@ export function renderClient(client) {
 
         document.getElementById('clientName').textContent = client.name;
         document.getElementById('clientPhone').textContent = client.phone || '---';
+        fetchTransactions(client.uid)
     });
 
     return li;
@@ -120,3 +121,27 @@ window.addEventListener('popstate',()=>{
     updateClientInfo(window.djangoData.clients)
 })
 
+
+//Transaction table fill up 
+async function fetchTransactions(clientUid){
+    const clientTransactionTableBody = document.getElementById('clientTransactionTableBody')
+    const res = await fetch(`/dashboard/fetch-transactions/${clientUid}`);
+    const data = await res.json()
+    console.log("yaa k xa",data)
+    clientTransactionTableBody.innerHTML = '';
+    data.transactions.forEach(transaction => loadTransactions(data.remainingBalance,transaction,clientTransactionTableBody))
+}
+
+async function loadTransactions(remainingBalance,transaction,clientTransactionTableBody){
+    if(!clientTransactionTableBody) return;
+
+    const row = document.createElement('tr');
+    row.innerHTML = `
+    <td>Sales Invoice #${transaction.id}</td>
+    <td>${transaction.date.split('T')[0]}</td>
+    <td>${transaction.finalAmount}</td>
+    <td>Status</td>
+    <td>${remainingBalance}</td>
+    <td>${transaction.remarks || "---"}</td>`;
+    clientTransactionTableBody.appendChild(row)
+}
