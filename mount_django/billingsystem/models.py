@@ -271,7 +271,7 @@ class RemainingAmount(models.Model):
         Customer, on_delete=models.CASCADE, related_name="customer"
     )
     orders = models.OneToOneField(
-        OrderList, on_delete=models.CASCADE, related_name="remaining"
+        OrderList, on_delete=models.CASCADE, related_name="remaining",null=True,blank=True
     )
     remaining_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
 

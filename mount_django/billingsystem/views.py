@@ -1149,14 +1149,26 @@ def fetch_transactions(request,id:UUID):
     return JsonResponse({"success":True,
                          "transactions":data})
 
+@require_POST
 def payment_in(request,id):
     try:
         data = json.loads(request.body)
-        payment_in = float(data.get("payment_in"))
-        remainingAmount = RemainingAmount.objects.filter(customer=id).order_by('-id').first()
+        payment_in = Decimal(str(data.get("payment_in")))
+
+        remainingAmount = RemainingAmount.objects.filter(customer_id=id).order_by('-id').first()
+        # if the remaining amount is not there then create one
+
+        if not remainingAmount:
+            remainingAmount = RemainingAmount.objects.create(
+            customer_id=id,
+            orders=None,
+            remaining_amount=Decimal("0.00")
+            )
+
         remainingAmount.remaining_amount -= payment_in
         remainingAmount.save()
 
+        return JsonResponse({"success":True})
     except Exception as e:
         return JsonResponse(
             {"success": False, "error": f"Server error: {str(e)}"}, status=500

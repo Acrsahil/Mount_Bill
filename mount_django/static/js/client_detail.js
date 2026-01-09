@@ -176,7 +176,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     //to fill up the form 
     paymentIn.dataset.clientId = addTransaction.dataset.clientId
-    console.log("id aauna parxa",paymentIn.dataset.clientId)
+
+    //set the id of the save immediately after the paymentIn list is clicked 
+    const savePaymentIn = document.getElementById('savePaymentIn');
+    savePaymentIn.dataset.clientIds = addTransaction.dataset.clientId;
+
     paymentTransactions.classList.add('hidden');
     paymentModal.classList.remove('hidden');
   })
@@ -195,7 +199,40 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     })
 
+    //saving payment in transaction
+    const savePaymentIn = document.getElementById('savePaymentIn');
+    savePaymentIn.addEventListener('click',async() => {
+        console.log("esko id aako xaina po",savePaymentIn.dataset.clientIds)
+        await savePaymentInFunc(savePaymentIn.dataset.clientIds);
+        paymentModal.classList.add('hidden');
+    })
 });
 
+//savePaymentIn funcion 
+async function savePaymentInFunc(clientId){
+    const receivedAmountIn = document.getElementById('receivedAmountIn')?.value;
+    
+    //preparing data to send
+    try{
+        const paymentIn = {
+            payment_in:receivedAmountIn,
+        }
+    // Send AJAX request to Django
+        const response = await fetch(`/dashboard/payment-in/${clientId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': window.djangoData.csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify(paymentIn)
+        });
 
+        const result = await response.json();
+        console.log('Server response:', result);
+
+    }catch (error) {
+        console.error('Error receiving amount:', error);
+}
+}
 
