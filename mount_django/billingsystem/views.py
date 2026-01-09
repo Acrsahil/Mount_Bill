@@ -1145,6 +1145,19 @@ def fetch_transactions(request,id:UUID):
     return JsonResponse({"success":True,
                          "transactions":data})
 
+def payment_in(request,id):
+    try:
+        data = json.loads(request.body)
+        payment_in = float(data.get("payment_in"))
+        remainingAmount = RemainingAmount.objects.filter(customer=id).order_by('-id').first()
+        remainingAmount.remaining_amount -= payment_in
+        remainingAmount.save()
+
+    except Exception as e:
+        return JsonResponse(
+            {"success": False, "error": f"Server error: {str(e)}"}, status=500
+        )
+    
 def product_detail(request, id: UUID = None):
     context = get_serialized_data(request.user, "dashboard")
     if id:
