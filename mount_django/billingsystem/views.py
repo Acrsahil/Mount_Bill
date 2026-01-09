@@ -736,10 +736,10 @@ def save_invoice(request):
 
         # Calculate this order's remaining amount
         current_remaining = Decimal(str(final_amount)) - Decimal(str(received_amount))
-        print(current_remaining)
+        
         latest_remaining = RemainingAmount.objects.filter(customer=customer).order_by('-id').first()
         previous_remaining = latest_remaining.remaining_amount if latest_remaining else 0
-        print(previous_remaining)
+        
 
         # Add previous remaining to this order's remaining
         total_remaining_for_order = current_remaining + Decimal(previous_remaining)

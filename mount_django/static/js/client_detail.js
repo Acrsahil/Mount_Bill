@@ -51,6 +51,7 @@ window.addEventListener('pageshow',() =>{
         fetchclients()
 })
 
+const addTransaction = document.getElementById('addTransaction')
 //function to add the client to the list
 export function renderClient(client) {
     const li = document.createElement('li');
@@ -100,6 +101,8 @@ export function renderClient(client) {
         document.getElementById('clientName').textContent = client.name;
         document.getElementById('clientPhone').textContent = client.phone || '---';
         fetchTransactions(client.uid)
+        addTransaction.dataset.clientId = client.id;
+        
     });
 
     return li;
@@ -145,3 +148,54 @@ async function loadTransactions(transaction,clientTransactionTableBody){
     <td>${transaction.remarks || "---"}</td>`;
     clientTransactionTableBody.appendChild(row)
 }
+
+//add transaction button functions
+document.addEventListener('DOMContentLoaded', () => {
+  const addTransaction = document.getElementById('addTransaction');
+  const paymentTransactions = document.getElementById('paymentTransactions');
+
+  addTransaction.addEventListener('click', (e) => {
+    e.stopPropagation()
+    const rect = addTransaction.getBoundingClientRect();
+
+    paymentTransactions.style.top = rect.bottom + window.scrollY + 'px';
+    paymentTransactions.style.left = rect.left + window.scrollX + 'px';
+
+    paymentTransactions.classList.toggle('hidden');
+
+    document.addEventListener('click', (e)=> {
+        if(!paymentTransactions.contains(e.target)&& !addTransaction.contains(e.target)){
+            paymentTransactions.classList.add('hidden');
+        }
+    })
+  });
+
+  //for payment in
+  const paymentIn = document.getElementById('paymentIn');
+  paymentIn.addEventListener('click',() => {
+
+    //to fill up the form 
+    paymentIn.dataset.clientId = addTransaction.dataset.clientId
+    console.log("id aauna parxa",paymentIn.dataset.clientId)
+    paymentTransactions.classList.add('hidden');
+    paymentModal.classList.remove('hidden');
+  })
+
+  //clicking the close button
+    const closeModalBtn = paymentModal.querySelector('button[aria-label="Close"]');
+
+    closeModalBtn.addEventListener('click', () => {
+    paymentModal.classList.add('hidden');
+    });
+
+    //clicking outside the modal
+    paymentModal.addEventListener('click',(e) => {
+        if(e.target === paymentModal){
+            paymentModal.classList.add('hidden');
+        }
+    })
+
+});
+
+
+
