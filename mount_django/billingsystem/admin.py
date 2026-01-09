@@ -245,6 +245,7 @@ class AdditionalChargesAdmin(admin.ModelAdmin):
 class RemainingAmountAdmin(admin.ModelAdmin):
     list_display = (
         "customer",
+        "orders",
         "remaining_amount",
     )
     search_fields = ("customer",)

@@ -129,10 +129,10 @@ async function fetchTransactions(clientUid){
     const data = await res.json()
     console.log("yaa k xa",data)
     clientTransactionTableBody.innerHTML = '';
-    data.transactions.forEach(transaction => loadTransactions(data.remainingBalance,transaction,clientTransactionTableBody))
+    data.transactions.forEach(transaction => loadTransactions(transaction,clientTransactionTableBody))
 }
 
-async function loadTransactions(remainingBalance,transaction,clientTransactionTableBody){
+async function loadTransactions(transaction,clientTransactionTableBody){
     if(!clientTransactionTableBody) return;
 
     const row = document.createElement('tr');
@@ -141,7 +141,7 @@ async function loadTransactions(remainingBalance,transaction,clientTransactionTa
     <td>${transaction.date.split('T')[0]}</td>
     <td>${transaction.finalAmount}</td>
     <td>Status</td>
-    <td>${remainingBalance}</td>
+    <td>${transaction.remainingAmount}</td>
     <td>${transaction.remarks || "---"}</td>`;
     clientTransactionTableBody.appendChild(row)
 }

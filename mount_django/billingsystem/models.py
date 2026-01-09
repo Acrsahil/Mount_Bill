@@ -266,8 +266,11 @@ class AdditionalCharges(models.Model):
 
 
 class RemainingAmount(models.Model):
-    customer = models.OneToOneField(
+    customer = models.ForeignKey(
         Customer, on_delete=models.CASCADE, related_name="customer"
+    )
+    orders = models.OneToOneField(
+        OrderList, on_delete=models.CASCADE, related_name="remaining"
     )
     remaining_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
 
