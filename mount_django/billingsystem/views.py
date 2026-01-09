@@ -157,6 +157,7 @@ def get_serialized_data(user, active_tab="dashboard"):
                 invoice_data.append(
                     {
                         "id": order.id,
+                        "uid": str(order.uid),
                         "number": f"INV-00{order.id}",
                         "client": order.customer.name,
                         "issueDate": order.order_date.date().isoformat(),
@@ -863,12 +864,12 @@ def delete_product(request, id):
     return JsonResponse({"success": True})
 
 
-# @login_required
-# @csrf_exempt
+@login_required
+@csrf_exempt
 def invoice_layout(request, id):
     if request.method == "GET":
         try:
-            order_list = OrderList.objects.get(id=id)
+            order_list = OrderList.objects.get(uid=id)
 
             # Check if order_list exists
             if not order_list:
@@ -903,6 +904,7 @@ def invoice_layout(request, id):
             customer_phone = order_list.customer.phone if order_list.customer else "N/A"
             company_name = order_list.company.name if order_list.company else "N/A"
             order_id = order_list.id
+            uuid = order_list.uid
 
             # Initialize amounts
             total_amount = 0
@@ -1005,6 +1007,7 @@ def invoice_layout(request, id):
                 "success": True,
                 "invoice": {
                     "order_id": order_id,
+                    "uuid": uuid,
                     "invoice_number": f"INV-{order_id:03d}",
                     "company_name": company_name,
                     "company_phone": company_phone,
@@ -1088,6 +1091,7 @@ def invoice_layout(request, id):
 def invoices(request, id=None):
     context = get_serialized_data(request.user, "invoices")
     if id:
+        print("hello")
         return render(request, "website/create_invoice.html", context)
     return render(request, "website/bill.html", context)
 

@@ -360,10 +360,11 @@ export function loadInvoices(invoices, invoicesTableBody, csrfToken = '') {
     // Add click event to view buttons using event delegation
     row.addEventListener("click", (event) => {
          const row = event.target.closest('tr');
+            // console.log("this is row",row.dataset)
             if (!row) return;
-            const invoiceId = row.dataset.orderId || parseInt(row.cells[0].innerText.split('-')[1]);
-            openModal(invoiceId);
-
+            const invoiceId = row.dataset.uid || parseInt(row.cells[0].innerText.split('-')[1]);
+            // console.log("this is invoiceId in addEventListener ",invoiceId)
+            openModal(invoice.uid);
 
 
         });

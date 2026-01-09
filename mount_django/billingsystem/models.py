@@ -124,6 +124,7 @@ class OrderList(models.Model):
     company = models.ForeignKey(
         Company, on_delete=models.CASCADE, related_name="orders"
     )
+    uid = models.UUIDField(default=uuid.uuid4, editable=False)
 
     order_date = models.DateTimeField(default=timezone.now)
     customer = models.ForeignKey(
@@ -225,7 +226,7 @@ class OrderSummary(models.Model):
         - 8 integer digits + 2 decimal digits
 
         Here we enforce that same rule with a clear message BEFORE hitting DB.
-        
+
         """
         super().clean()
 

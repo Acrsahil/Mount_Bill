@@ -30,9 +30,9 @@ urlpatterns = [
     path("sahilpage/", views.sahilpage, name="sahilpage"),
     path("save-invoice/", views.save_invoice, name="save_invoice"),
     path("delete_invoice/<int:id>/", views.delete_invoice, name="delete_invoice"),
-    path("invoice-layout/<int:id>/", views.invoice_layout, name="invoice_layout"),
+    path("invoice-layout/<uuid:id>/", views.invoice_layout, name="invoice_layout"),
     path("invoices/", views.invoices, name="invoices"),
-    path("invoices/<int:id>/", views.invoices, name="invoices"),
+    path("invoices/<uuid:id>/", views.invoices, name="invoices"),
     path(
         "products/", views.products, name="products"
     ),  # FIXED: views.products not views.Product
