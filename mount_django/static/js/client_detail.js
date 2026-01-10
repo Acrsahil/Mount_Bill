@@ -330,27 +330,54 @@ window.addEventListener('popstate',()=>{
 
 //Transaction table fill up 
 async function fetchTransactions(clientUid){
-    const clientTransactionTableBody = document.getElementById('clientTransactionTableBody')
+    const clientTransactionTableBody = document.getElementById('clientTransactionTableBody');
     const res = await fetch(`/dashboard/fetch-transactions/${clientUid}`);
-    const data = await res.json()
-    console.log("yaa k xa",data)
+    const data = await res.json();
+    
     clientTransactionTableBody.innerHTML = '';
-    data.transactions.reverse().forEach(transaction => loadTransactions(transaction,clientTransactionTableBody))
+
+    // Add a type property to distinguish them
+    
+    const transactions = data.transactions.map(t => ({...t,type:"sale"}));
+    const payments = data.paymentIn.map(p => ({...p,type:"payment"}));
+
+    // Merge arrays
+    const mergedData = [...transactions,...payments]
+    console.log("yo mergedData vaneko k ho tw",mergedData)
+    // Sort by date ascending (or descending if you want latest first)
+    mergedData.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    // Load each row
+    mergedData.forEach(item => loadTransactions(item, clientTransactionTableBody));
 }
 
-async function loadTransactions(transaction,clientTransactionTableBody){
-    if(!clientTransactionTableBody) return;
+
+function loadTransactions(item, tableBody) {
+    if (!tableBody) return;
 
     const row = document.createElement('tr');
-    row.innerHTML = `
-    <td>Sales Invoice #${transaction.id}</td>
-    <td>${transaction.date.split('T')[0]}</td>
-    <td>${transaction.finalAmount}</td>
-    <td>Status</td>
-    <td>${transaction.remainingAmount}</td>
-    <td>${transaction.remarks || "---"}</td>`;
-    clientTransactionTableBody.appendChild(row)
+
+    if (item.type === 'sale') {
+        row.innerHTML = `
+        <td>Sales Invoice #${item.id}</td>
+        <td>${item.date.split('T')[0]}</td>
+        <td>${item.finalAmount}</td>
+        <td>Sale</td>
+        <td>${item.remainingAmount}</td>
+        <td>${item.remarks || "---"}</td>`;
+    } else if (item.type === 'payment') {
+        row.innerHTML = `
+        <td>Payment #${item.id}</td>
+        <td>${item.date.split('T')[0]}</td>
+        <td>${item.payment_in}</td>
+        <td>Payment</td>
+        <td>-</td>
+        <td>${item.remarks || "---"}</td>`;
+    }
+
+    tableBody.appendChild(row);
 }
+
 
 //add transaction button functions
 document.addEventListener('DOMContentLoaded', () => {
@@ -414,11 +441,15 @@ document.addEventListener('DOMContentLoaded', () => {
 //savePaymentIn funcion 
 async function savePaymentInFunc(clientId){
     const receivedAmountIn = document.getElementById('receivedAmountIn')?.value;
+    const paymentInDate = document.getElementById('paymentInDate')?.value;
+    const paymentInRemarks = document.getElementById('paymentInRemarks')?.value;
     
     //preparing data to send
     try{
         const paymentIn = {
             payment_in:receivedAmountIn,
+            payment_in_date:paymentInDate,
+            payment_in_remark:paymentInRemarks,
         }
     // Send AJAX request to Django
         const response = await fetch(`/dashboard/payment-in/${clientId}/`, {

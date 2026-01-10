@@ -294,3 +294,13 @@ class ItemActivity(models.Model):
 
     def __str__(self):
         return self.product.name
+
+class PaymentIn(models.Model):
+    customer = models.ForeignKey(Customer,on_delete=models.PROTECT,related_name="paymentIn")
+    # remainings = models.OneToOneField(RemainingAmount,on_delete=models.CASCADE,related_name="paymentInRemaining")
+    date = models.DateTimeField(auto_now_add=True)
+    payment_in = models.DecimalField(max_digits=10,decimal_places=2,default=0.0)
+    remarks = models.CharField(max_length=200)
+    
+    def __str__(self):
+        return f"payment in amount: {self.payment_in}"

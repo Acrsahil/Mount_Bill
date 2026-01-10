@@ -24,6 +24,7 @@ from .models import (
     Product,
     ProductCategory,
     RemainingAmount,
+    PaymentIn,
 )
 
 
@@ -1153,12 +1154,14 @@ def fetch_transactions(request,id:UUID):
         return JsonResponse({"transactions": []})
     print("error yaa aako ho")
     transactions = OrderList.objects.filter(customer__uid = id).order_by('id')
+    payment_in_transactions = PaymentIn.objects.filter(customer__uid =id)
+    print("yo customer ko paymentin history",payment_in_transactions)
     # remainingamounts = RemainingAmount.objects.filter(customer__uid = id)
-    data = []
+    invoiceData = []
     for transaction in transactions:
         summary = getattr(transaction,"summary",None)
         remaining = transaction.remaining.remaining_amount if hasattr(transaction, "remaining") else 0
-        data.append({
+        invoiceData.append({
             "id": transaction.id,
             "date": transaction.order_date,
             "finalAmount":summary.final_amount if summary else 0,
@@ -1166,17 +1169,29 @@ def fetch_transactions(request,id:UUID):
             "remainingAmount": remaining if remaining else 0,
 
         })
+    paymentInData=[]
+    for paymentIn in payment_in_transactions:
+        paymentInData.append({
+            "id":paymentIn.id,
+            "date":paymentIn.date,
+            "payment_in":paymentIn.payment_in,
+            "remarks":paymentIn.remarks
+        })
     
     return JsonResponse({"success":True,
-                         "transactions":data})
+                         "transactions":invoiceData,
+                         "paymentIn":paymentInData})
 
 @require_POST
 def payment_in(request,id):
     try:
         data = json.loads(request.body)
         payment_in = Decimal(str(data.get("payment_in")))
-
+        payment_in_date = data.get("payment_in_date")
+        payment_in_remark = data.get("payment_in_remark")
         remainingAmount = RemainingAmount.objects.filter(customer_id=id).order_by('-id').first()
+        paymentIn = PaymentIn.objects.create(customer_id=id,date=payment_in_date,payment_in=payment_in,remarks=payment_in_remark)
+        paymentIn.save()
         # if the remaining amount is not there then create one
 
         if not remainingAmount:
