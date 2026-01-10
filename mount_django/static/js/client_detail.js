@@ -15,19 +15,50 @@ document.addEventListener('DOMContentLoaded', () => {
     })
 });
 
-function resetClientModal(){
+export function resetClientModal(){
     document.querySelector('.app-modal-header h3').textContent = "Add New Client";
     document.getElementById('saveClientBtn').style.display = 'block';
     document.getElementById('updateClientBtn').style.display = 'none';
     document.getElementById('additionalInfo').style.display = 'none';
     document.getElementById('additionInfoBtn').style.display = 'block';
+
+    //resetting the form field
+    document.getElementById('clientNameInput').value = '';
+    document.getElementById('clientPhoneInput').value = '';
+    document.getElementById('clientAddressInput').value = '';
+    document.getElementById('clientPanNoInput').value = '';
+    document.getElementById('clientEmailInput').value = '';
 }
 //editing the client 
 
 const clientEditBtn = document.getElementById('clientEditBtn')
 
+//calling edit function after the edit button is clicked
 document.addEventListener('DOMContentLoaded',() =>{
-    clientEditBtn.addEventListener('click',() => {
+    clientEditBtn.addEventListener('click',async() => {
+        editClientFunc(clientEditBtn.dataset.clientId)
+})
+
+//update button inside the edit modal
+    const updateClientBtn = document.getElementById('updateClientBtn');
+    updateClientBtn.addEventListener('click',async()=>{
+        
+        await updateClientFunc(clientEditBtn.dataset.clientId);
+    })
+})
+
+function editClientFunc(clientId){
+    const client = window.djangoData.clients.find(c => String(c.id) === String(clientId))
+    //populating the form 
+
+    document.getElementById('clientNameInput').value = client.name;
+    document.getElementById('clientPhoneInput').value = client.phone || '';
+    document.getElementById('clientAddressInput').value = client.address || '';
+    document.getElementById('clientPanNoInput').value = client.pan_id || '';
+    document.getElementById('clientEmailInput').value = client.email || '';
+
+
+    //resetting the modal form    
     document.querySelector('.app-modal-header h3').textContent = "Update Client";
     document.getElementById('saveClientBtn').style.display = 'none';
     document.getElementById('updateClientBtn').style.display = 'block';
@@ -35,16 +66,9 @@ document.addEventListener('DOMContentLoaded',() =>{
     document.getElementById('additionalInfo').style.display = 'block';
     document.getElementById('additionInfoBtn').style.display = 'none';
     activateTabAll();
-})
+}
 
-
-    const updateClientBtn = document.getElementById('updateClientBtn');
-    updateClientBtn.addEventListener('click',async()=>{
-        console.log("esma id kina xaina??",clientEditBtn.dataset.clientId)
-        await updateClientFunc(clientEditBtn.dataset.clientId);
-    })
-})
-
+//udpate function for client
 async function updateClientFunc(clientId){
     console.log("ya id aayo tw???????",clientId)
         const clientName= document.getElementById('clientNameInput').value.trim();
@@ -59,7 +83,6 @@ async function updateClientFunc(clientId){
             document.getElementById('clientNameInput').focus();
             return;
         }
-    
     
         // Show loading state
         const updateClientBtn = document.getElementById('updateClientBtn');
@@ -96,7 +119,14 @@ async function updateClientFunc(clientId){
             if (result.success) {
                 // Show success message
                 showAlert(result.message, 'success');
+                //updating the client details instantly
+                document.getElementById('clientName').textContent = clientName 
+                document.getElementById('clientDetail').textContent = clientAddress || clientPhone || "---" 
     
+                //updating instantly on the list of the table
+                const clients = await fetchclients()
+                addClientsToList(clients)
+
                 // Close modal after short delay
                 setTimeout(() => {
                     const closeClientModalFunc = () => {
@@ -105,7 +135,7 @@ async function updateClientFunc(clientId){
                         }
                     };
                     closeClientModalFunc();
-    
+                    
                     // Reset form
                     document.getElementById('clientNameInput').value = '';
                     document.getElementById('clientPhoneInput').value = '';
@@ -134,8 +164,8 @@ async function updateClientFunc(clientId){
 //to get uid from the url
 function getUidFromUrl(){
     const urlUid = window.location.pathname.split('/').filter(Boolean);
-    const uid = urlUid[urlUid.length - 1]
-    return uid
+    return urlUid[urlUid.length - 1]
+    
 }
 
 //get selected client from url
@@ -164,6 +194,7 @@ async function fetchclients() {
   const data = await res.json();
   const clientsTableBody = document.getElementById('clientsTableBody')
   loadClients(data.clients, clientsTableBody) 
+  return data.clients;
 }
 
 //BFcache handling 
@@ -172,6 +203,7 @@ window.addEventListener('pageshow',() =>{
 })
 
 const addTransaction = document.getElementById('addTransaction')
+
 //function to add the client to the list
 export function renderClient(client) {
     const li = document.createElement('li');
@@ -194,7 +226,35 @@ export function renderClient(client) {
     );
 
     li.textContent = client.name;
+    li.dataset.clientUid = client.uid;
+    //select the list according to the uid
+    
+    const clientUid = getUidFromUrl()
+    if(clientUid && String(clientUid) == client.uid){
+       document.querySelectorAll('.clientlists').forEach(c => {
+            c.classList.remove(
+                'selected',
+                'bg-blue-100',
+                'border-blue-200',
+                'text-blue-700',
+                'font-medium'
+            );
+            c.classList.add('border-gray-100', 'text-gray-700');
+        });
 
+        li.classList.add(
+            'selected',
+            'bg-blue-100',
+            'border-blue-200',
+            'text-blue-700',
+            'font-medium'
+        );
+        fetchTransactions(client.uid)
+        addTransaction.dataset.clientId = client.id;
+
+        //client id for editing client
+        clientEditBtn.dataset.clientId = client.id;
+    }
     li.addEventListener('click', () => {
         fetchclients()
         document.querySelectorAll('.clientlists').forEach(c => {
@@ -245,6 +305,26 @@ export function addClientsToList(clients) {
 //triggers the backward and forward event of the browser
 window.addEventListener('popstate',()=>{
     updateClientInfo(window.djangoData.clients)
+
+    //highlight the list again
+    const urlUid = getUidFromUrl();
+    document.querySelectorAll('.clientlists').forEach(li => {
+    if(String(li.dataset.clientUid) === String(urlUid)){
+        li.classList.add('selected',
+            'bg-blue-100',
+            'border-blue-200',
+            'text-blue-700',
+            'font-medium');
+    }
+    else{
+        li.classList.remove('selected',
+                'bg-blue-100',
+                'border-blue-200',
+                'text-blue-700',
+                'font-medium');
+        li.classList.add('border-gray-100', 'text-gray-700');
+    }
+})
 })
 
 

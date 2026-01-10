@@ -22,7 +22,7 @@ import {
 } from './dom.js';
 import { saveInvoice,renderInvoiceItems } from './create_invoice.js';
 import { editProduct,deleteProduct,saveProduct,loadProducts } from './product.js';
-import { renderClient, addClientsToList } from './client_detail.js';
+import { renderClient, addClientsToList,resetClientModal } from './client_detail.js';
 // Track currently selected hint for keyboard navigation
 let currentSelectedHintIndex = -1;
 let currentSelectedProductHintIndex = -1;
@@ -71,7 +71,9 @@ export function setupEventListeners(
         console.log("am i getting clicked??")
         openAddProductModal(addProductModal)});
     if (addNewProductBtn) addNewProductBtn.addEventListener('click', () => openAddProductModal(addProductModal));
-    if (addClientBtn) addClientBtn.addEventListener('click', () => openClientModal(addClientModal));
+    if (addClientBtn) addClientBtn.addEventListener('click', () => {
+        resetClientModal();
+        openClientModal(addClientModal)});
     if (closeInvoiceModal) closeInvoiceModal.addEventListener('click', () => closeInvoiceModalFunc(createInvoiceModal));
     if (closeProductModal) closeProductModal.addEventListener('click', () => {
         const slider = document.getElementById('statusToggle');
