@@ -15,6 +15,7 @@ from .models import (
     ProductCategory,
     RemainingAmount,
     User,
+    PaymentIn
 )
 
 
@@ -262,3 +263,13 @@ class ItemActivityAdmin(admin.ModelAdmin):
         "quantity",
     )
     search_fields = ("order_id",)
+
+@admin.register(PaymentIn)
+class PaymentInAdmin(admin.ModelAdmin):
+    list_display = (
+        "customer",
+        "date",
+        "payment_in",
+        "remarks",
+    )
+    search_fields = ("customer_id",)

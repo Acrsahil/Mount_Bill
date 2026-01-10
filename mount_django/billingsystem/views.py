@@ -24,6 +24,7 @@ from .models import (
     Product,
     ProductCategory,
     RemainingAmount,
+    PaymentIn,
 )
 
 
@@ -597,10 +598,11 @@ def save_invoice(request):
         # Handle date conversion
         if invoice_date_str:
             try:
-                invoice_date = datetime.strptime(invoice_date_str, "%Y-%m-%d").date()
-                invoice_date = timezone.make_aware(
-                    datetime.combine(invoice_date, datetime.min.time())
-                )
+                invoice_date = datetime.strptime(invoice_date_str, "%Y-%m-%d")
+                # Keep current time instead of 00:00:00
+                now = timezone.now()
+                invoice_date = invoice_date.replace(hour=now.hour, minute=now.minute, second=now.second, microsecond=now.microsecond)
+                invoice_date = timezone.make_aware(invoice_date)
             except ValueError:
                 invoice_date = timezone.now()
         else:
@@ -842,6 +844,27 @@ def save_client(request):
     except Exception as e:
         return JsonResponse({"success": False, "error": f"Server error: {str(e)}"})
 
+@require_POST
+@csrf_exempt
+def update_client(request,id):
+    try:
+        data = json.loads(request.body)
+        name = data.get("clientName")
+        phone = data.get("clientPhone")
+        address = data.get("clientAddress")
+        pan_number = data.get("clientPan")
+        email = data.get("clientEmail")
+
+        customers = Customer.objects.get(id = id)
+        customers.name = name
+        customers.email = email
+        customers.phone = phone
+        customers.address = address
+        customers.pan_id = pan_number
+        customers.save()
+        return JsonResponse({"success":True,"message": "Client updated successfully"})
+    except Exception as e:
+        return JsonResponse({"success":False, "error":f"Server error: {str(e)}"})
 
 @login_required
 @csrf_exempt
@@ -1131,31 +1154,48 @@ def fetch_transactions(request,id:UUID):
     if not company:
         return JsonResponse({"transactions": []})
     print("error yaa aako ho")
-    transactions = OrderList.objects.filter(customer__uid = id).order_by('id')
-    # remainingamounts = RemainingAmount.objects.filter(customer__uid = id)
-    data = []
+    transactions = OrderList.objects.filter(customer__uid = id).order_by('-id')
+    payment_in_transactions = PaymentIn.objects.filter(customer__uid =id)
+   
+    invoiceData = []
     for transaction in transactions:
         summary = getattr(transaction,"summary",None)
         remaining = transaction.remaining.remaining_amount if hasattr(transaction, "remaining") else 0
-        data.append({
+        invoiceData.append({
             "id": transaction.id,
             "date": transaction.order_date,
             "finalAmount":summary.final_amount if summary else 0,
             "remarks": transaction.notes,
             "remainingAmount": remaining if remaining else 0,
+            "type": "sale"
 
         })
-    
+    paymentInData=[]
+    for paymentIn in payment_in_transactions:
+        remainingAmount = paymentIn.remainings.remaining_amount 
+        paymentInData.append({
+            "id":paymentIn.id,
+            "date":paymentIn.date,
+            "payment_in":paymentIn.payment_in,
+            "remainingAmount": remainingAmount,
+            "remarks":paymentIn.remarks,
+            "type": "payment"
+        })
+    mergedData = invoiceData + paymentInData
+    mergedData.sort(key=lambda x: x["date"], reverse=True)
     return JsonResponse({"success":True,
-                         "transactions":data})
+                         "transactions":mergedData})
 
 @require_POST
 def payment_in(request,id):
     try:
         data = json.loads(request.body)
         payment_in = Decimal(str(data.get("payment_in")))
+        payment_in_date = data.get("payment_in_date")
+        payment_in_remark = data.get("payment_in_remark")
 
         remainingAmount = RemainingAmount.objects.filter(customer_id=id).order_by('-id').first()
+
         # if the remaining amount is not there then create one
 
         if not remainingAmount:
@@ -1164,9 +1204,18 @@ def payment_in(request,id):
             orders=None,
             remaining_amount=Decimal("0.00")
             )
-
+        else:
+            remainingAmount = RemainingAmount.objects.create(
+            customer_id=id,
+            orders=None,
+            remaining_amount=Decimal(remainingAmount.remaining_amount)
+            )
         remainingAmount.remaining_amount -= payment_in
+
         remainingAmount.save()
+
+        paymentIn = PaymentIn.objects.create(customer_id=id,date=payment_in_date,remainings=remainingAmount,payment_in=payment_in,remarks=payment_in_remark)
+        paymentIn.save()
 
         return JsonResponse({"success":True})
     except Exception as e:

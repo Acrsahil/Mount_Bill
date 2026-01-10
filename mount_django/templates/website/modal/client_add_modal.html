@@ -265,7 +265,7 @@
         </div>
         <div class="app-modal-choice">
             <button type="button" class="app-tab-link active" data-tab="client-info">Client Info</button>
-            <button type="button" class="app-tab-link" data-tab="additional-info">Additional Info</button>
+            <button type="button" class="app-tab-link" data-tab="additional-info" id="additionInfoBtn">Additional Info</button>
         </div>
         <div class="app-modal-body">
             <div id="client-info" class="app-tab-content active">
@@ -280,15 +280,20 @@
                             <input type="tel" id="clientPhoneInput" class="app-form-control" placeholder="Enter phone number" required>
                         </div>
                     </div>
-                    <div class="app-form-col">
+                     <div class="app-form-col">
                         <div class="app-form-group">
-                            <label for="clientEmailInput">Email</label>
-                            <input type="email" id="clientEmailInput" class="app-form-control" placeholder="Enter email">
+                            <label for="clientType">Client Type</label>
+                            <select id="clientType" class="app-form-control">
+                                <option value="regular">Regular</option>
+                                <option value="business">Business</option>
+                                <option value="wholesale">Wholesale</option>
+                            </select>
                         </div>
                     </div>
                 </div>
             </div>
             <div id="additional-info" class="app-tab-content">
+                <label id="additionalInfo" class="underline decoration-blue-500" >Additional Info</label>
                 <div class="app-form-group">
                     <label for="clientAddressInput">Address</label>
                     <textarea id="clientAddressInput" class="app-form-control" rows="2" placeholder="Enter address"></textarea>
@@ -302,12 +307,8 @@
                     </div>
                     <div class="app-form-col">
                         <div class="app-form-group">
-                            <label for="clientType">Client Type</label>
-                            <select id="clientType" class="app-form-control">
-                                <option value="regular">Regular</option>
-                                <option value="business">Business</option>
-                                <option value="wholesale">Wholesale</option>
-                            </select>
+                            <label for="clientEmailInput">Email</label>
+                            <input type="email" id="clientEmailInput" class="app-form-control" placeholder="Enter email">
                         </div>
                     </div>
                 </div>
@@ -316,6 +317,7 @@
         <div class="app-modal-footer">
             <button class="app-btn app-btn-light" id="cancelClientBtn">Cancel</button>
             <button class="app-btn app-btn-primary" id="saveClientBtn">Save Client</button>
+            <button class="app-btn app-btn-primary" id="updateClientBtn">Update Client</button>
         </div>
     </div>
 </div>
