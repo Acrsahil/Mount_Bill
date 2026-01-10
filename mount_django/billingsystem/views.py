@@ -1164,8 +1164,14 @@ def payment_in(request,id):
             orders=None,
             remaining_amount=Decimal("0.00")
             )
-
+        else:
+            remainingAmount = RemainingAmount.objects.create(
+            customer_id=id,
+            orders=None,
+            remaining_amount=Decimal(remainingAmount.remaining_amount)
+            )
         remainingAmount.remaining_amount -= payment_in
+
         remainingAmount.save()
 
         return JsonResponse({"success":True})
