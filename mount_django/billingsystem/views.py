@@ -6,7 +6,7 @@ from uuid import UUID
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.db import transaction
-from django.db.models import F
+from django.db.models import F,Sum
 from django.http import JsonResponse
 from django.shortcuts import get_list_or_404, get_object_or_404, render
 from django.utils import timezone
@@ -112,6 +112,33 @@ def products_json(request):
 
     return JsonResponse({"products": products_data, "count": products.count()})
 
+@never_cache
+def clients_json(request):
+    user = request.user
+    company = user.owned_company or user.active_company
+
+    if not company:
+        return JsonResponse({"clients": [], "count": 0})
+
+    clients = (
+        Customer.objects.filter(company=company)
+    )
+
+    clients_data = [
+        {
+            "id": c.id,
+            "uid": str(c.uid),
+            "name": c.name,
+            "phone": c.phone,
+            "email": c.email,
+            "pan_id": c.pan_id,
+            "address": c.address,
+        }
+        for c in clients
+    ]
+
+    return JsonResponse({"clients": clients_data, "client_count": clients.count()})
+
 
 def get_serialized_data(user, active_tab="dashboard"):
     """Helper function to get serialized data for template"""
@@ -155,6 +182,7 @@ def get_serialized_data(user, active_tab="dashboard"):
 
     customers_data = [
         {
+            "uid": str(c.uid),
             "id": c.id,
             "name": c.name,
             "phone": c.phone,
@@ -670,8 +698,8 @@ def save_invoice(request):
         print(total_amount)
 
         remaining_amount = 0
-        remaining_amount = Decimal(str(final_amount)) - Decimal(str(received_amount))
-        print(remaining_amount)
+        # remaining_amount = Decimal(str(final_amount)) - Decimal(str(received_amount))
+        # print(remaining_amount)
 
         print("this is global_discount-> ", global_discount)
 
@@ -706,12 +734,26 @@ def save_invoice(request):
 
         # calculating remaining amount
 
-        remaining, created = RemainingAmount.objects.get_or_create(
-            customer=customer, defaults={"remaining_amount": remaining_amount}
+        # Calculate this order's remaining amount
+        current_remaining = Decimal(str(final_amount)) - Decimal(str(received_amount))
+        
+        latest_remaining = RemainingAmount.objects.filter(customer=customer).order_by('-id').first()
+        previous_remaining = latest_remaining.remaining_amount if latest_remaining else 0
+        
+
+        # Add previous remaining to this order's remaining
+        total_remaining_for_order = current_remaining + Decimal(previous_remaining)
+
+        # Save remaining amount for this order
+        remaining_obj, created = RemainingAmount.objects.get_or_create(
+            customer=customer,
+            orders=order,
+            defaults={"remaining_amount": total_remaining_for_order}
         )
+
         if not created:
-            remaining.remaining_amount += remaining_amount
-            remaining.save()
+            remaining_obj.remaining_amount = total_remaining_for_order
+            remaining_obj.save()
 
         return JsonResponse(
             {
@@ -786,6 +828,7 @@ def save_client(request):
                     "success": True,
                     "message": "Client saved successfully!",
                     "client": {
+                        "uid": client.uid,
                         "id": client.id,
                         "name": client.name,
                         "phone": client.phone,
@@ -1074,11 +1117,63 @@ def settings(request):
     return render(request, "website/bill.html", context)
 
 
-def client_detail(request):
+def client_detail(request,id: UUID):
     context = get_serialized_data(request.user, "dashboard")
+    if id:
+        customer = get_object_or_404(Customer,uid=id)
+        context["customer_info"] = customer
     return render(request, "website/client_detail.html", context)
 
+def fetch_transactions(request,id:UUID):
+    user = request.user
+    company = user.owned_company or user.active_company
 
+    if not company:
+        return JsonResponse({"transactions": []})
+    print("error yaa aako ho")
+    transactions = OrderList.objects.filter(customer__uid = id).order_by('id')
+    # remainingamounts = RemainingAmount.objects.filter(customer__uid = id)
+    data = []
+    for transaction in transactions:
+        summary = getattr(transaction,"summary",None)
+        remaining = transaction.remaining.remaining_amount if hasattr(transaction, "remaining") else 0
+        data.append({
+            "id": transaction.id,
+            "date": transaction.order_date,
+            "finalAmount":summary.final_amount if summary else 0,
+            "remarks": transaction.notes,
+            "remainingAmount": remaining if remaining else 0,
+
+        })
+    
+    return JsonResponse({"success":True,
+                         "transactions":data})
+
+@require_POST
+def payment_in(request,id):
+    try:
+        data = json.loads(request.body)
+        payment_in = Decimal(str(data.get("payment_in")))
+
+        remainingAmount = RemainingAmount.objects.filter(customer_id=id).order_by('-id').first()
+        # if the remaining amount is not there then create one
+
+        if not remainingAmount:
+            remainingAmount = RemainingAmount.objects.create(
+            customer_id=id,
+            orders=None,
+            remaining_amount=Decimal("0.00")
+            )
+
+        remainingAmount.remaining_amount -= payment_in
+        remainingAmount.save()
+
+        return JsonResponse({"success":True})
+    except Exception as e:
+        return JsonResponse(
+            {"success": False, "error": f"Server error: {str(e)}"}, status=500
+        )
+    
 def product_detail(request, id: UUID = None):
     context = get_serialized_data(request.user, "dashboard")
     if id:

@@ -55,6 +55,7 @@ class Customer(models.Model):  # sabina
     company = models.ForeignKey(
         Company, on_delete=models.CASCADE, related_name="customers"
     )
+    uid = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=100)
     phone = models.CharField(max_length=15, blank=True)
     email = models.EmailField(blank=True)
@@ -266,8 +267,11 @@ class AdditionalCharges(models.Model):
 
 
 class RemainingAmount(models.Model):
-    customer = models.OneToOneField(
+    customer = models.ForeignKey(
         Customer, on_delete=models.CASCADE, related_name="customer"
+    )
+    orders = models.OneToOneField(
+        OrderList, on_delete=models.CASCADE, related_name="remaining",null=True,blank=True
     )
     remaining_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
 

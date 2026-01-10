@@ -20,10 +20,11 @@
             <i class="fas fa-clock"></i>
             <span>{% now "h:i A" %}</span>
         </div>
-        <div
-            class="w-8 h-8 bg-gradient-to-r from-[#4361ee] to-[#3a0ca3] text-white rounded-full flex items-center justify-center font-bold text-sm">
-            {{ request.user.username.0|upper }}
-        </div>
+       <div
+          class="w-8 h-8 !bg-gradient-to-r !from-[#4361ee] !to-[#3a0ca3] !text-white rounded-full flex items-center justify-center font-bold text-sm">
+          {{ request.user.username.0|upper }}
+      </div>
+
     </div>
 </header>
 
@@ -38,9 +39,12 @@
             <h2 class="font-semibold text-lg">
                 Clients ({{ client_num }})
             </h2>
-            <button class="btn btn-success flex items-center gap-1" id="addNewClientDetailBtn">
-                <i class="fas fa-plus-circle"></i> Add Client
+            <button class="btn flex items-center gap-1 px-3 py-1 text-white rounded
+            !bg-gradient-to-r !from-[#4361ee] !to-[#3a0ca3]
+            hover:!from-[#3f5bdc] hover:!to-[#320b8f]" id="addNewClientDetailBtn">
+              <i class="fas fa-plus-circle"></i> Add Client
             </button>
+
         </div>
 
         <!-- Search + Sort -->
@@ -81,25 +85,26 @@
 
     <!-- ROW 1 -->
     <div class="flex items-start w-full">
-      <div class="text-lg font-semibold">Client Name
-        {{ client_name }}
+      <div class="text-xl text-900 font-semibold" id = "clientName">
+        {{ customer_info.name }}
       </div>
 
       <div class="ml-auto text-right">
-        <div class="text-sm text-gray-500">Receivable</div>
-        <div class="text-xl font-semibold text-emerald-600">-----
-          {{ client_transaction }}
-        </div>
+        <div class="text-xl text-500 font-semibold">Receivable</div>
+       
       </div>
     </div>
 
     <!-- ROW 2 -->
     <div class="flex w-full text-gray-500">
-      <div>----{{ client_number }}</div>
-
-      <div class="ml-auto font-medium">
-        {{ client_amount }}----
-      </div>
+      <div id="clientPhone">{%if customer_info.phone%}
+              {{ customer_info.phone }}
+            {%else%}
+              ---
+            {%endif%}</div>
+        <div class="text-xl font-semibold text-emerald-600 ml-auto text-right">-----
+          {{ client_transaction }}
+        </div>
     </div>
 
     <!-- ROW 3 -->
@@ -114,8 +119,11 @@
         <button class="btn border border-gray-300 px-3 py-1 rounded"><i class="fas fa-file-pdf"></i> PDF</button>
       </div>
 
-      <div class="ml-auto border border-gray-300 px-3 py-1 rounded">
-        <button class="btn"><i class="fas fa-bell"></i> Send Reminder</button>
+      <div class="ml-auto">
+        <button class="btn !bg-gradient-to-r !from-[#4361ee] !to-[#3a0ca3] !text-white px-3 py-1 rounded hover:!from-[#3f5bdc] hover:!to-[#320b8f']">
+  <i class="fas fa-bell"></i> Send Reminder
+</button>
+
       </div>
     </div>
 <!-- Divider line -->
@@ -146,9 +154,13 @@
       <i class="fa-solid fa-sort"></i> Sort By
     </button>
 
-    <button class="btn bg-emerald-600 text-white px-3 py-1 rounded hover:bg-emerald-700">
-      Add Transaction
-    </button>
+   <button
+  class="btn px-3 py-1 text-white rounded
+         !bg-gradient-to-r !from-[#4361ee] !to-[#3a0ca3]
+         hover:!from-[#3f5bdc] hover:!to-[#320b8f]" id="addTransaction">
+  <i class="fas fa-plus-circle"></i>
+  Add Transaction
+</button>
 
   </div>
 
@@ -170,7 +182,133 @@
     </tbody>
   </table>
 </div>
+<div
+  id="paymentTransactions"
+  class="absolute hidden mt-0.5 z-50 w-44
+         bg-white border border-gray-200
+         rounded-lg shadow-lg
+         py-1 "
+>
+  <ul class="text-sm text-gray-700">
+    <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer" id= "salesInvoice">
+      Sales Invoice
+    </li>
+    <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer" id= "paymentIn">
+      Payment In
+    </li>
+    <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer" id= "paymentOut">
+      Payment Out
+    </li>
+  </ul>
+</div>
+
+{% comment %} payment in modal {% endcomment %}
+<!-- Overlay (hidden by default) -->
+<div id="paymentModal"
+     class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 hidden">
+
+  <!-- Modal -->
+  <div class="bg-white w-full max-w-3xl rounded-lg shadow-lg p-6">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-6">
+
+      <h2 class="text-xl font-semibold text-gray-800">
+        Add Payment In
+      </h2>
+
+      <!-- Close Button -->
+      <button
+        type="button"
+        class="w-8 h-8 flex items-center justify-center rounded-full
+               text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition"
+        aria-label="Close"
+      >
+        ✕
+      </button>
+
+    </div>
+
+    <!-- Body -->
+    <div class="space-y-5">
+
+      <!-- First Row -->
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm text-gray-600 mb-1">Receipt Number</label>
+          <input
+            type="text"
+            placeholder="ID from DB"
+            class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+        </div>
+
+        <div>
+          <label class="block text-sm text-gray-600 mb-1">Date</label>
+          <input
+            type="date"
+            class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+        </div>
+      </div>
+
+      <!-- Second Row -->
+      <div>
+        <label class="block text-sm text-gray-600 mb-1">Party Name</label>
+        <input
+          type="text"
+          class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+      </div>
+
+      <!-- Third Row -->
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm text-gray-600 mb-1">Received Amount</label>
+          <input
+            type="text"
+            class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" id= "receivedAmountIn">
+        </div>
+
+        <div>
+          <label class="block text-sm text-gray-600 mb-1">Payment Method</label>
+          <input
+            type="text"
+            placeholder="Cash"
+            class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+        </div>
+      </div>
+
+      <!-- Fourth Row -->
+      <div>
+        <label class="block text-sm text-gray-600 mb-1">Remarks</label>
+        <input
+          type="text"
+          class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+      </div>
+
+    </div>
+
+    <!-- Footer -->
+    <div class="flex justify-end gap-3 mt-8 pt-4 border-t">
+
+      <button
+        class="px-4 py-2 border border-gray-300 rounded-md text-sm
+               text-gray-700 hover:bg-gray-100 transition">
+        Save & New
+      </button>
+
+      <button
+        class="px-4 py-2 bg-blue-600 text-white rounded-md text-sm
+               hover:bg-blue-700 transition" id="savePaymentIn">
+        Save Payment In
+      </button>
+
+    </div>
+
   </div>
+</div>
+
+
+  </div>
+
 
 
 </main>
@@ -178,4 +316,39 @@
 
 </div>
 
+{% include "website/modal/client_add_modal.html" %}
 {% endblock %}
+{% block extra_js %}
+<script>
+// Simple and safe data structure
+window.djangoData = {
+    products: {{ product|safe }},
+    product_cat: {{ product_cat|safe }},
+    clients: {{ customer|safe }},
+    invoices: {{ invoices|safe }},
+    csrfToken: "{{ csrf_token }}",
+    active_tab: "{{ active_tab|default:'dashboard' }}"
+};
+
+// SAFETY CHECK
+if (typeof window.djangoData === 'undefined') {
+    window.djangoData = {
+        products: [],
+        product_cat: [],
+        clients: [],
+        invoices: {{ invoices|safe }},
+        csrfToken: "{{ csrf_token }}",
+        active_tab: "{{ active_tab|default:'dashboard' }}"
+    };
+}
+
+console.log('Active tab:', window.djangoData.active_tab);
+</script>
+
+<script>const csrfToken = "{{ csrf_token }}";</script>
+<script type="module" src="{%static 'js/client_detail.js'%}"></script>
+<script type="module" src="{%static 'js/client.js'%}"></script>
+<script type="module" src="{% static 'js/main.js' %}"></script>
+<script type="module" src="{% static 'js/event.js' %}"></script>
+{% endblock %}
+

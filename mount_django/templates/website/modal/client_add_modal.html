@@ -1,0 +1,321 @@
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+    body {
+        font-family: 'Poppins', sans-serif;
+    }
+    .thin-scrollbar::-webkit-scrollbar {
+        width: 4px;
+    }
+    .thin-scrollbar::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+    .thin-scrollbar::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 10px;
+    }
+    /* Tab visibility control */
+    .tab-content {
+        display: none;
+    }
+    .tab-content.active {
+        display: block;
+    }
+    
+    /* MODAL STYLES - Scoped to avoid conflicts */
+    .app-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 9999;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .app-modal.active {
+        display: flex;
+    }
+    
+    .app-modal-content {
+        background: white;
+        border-radius: 12px;
+        width: 90%;
+        max-width: 500px;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        animation: modalSlideIn 0.3s ease-out;
+    }
+    
+    @keyframes modalSlideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .app-modal-header {
+        padding: 20px 24px;
+        border-bottom: 1px solid #e5e7eb;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .app-modal-header h3 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+        color: #111827;
+    }
+    
+    .app-modal-close {
+        background: none;
+        border: none;
+        font-size: 24px;
+        color: #6b7280;
+        cursor: pointer;
+        padding: 0;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+    }
+    
+    .app-modal-close:hover {
+        background-color: #f3f4f6;
+        color: #374151;
+    }
+    
+    .app-modal-body {
+        padding: 24px;
+    }
+    
+    .app-modal-footer {
+        padding: 20px 24px;
+        border-top: 1px solid #e5e7eb;
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+    }
+    
+    .app-modal-choice {
+        display: flex;
+        border-bottom: 1px solid #e5e7eb;
+        padding: 0 24px;
+        gap: 8px;
+    }
+    
+    .app-tab-link {
+        padding: 12px 0;
+        background: none;
+        border: none;
+        font-size: 14px;
+        color: #6b7280;
+        cursor: pointer;
+        position: relative;
+        margin: 0 8px;
+        font-weight: 500;
+    }
+    
+    .app-tab-link.active {
+        color: #4361ee;
+    }
+    
+    .app-tab-link.active::after {
+        content: '';
+        position: absolute;
+        bottom: -1px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background-color: #4361ee;
+        border-radius: 2px;
+    }
+    
+    .app-tab-content {
+        display: none;
+    }
+    
+    .app-tab-content.active {
+        display: block;
+    }
+    
+    /* Form Styles */
+    .app-form-group {
+        margin-bottom: 20px;
+    }
+    
+    .app-form-group label {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        color: #374151;
+    }
+    
+    .app-form-control {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: all 0.2s;
+        background-color: white;
+    }
+    
+    .app-form-control:focus {
+        outline: none;
+        border-color: #4361ee;
+        box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+    }
+    
+    .app-form-row {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 16px;
+    }
+    
+    .app-form-col {
+        flex: 1;
+    }
+    
+    /* Button Styles */
+    .app-btn {
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: none;
+    }
+    
+    .app-btn-primary {
+        background: linear-gradient(to right, #4361ee, #3a0ca3);
+        color: white;
+    }
+    
+    .app-btn-primary:hover {
+        background: linear-gradient(to right, #3a0ca3, #2a007a);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(67, 97, 238, 0.2);
+    }
+    
+    .app-btn-light {
+        background-color: white;
+        color: #374151;
+        border: 1px solid #d1d5db;
+    }
+    
+    .app-btn-light:hover {
+        background-color: #f9fafb;
+        border-color: #9ca3af;
+    }
+    
+    /* Product Quantities */
+    .product-quantities {
+        margin-bottom: 20px;
+    }
+    
+    /* Search Hint */
+    .search-hint {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        max-height: 200px;
+        overflow-y: auto;
+        z-index: 100;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        display: none;
+    }
+    
+    .search-hint-item {
+        padding: 10px 12px;
+        cursor: pointer;
+        font-size: 14px;
+        color: #374151;
+        transition: background-color 0.2s;
+    }
+    
+    .search-hint-item:hover {
+        background-color: #f3f4f6;
+    }
+</style>
+<div class="app-modal" id="addClientModal">
+    <div class="app-modal-content">
+        <div class="app-modal-header">
+            <h3>Add New Client</h3>
+            <button class="app-modal-close" id="closeClientModal">&times;</button>
+        </div>
+        <div class="app-modal-choice">
+            <button type="button" class="app-tab-link active" data-tab="client-info">Client Info</button>
+            <button type="button" class="app-tab-link" data-tab="additional-info">Additional Info</button>
+        </div>
+        <div class="app-modal-body">
+            <div id="client-info" class="app-tab-content active">
+                <div class="app-form-group">
+                    <label for="clientNameInput">Client Name *</label>
+                    <input type="text" id="clientNameInput" class="app-form-control" placeholder="Enter client name" required>
+                </div>
+                <div class="app-form-row">
+                    <div class="app-form-col">
+                        <div class="app-form-group">
+                            <label for="clientPhoneInput">Phone Number *</label>
+                            <input type="tel" id="clientPhoneInput" class="app-form-control" placeholder="Enter phone number" required>
+                        </div>
+                    </div>
+                    <div class="app-form-col">
+                        <div class="app-form-group">
+                            <label for="clientEmailInput">Email</label>
+                            <input type="email" id="clientEmailInput" class="app-form-control" placeholder="Enter email">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="additional-info" class="app-tab-content">
+                <div class="app-form-group">
+                    <label for="clientAddressInput">Address</label>
+                    <textarea id="clientAddressInput" class="app-form-control" rows="2" placeholder="Enter address"></textarea>
+                </div>
+                <div class="app-form-row">
+                    <div class="app-form-col">
+                        <div class="app-form-group">
+                            <label for="clientPanNoInput">PAN Number</label>
+                            <input type="text" id="clientPanNoInput" class="app-form-control" placeholder="Enter PAN Number">
+                        </div>
+                    </div>
+                    <div class="app-form-col">
+                        <div class="app-form-group">
+                            <label for="clientType">Client Type</label>
+                            <select id="clientType" class="app-form-control">
+                                <option value="regular">Regular</option>
+                                <option value="business">Business</option>
+                                <option value="wholesale">Wholesale</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="app-modal-footer">
+            <button class="app-btn app-btn-light" id="cancelClientBtn">Cancel</button>
+            <button class="app-btn app-btn-primary" id="saveClientBtn">Save Client</button>
+        </div>
+    </div>
+</div>
