@@ -336,44 +336,33 @@ async function fetchTransactions(clientUid){
     
     clientTransactionTableBody.innerHTML = '';
 
-    // Add a type property to distinguish them
-    
-    const transactions = data.transactions.map(t => ({...t,type:"sale"}));
-    const payments = data.paymentIn.map(p => ({...p,type:"payment"}));
-
-    // Merge arrays
-    const mergedData = [...transactions,...payments]
-    console.log("yo mergedData vaneko k ho tw",mergedData)
-
-    // Sort by date descending 
-    mergedData.sort((a, b) => new Date(a.date) - new Date(b.date));
-
     // Load each row
-    mergedData.forEach(item => loadTransactions(item, clientTransactionTableBody));
+    data.transactions.forEach(transaction => loadTransactions(transaction, clientTransactionTableBody));
 }
 
 
-function loadTransactions(item, tableBody) {
+function loadTransactions(transaction, tableBody) {
     if (!tableBody) return;
 
     const row = document.createElement('tr');
 
-    if (item.type === 'sale') {
+    if (transaction.type === 'sale') {
         row.innerHTML = `
-        <td>Sales Invoice #${item.id}</td>
-        <td>${item.date}</td>
-        <td>${item.finalAmount}</td>
+        <td>Sales Invoice #${transaction.id}>
+        <td>${transaction.date.split('T')[0]}</td>
+        <td>${transaction.finalAmount}</td>
         <td>Sale</td>
-        <td>${item.remainingAmount}</td>
-        <td>${item.remarks || "---"}</td>`;
-    } else if (item.type === 'payment') {
+        <td>${transaction.remainingAmount}</td>
+        <td>${transaction.remarks || "---"}</td>`;
+
+    } else if (transaction.type === 'payment') {
         row.innerHTML = `
-        <td>Payment #${item.id}</td>
-        <td>${item.date}</td>
-        <td>${item.payment_in}</td>
+        <td>Payment #${transaction.id}</td>
+        <td>${transaction.date.split('T')[0]}</td>
+        <td>${transaction.payment_in}</td>
         <td>Payment</td>
-        <td>${item.remainingAmount}</td>
-        <td>${item.remarks || "---"}</td>`;
+        <td>${transaction.remainingAmount}</td>
+        <td>${transaction.remarks || "---"}</td>`;
     }
 
     tableBody.appendChild(row);

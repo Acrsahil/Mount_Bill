@@ -598,10 +598,11 @@ def save_invoice(request):
         # Handle date conversion
         if invoice_date_str:
             try:
-                invoice_date = datetime.strptime(invoice_date_str, "%Y-%m-%d").date()
-                invoice_date = timezone.make_aware(
-                    datetime.combine(invoice_date, datetime.min.time())
-                )
+                invoice_date = datetime.strptime(invoice_date_str, "%Y-%m-%d")
+                # Keep current time instead of 00:00:00
+                now = timezone.now()
+                invoice_date = invoice_date.replace(hour=now.hour, minute=now.minute, second=now.second, microsecond=now.microsecond)
+                invoice_date = timezone.make_aware(invoice_date)
             except ValueError:
                 invoice_date = timezone.now()
         else:
@@ -1153,7 +1154,7 @@ def fetch_transactions(request,id:UUID):
     if not company:
         return JsonResponse({"transactions": []})
     print("error yaa aako ho")
-    transactions = OrderList.objects.filter(customer__uid = id).order_by('id')
+    transactions = OrderList.objects.filter(customer__uid = id).order_by('-id')
     payment_in_transactions = PaymentIn.objects.filter(customer__uid =id)
    
     invoiceData = []
@@ -1166,6 +1167,7 @@ def fetch_transactions(request,id:UUID):
             "finalAmount":summary.final_amount if summary else 0,
             "remarks": transaction.notes,
             "remainingAmount": remaining if remaining else 0,
+            "type": "sale"
 
         })
     paymentInData=[]
@@ -1176,12 +1178,13 @@ def fetch_transactions(request,id:UUID):
             "date":paymentIn.date,
             "payment_in":paymentIn.payment_in,
             "remainingAmount": remainingAmount,
-            "remarks":paymentIn.remarks
+            "remarks":paymentIn.remarks,
+            "type": "payment"
         })
-    
+    mergedData = invoiceData + paymentInData
+    mergedData.sort(key=lambda x: x["date"], reverse=True)
     return JsonResponse({"success":True,
-                         "transactions":invoiceData,
-                         "paymentIn":paymentInData})
+                         "transactions":mergedData})
 
 @require_POST
 def payment_in(request,id):
