@@ -842,6 +842,27 @@ def save_client(request):
     except Exception as e:
         return JsonResponse({"success": False, "error": f"Server error: {str(e)}"})
 
+@require_POST
+@csrf_exempt
+def update_client(request,id):
+    try:
+        data = json.loads(request.body)
+        name = data.get("clientName")
+        phone = data.get("clientPhone")
+        address = data.get("clientAddress")
+        pan_number = data.get("clientPan")
+        email = data.get("clientEmail")
+
+        customers = Customer.objects.get(id = id)
+        customers.name = name
+        customers.email = email
+        customers.phone = phone
+        customers.address = address
+        customers.pan_id = pan_number
+        customers.save()
+        return JsonResponse({"success":True,"message": "Client updated successfully"})
+    except Exception as e:
+        return JsonResponse({"success":False, "error":f"Server error: {str(e)}"})
 
 @login_required
 @csrf_exempt

@@ -1,6 +1,6 @@
-document.addEventListener('DOMContentLoaded', function () {
-  const tabBtn = document.querySelectorAll('.tab-links');
-  const tabContent = document.querySelectorAll('.tab-contents');
+  //for AddNewClient Modal js
+  const tabBtn = document.querySelectorAll('.app-tab-link');
+  const tabContent = document.querySelectorAll('.app-tab-content');
   const DEFAULT_TAB_ID = 'client-info';
 
   // helper to activate a tab by its id
@@ -45,4 +45,10 @@ document.addEventListener('DOMContentLoaded', function () {
       activateTab(DEFAULT_TAB_ID);
     });
   });
-});
+
+//activating both tabs
+export function activateTabAll(){
+  tabBtn.forEach(btn => btn.classList.add('active'))
+
+  tabContent.forEach(content => content.classList.add('active'))
+}

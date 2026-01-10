@@ -1,4 +1,7 @@
 import { loadClients } from "./dom.js";
+import { selectClientFromHint } from "./events.js";
+import{ activateTabAll } from "./client.js";
+import { showAlert } from "./utils.js";
 document.addEventListener('DOMContentLoaded', () => {
     addClientsToList(window.djangoData.clients)
     updateClientInfo(window.djangoData.clients)
@@ -7,9 +10,126 @@ document.addEventListener('DOMContentLoaded', () => {
     const addNewClientDetailBtn = document.getElementById('addNewClientDetailBtn');
     addNewClientDetailBtn.addEventListener('click',() => {
         const addClientModal = document.getElementById('addClientModal')
+        resetClientModal()
         addClientModal.style.display = 'flex';
     })
 });
+
+function resetClientModal(){
+    document.querySelector('.app-modal-header h3').textContent = "Add New Client";
+    document.getElementById('saveClientBtn').style.display = 'block';
+    document.getElementById('updateClientBtn').style.display = 'none';
+    document.getElementById('additionalInfo').style.display = 'none';
+    document.getElementById('additionInfoBtn').style.display = 'block';
+}
+//editing the client 
+
+const clientEditBtn = document.getElementById('clientEditBtn')
+
+document.addEventListener('DOMContentLoaded',() =>{
+    clientEditBtn.addEventListener('click',() => {
+    document.querySelector('.app-modal-header h3').textContent = "Update Client";
+    document.getElementById('saveClientBtn').style.display = 'none';
+    document.getElementById('updateClientBtn').style.display = 'block';
+    addClientModal.style.display = 'flex';
+    document.getElementById('additionalInfo').style.display = 'block';
+    document.getElementById('additionInfoBtn').style.display = 'none';
+    activateTabAll();
+})
+
+
+    const updateClientBtn = document.getElementById('updateClientBtn');
+    updateClientBtn.addEventListener('click',async()=>{
+        console.log("esma id kina xaina??",clientEditBtn.dataset.clientId)
+        await updateClientFunc(clientEditBtn.dataset.clientId);
+    })
+})
+
+async function updateClientFunc(clientId){
+    console.log("ya id aayo tw???????",clientId)
+        const clientName= document.getElementById('clientNameInput').value.trim();
+        const clientPhone = document.getElementById('clientPhoneInput')?.value;
+        const clientAddress = document.getElementById('clientAddressInput')?.value;
+        const clientPanNo = document.getElementById('clientPanNoInput')?.value;
+        const clientEmail = document.getElementById('clientEmailInput').value.trim();
+    
+        // Client-side validation
+        if (!clientName) {
+            showAlert('Please enter client name', 'error');
+            document.getElementById('clientNameInput').focus();
+            return;
+        }
+    
+    
+        // Show loading state
+        const updateClientBtn = document.getElementById('updateClientBtn');
+        const originalText = updateClientBtn.innerHTML;
+        
+        updateClientBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
+        updateClientBtn.disabled = true;
+    
+        try {
+            // Prepare data for sending
+            const clientData = {
+                id: clientId,
+                clientName: clientName,
+                clientPhone: clientPhone,
+                clientAddress: clientAddress,
+                clientPan: clientPanNo,
+                clientEmail: clientEmail,
+    
+            };
+            // Send AJAX request to Django
+            const response = await fetch(`/dashboard/client-update/${clientId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': window.djangoData.csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify(clientData)
+            });
+    
+            const result = await response.json();
+            console.log('Server response yaa ko ho tw:', result);
+    
+            if (result.success) {
+                // Show success message
+                showAlert(result.message, 'success');
+    
+                // Close modal after short delay
+                setTimeout(() => {
+                    const closeClientModalFunc = () => {
+                        if (addClientModal) {
+                            addClientModal.style.display = 'none';
+                        }
+                    };
+                    closeClientModalFunc();
+    
+                    // Reset form
+                    document.getElementById('clientNameInput').value = '';
+                    document.getElementById('clientPhoneInput').value = '';
+                    document.getElementById('clientAddressInput').value = '';
+                    document.getElementById('clientPanNoInput').value = '';
+                    document.getElementById('clientEmailInput').value = '';
+                }, 1500);
+    
+            } else {
+                showAlert('Error: ' + (result.error || 'Failed to edit client'), 'error');
+            }
+    
+        } catch (error) {
+            console.error('Error updating:', error);
+            showAlert('Network error. Please check your connection and try again.', 'error');
+        } finally {
+            // Restore button state
+            updateClientBtn.innerHTML = originalText;
+            updateClientBtn.disabled = false;
+        }
+   
+}
+
+
 
 //to get uid from the url
 function getUidFromUrl(){
@@ -28,9 +148,9 @@ function getClientFromUid(clients){
 function updateClientInfo(clients){
     const selectedClients = getClientFromUid(clients)
     const clientName = document.getElementById('clientName');
-    const clientPhone = document.getElementById('clientPhone');
+    const clientDetail = document.getElementById('clientDetail');
     clientName.textContent = selectedClients.name;
-    clientPhone.textContent = selectedClients.phone;
+    clientDetail.textContent = selectedClients.address || selectedClients.phone || "---";
 
 }
 
@@ -99,9 +219,12 @@ export function renderClient(client) {
         history.pushState({}, '', `/dashboard/client-detail/${client.uid}`);
 
         document.getElementById('clientName').textContent = client.name;
-        document.getElementById('clientPhone').textContent = client.phone || '---';
+        document.getElementById('clientDetail').textContent = client.address || client.phone || '---';
         fetchTransactions(client.uid)
         addTransaction.dataset.clientId = client.id;
+
+        //client id for editing client
+        clientEditBtn.dataset.clientId = client.id;
         
     });
 
