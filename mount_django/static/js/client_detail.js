@@ -344,7 +344,8 @@ async function fetchTransactions(clientUid){
     // Merge arrays
     const mergedData = [...transactions,...payments]
     console.log("yo mergedData vaneko k ho tw",mergedData)
-    // Sort by date ascending (or descending if you want latest first)
+
+    // Sort by date descending 
     mergedData.sort((a, b) => new Date(a.date) - new Date(b.date));
 
     // Load each row
@@ -360,7 +361,7 @@ function loadTransactions(item, tableBody) {
     if (item.type === 'sale') {
         row.innerHTML = `
         <td>Sales Invoice #${item.id}</td>
-        <td>${item.date.split('T')[0]}</td>
+        <td>${item.date}</td>
         <td>${item.finalAmount}</td>
         <td>Sale</td>
         <td>${item.remainingAmount}</td>
@@ -368,10 +369,10 @@ function loadTransactions(item, tableBody) {
     } else if (item.type === 'payment') {
         row.innerHTML = `
         <td>Payment #${item.id}</td>
-        <td>${item.date.split('T')[0]}</td>
+        <td>${item.date}</td>
         <td>${item.payment_in}</td>
         <td>Payment</td>
-        <td>-</td>
+        <td>${item.remainingAmount}</td>
         <td>${item.remarks || "---"}</td>`;
     }
 

@@ -1155,8 +1155,7 @@ def fetch_transactions(request,id:UUID):
     print("error yaa aako ho")
     transactions = OrderList.objects.filter(customer__uid = id).order_by('id')
     payment_in_transactions = PaymentIn.objects.filter(customer__uid =id)
-    print("yo customer ko paymentin history",payment_in_transactions)
-    # remainingamounts = RemainingAmount.objects.filter(customer__uid = id)
+   
     invoiceData = []
     for transaction in transactions:
         summary = getattr(transaction,"summary",None)
@@ -1171,10 +1170,12 @@ def fetch_transactions(request,id:UUID):
         })
     paymentInData=[]
     for paymentIn in payment_in_transactions:
+        remainingAmount = paymentIn.remainings.remaining_amount 
         paymentInData.append({
             "id":paymentIn.id,
             "date":paymentIn.date,
             "payment_in":paymentIn.payment_in,
+            "remainingAmount": remainingAmount,
             "remarks":paymentIn.remarks
         })
     
@@ -1189,9 +1190,9 @@ def payment_in(request,id):
         payment_in = Decimal(str(data.get("payment_in")))
         payment_in_date = data.get("payment_in_date")
         payment_in_remark = data.get("payment_in_remark")
+
         remainingAmount = RemainingAmount.objects.filter(customer_id=id).order_by('-id').first()
-        paymentIn = PaymentIn.objects.create(customer_id=id,date=payment_in_date,payment_in=payment_in,remarks=payment_in_remark)
-        paymentIn.save()
+
         # if the remaining amount is not there then create one
 
         if not remainingAmount:
@@ -1209,6 +1210,9 @@ def payment_in(request,id):
         remainingAmount.remaining_amount -= payment_in
 
         remainingAmount.save()
+
+        paymentIn = PaymentIn.objects.create(customer_id=id,date=payment_in_date,remainings=remainingAmount,payment_in=payment_in,remarks=payment_in_remark)
+        paymentIn.save()
 
         return JsonResponse({"success":True})
     except Exception as e:
