@@ -28,6 +28,12 @@ from .models import (
 )
 
 
+def invoice_uid(request,id):
+    order = OrderList.objects.get(id=id)
+    return JsonResponse({"uid": str(order.uid)})
+
+
+
 def filtered_products(request):
     user = request.user
     company = user.owned_company or user.active_company

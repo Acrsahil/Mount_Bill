@@ -1,7 +1,7 @@
 // API calls for AJAX/fetch requests
 import { showAlert } from './utils.js';
-import { openAddProductModal,closeProductModalFunc  } from './events.js';
-import { openModal} from './bill_layout.js';
+import { openAddProductModal, closeProductModalFunc } from './events.js';
+import { openModal } from './bill_layout.js';
 //for csrfToken for js
 function getCookie(name) {
     let cookieValue = null;
@@ -22,21 +22,21 @@ const csrfToken = getCookie('csrftoken');
 
 
 //for stock filter
-document.addEventListener('DOMContentLoaded',() =>{
+document.addEventListener('DOMContentLoaded', () => {
     const slidercheck = document.getElementById('statusToggle');
     const lowStockConstraint = document.getElementById('lowStockConstraint')
 
     if (!slidercheck || !lowStockConstraint) return;
     lowStockConstraint.style.display = 'none';
-    slidercheck.addEventListener('change',()=>{
-        if (slidercheck.checked == true){
-        lowStockConstraint.style.display = 'flex';
+    slidercheck.addEventListener('change', () => {
+        if (slidercheck.checked == true) {
+            lowStockConstraint.style.display = 'flex';
         }
-        else{
+        else {
             lowStockConstraint.style.display = 'none';
         }
     })
-    
+
 })
 
 
@@ -45,82 +45,80 @@ const stocklistpopup = document.querySelector('.stocklist-popup');
 let currentCategory = null; // store the currently selected category
 let currentStock = "";      // store the currently selected stock filter
 
-async function fetchStockProducts(category= null, stock=""){
+async function fetchStockProducts(category = null, stock = "") {
     let url = `/dashboard/filtered-products/?`;
-    if(category) url += `category=${category}&`;
-    if(stock) url += `stock=${stock}&`;
+    if (category) url += `category=${category}&`;
+    if (stock) url += `stock=${stock}&`;
     const res = await fetch(url);
     const data = await res.json();
-    console.log("yo ho k ho ",data)
+    console.log("yo ho k ho ", data)
     return data.products;
-    
+
 }
-document.addEventListener('DOMContentLoaded',() =>{
+document.addEventListener('DOMContentLoaded', () => {
     const stocklists = document.getElementById('stocklists');
-    if(!stocklists) return;
-    stocklists.addEventListener('click',(e) =>
-    {
-        
+    if (!stocklists) return;
+    stocklists.addEventListener('click', (e) => {
+
         e.stopPropagation();
         console.log("click vako xaina??")
         const rect = stocklists.getBoundingClientRect();
-        
+
         stocklistpopup.style.top = rect.bottom + window.scrollY + 'px';
         stocklistpopup.style.left = rect.left + window.scrollX + 'px';
 
-        if(stocklistpopup.style.display === 'block'){
+        if (stocklistpopup.style.display === 'block') {
             stocklistpopup.style.display = 'none';
         }
-        else{
+        else {
             stocklistpopup.style.display = 'block';
         }
-        
-       //for changing the button text
-      
+
+        //for changing the button text
+
     })
     document.addEventListener('click', (e) => {
-       if (!stocklistpopup.contains(e.target) && !stocklists.contains(e.target)) {
-        stocklistpopup.style.display = 'none';
-    }
-});
+        if (!stocklistpopup.contains(e.target) && !stocklists.contains(e.target)) {
+            stocklistpopup.style.display = 'none';
+        }
+    });
 
-stocklistpopup.addEventListener('click', async(e) => {
-      if (e.target.tagName === 'LI') {
-     stocklists.textContent = e.target.textContent; // change button text
-     if (e.target.id === 'allStock')
-     {
-       currentStock = '';
-     }
-     if (e.target.id === 'inStock'){
-        currentStock = 'instock';
-        
-     }
-     if(e.target.id == 'lowStock'){
-        currentStock = "lowstock";
-     }
-     if(e.target.id == 'outStock'){
-        currentStock = "outstock";
-     }
-     const stockProduct = await fetchStockProducts(currentCategory, currentStock);
-        productList.innerHTML=``;
-        stockProduct.forEach(product => addProductToList(product,productList))
-        
-      stocklistpopup.style.display = 'none'; // close popup
-    }
-});
+    stocklistpopup.addEventListener('click', async (e) => {
+        if (e.target.tagName === 'LI') {
+            stocklists.textContent = e.target.textContent; // change button text
+            if (e.target.id === 'allStock') {
+                currentStock = '';
+            }
+            if (e.target.id === 'inStock') {
+                currentStock = 'instock';
+
+            }
+            if (e.target.id == 'lowStock') {
+                currentStock = "lowstock";
+            }
+            if (e.target.id == 'outStock') {
+                currentStock = "outstock";
+            }
+            const stockProduct = await fetchStockProducts(currentCategory, currentStock);
+            productList.innerHTML = ``;
+            stockProduct.forEach(product => addProductToList(product, productList))
+
+            stocklistpopup.style.display = 'none'; // close popup
+        }
+    });
 })
 
 //category on the addProductModal
 const categoryDB = document.getElementById('categoryDB');
 const productCategories = document.getElementById('productCategory')
-document.addEventListener('DOMContentLoaded',() =>{
-    productCategories.addEventListener('click',(e) => {
+document.addEventListener('DOMContentLoaded', () => {
+    productCategories.addEventListener('click', (e) => {
         e.stopPropagation();
         console.log("i am supposed to be here")
         const rect = productCategories.getBoundingClientRect();
         categoryDB.style.top = rect.bottom + window.scrollX + 'px';
         categoryDB.style.left = rect.left + window.scrollY + 'px';
-        
+
         loadCategories()
         categoryDB.style.display = 'block';
     })
@@ -131,17 +129,17 @@ document.addEventListener('DOMContentLoaded',() =>{
 
     //putting the value from popup to input 
     productCategories.value = 'General';
-    categoryDB.addEventListener('click',(e) => {
+    categoryDB.addEventListener('click', (e) => {
         const li = e.target;
-        if(li.tagName === 'LI'){
+        if (li.tagName === 'LI') {
             productCategories.value = li.textContent
         }
     })
-    productCategories.addEventListener('input',()=>{
-    const searchTerm = productCategories.value.toLowerCase();
-    console.log("esko k xa tw",categories)
-    const filtered = categories.filter(category => category.name.toLowerCase().includes(searchTerm))
-    renderCategory(filtered)
+    productCategories.addEventListener('input', () => {
+        const searchTerm = productCategories.value.toLowerCase();
+        console.log("esko k xa tw", categories)
+        const filtered = categories.filter(category => category.name.toLowerCase().includes(searchTerm))
+        renderCategory(filtered)
     })
     loadCategories()
 })
@@ -151,100 +149,99 @@ document.addEventListener('DOMContentLoaded',() =>{
 
 
 
-document.addEventListener('DOMContentLoaded',() => {
-const caterorylists = document.getElementById('caterorylists');
-const categoryPopup = document.getElementById('categoryPopup');
-const categoryList = document.getElementById('categoryList');
-const button = document.getElementById('caterorylists');
-// Toggle popup on button click
-caterorylists.addEventListener('click', (e) => {
-    // Prevent click from closing the popup immediately
-    e.stopPropagation();
+document.addEventListener('DOMContentLoaded', () => {
+    const caterorylists = document.getElementById('caterorylists');
+    const categoryPopup = document.getElementById('categoryPopup');
+    const categoryList = document.getElementById('categoryList');
+    const button = document.getElementById('caterorylists');
+    // Toggle popup on button click
+    caterorylists.addEventListener('click', (e) => {
+        // Prevent click from closing the popup immediately
+        e.stopPropagation();
 
-    const rect = caterorylists.getBoundingClientRect();
+        const rect = caterorylists.getBoundingClientRect();
 
-    // Position the popup below the button
-    categoryPopup.style.top = rect.bottom + window.scrollY + 'px';
-    categoryPopup.style.left = rect.left + window.scrollX + 'px';
-    
-    //fetch category from backend when clicked
-    loadCategories()
-    // Toggle visibility
-    if (categoryPopup.style.display === 'block') {
-        categoryPopup.style.display = 'none';
-    } else {
-        categoryPopup.style.display = 'block';
+        // Position the popup below the button
+        categoryPopup.style.top = rect.bottom + window.scrollY + 'px';
+        categoryPopup.style.left = rect.left + window.scrollX + 'px';
+
+        //fetch category from backend when clicked
+        loadCategories()
+        // Toggle visibility
+        if (categoryPopup.style.display === 'block') {
+            categoryPopup.style.display = 'none';
+        } else {
+            categoryPopup.style.display = 'block';
+        }
+    });
+    // Replace button text when clicking a category
+    // categoryClick()
+    async function categoryClick(categoryId) {
+        const productList = document.querySelector('.productList');
+        //empty the list first 
+        productList.innerHTML = ``;
+        currentCategory = categoryId;
+        const products = await fetchStockProducts(currentCategory, currentStock);
+        products.forEach(product => addProductToList(product, productList))
     }
-});
-// Replace button text when clicking a category
-// categoryClick()
-async function categoryClick(categoryId){
-    const productList = document.querySelector('.productList');
-    //empty the list first 
-    productList.innerHTML=``;
-    currentCategory = categoryId;
-    const products =await fetchStockProducts(currentCategory, currentStock);
-    products.forEach(product => addProductToList(product, productList))
-}
 
-categoryList.addEventListener('click', async(e) => {
+    categoryList.addEventListener('click', async (e) => {
         const li = e.target;
         if (li.tagName === 'LI') {
             button.textContent = li.textContent;
-            if(li.id == 'allCategories')
-            {
+            if (li.id == 'allCategories') {
                 currentCategory = null
-                const products =await fetchStockProducts(currentCategory, currentStock);
+                const products = await fetchStockProducts(currentCategory, currentStock);
                 productList.innerHTML = '';
                 products.forEach(product => addProductToList(product, productList))
                 categoryPopup.style.display = 'none';
             }
             // replace button label
-            
-            else{
+
+            else {
                 const category_id = li.dataset.id;
-            categoryClick(category_id);
-            categoryPopup.style.display = 'none';
+                categoryClick(category_id);
+                categoryPopup.style.display = 'none';
             }
-              // hide popup
+            // hide popup
         }
     });
 
 
 
-// }
-// Close popup when clicking outside
-document.addEventListener('click', (e) => {
-    if (!categoryPopup.contains(e.target) && !caterorylists.contains(e.target)) {
-        categoryPopup.style.display = 'none';
-    }
-});
+    // }
+    // Close popup when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!categoryPopup.contains(e.target) && !caterorylists.contains(e.target)) {
+            categoryPopup.style.display = 'none';
+        }
+    });
 
 })
 
 
 //fetch category from backend
-let categories=[]
+let categories = []
 
-async function loadCategories(){
-    try{
+async function loadCategories() {
+    try {
         console.log("am i here?inside")
         const res = await fetch("/dashboard/category-json/");
         const data = await res.json();
-        console.log("yaa print garxu ma ",data)
-       
+        console.log("yaa print garxu ma ", data)
+
         categories = data.categories
         renderCategory(categories)
         renderCategories(categories)
-    }catch(error){
-        console.error("Error loading categories",error)
+    } catch (error) {
+        console.error("Error loading categories", error)
     }
 }
 
 
 //to render category inside the addproductmodal
 
-function renderCategory(categoryArray){
+function renderCategory(categoryArray) {
     const catelists = document.getElementById('catelists');
     const general = document.getElementById('general');
     catelists.querySelectorAll('li.categoryProductModal').forEach(li => li.remove());
@@ -256,9 +253,9 @@ function renderCategory(categoryArray){
         li.dataset.id = category.id;
         li.style.fontSize = '20px';
 
-        catelists.insertBefore(li,general)
+        catelists.insertBefore(li, general)
     });
-      // Show or hide 'general' in dropdown
+    // Show or hide 'general' in dropdown
     if (categoryArray.length === 0) {
         general.style.display = 'none';
     } else {
@@ -266,32 +263,32 @@ function renderCategory(categoryArray){
     }
 }
 
-function renderCategories(categoryArray){
+function renderCategories(categoryArray) {
     const categoryList = document.getElementById('categoryList');
     const generalCategory = document.getElementById('generalCategory');
 
     if (!categoryList || !generalCategory) return;
     document.querySelectorAll('.categorylists').forEach(li => li.remove())
     categoryArray.forEach(category => {
-            const li = document.createElement('li');
-            li.classList.add('categorylists')
-            li.textContent = category.name;
-            li.dataset.id = category.id;
+        const li = document.createElement('li');
+        li.classList.add('categorylists')
+        li.textContent = category.name;
+        li.dataset.id = category.id;
 
-        categoryList.insertBefore(li,generalCategory);
-        })
+        categoryList.insertBefore(li, generalCategory);
+    })
 }
 // FILTER Category
-document.addEventListener('DOMContentLoaded',() => {
-const categorySearchInput = document.getElementById('categorySearchInput');
+document.addEventListener('DOMContentLoaded', () => {
+    const categorySearchInput = document.getElementById('categorySearchInput');
 
-    categorySearchInput.addEventListener('input',()=>{
-    const searchTerm = categorySearchInput.value.toLowerCase();
-    const filteredCategory = categories.filter(category => category.name.toLowerCase().includes(searchTerm));
+    categorySearchInput.addEventListener('input', () => {
+        const searchTerm = categorySearchInput.value.toLowerCase();
+        const filteredCategory = categories.filter(category => category.name.toLowerCase().includes(searchTerm));
         renderCategories(filteredCategory);
     })
 
-loadCategories()
+    loadCategories()
 })
 //open modal for add product of product-detail page
 document.addEventListener('DOMContentLoaded', () => {
@@ -320,17 +317,17 @@ const productList = document.querySelector('.productList');
 const productDetailSearchInput = document.getElementById('productDetailSearchInput');
 
 // //when input is inside the search input
-document.addEventListener('DOMContentLoaded', ()=>{
-productDetailSearchInput.addEventListener('input',() => {
-    filterProduct(products, productDetailSearchInput, productList)
-})
+document.addEventListener('DOMContentLoaded', () => {
+    productDetailSearchInput.addEventListener('input', () => {
+        filterProduct(products, productDetailSearchInput, productList)
+    })
 })
 
 
 //filter product function
 export function filterProduct(products, productDetailSearchInput, productList) {
     const searchLetter = productDetailSearchInput.value.toLowerCase();
-    const filteredProduct = products.filter(product => 
+    const filteredProduct = products.filter(product =>
         product.name.toLowerCase().includes(searchLetter)
     );
 
@@ -344,36 +341,35 @@ export function filterProduct(products, productDetailSearchInput, productList) {
         li.dataset.uid = product.uid;
         productList.appendChild(li);
 
-        
- // Auto-select based on URL
-  const uidInUrl = selectedIdFromUrl();
-  if (uidInUrl && String(uidInUrl) === String(product.uid)) {
-      li.classList.add('selected');
-      const deleteBtn = document.querySelector('.delete-product-btn');
-      if (deleteBtn) deleteBtn.dataset.productId = product.id;
-      const editBtn = document.querySelector('.edit-product-btn');
-      if (editBtn) editBtn.dataset.productId = product.id;
-  }
 
-   li.addEventListener('click', () => {
-        //for deleting the product,we need product id
-        const deleteBtn = document.querySelector('.delete-product-btn');
-        const editBtn = document.querySelector('.edit-product-btn'); 
-        deleteBtn.dataset.productId = product.id;
-        editBtn.dataset.productId = product.id;
-        console.log("yo id ho haii",editBtn.dataset.productId)
-
-        history.pushState({}, '', `/dashboard/product-detail/${product.uid}`);
-        document.querySelectorAll('.productlists').forEach(item =>
-        {
-            item.classList.remove('selected');
+        // Auto-select based on URL
+        const uidInUrl = selectedIdFromUrl();
+        if (uidInUrl && String(uidInUrl) === String(product.uid)) {
+            li.classList.add('selected');
+            const deleteBtn = document.querySelector('.delete-product-btn');
+            if (deleteBtn) deleteBtn.dataset.productId = product.id;
+            const editBtn = document.querySelector('.edit-product-btn');
+            if (editBtn) editBtn.dataset.productId = product.id;
         }
-        )
-        li.classList.add('selected')
-        //immediately update the table
-        renderDetails(productsCache);
-      });
-});
+
+        li.addEventListener('click', () => {
+            //for deleting the product,we need product id
+            const deleteBtn = document.querySelector('.delete-product-btn');
+            const editBtn = document.querySelector('.edit-product-btn');
+            deleteBtn.dataset.productId = product.id;
+            editBtn.dataset.productId = product.id;
+            console.log("yo id ho haii", editBtn.dataset.productId)
+
+            history.pushState({}, '', `/dashboard/product-detail/${product.uid}`);
+            document.querySelectorAll('.productlists').forEach(item => {
+                item.classList.remove('selected');
+            }
+            )
+            li.classList.add('selected')
+            //immediately update the table
+            renderDetails(productsCache);
+        });
+    });
 }
 
 
@@ -381,16 +377,16 @@ let productsCache = []; // store products locally
 
 // Fetch products from backend
 async function fetchProducts() {
-  const res = await fetch('/dashboard/products-json/', {
-    headers: { 'X-Requested-With': 'XMLHttpRequest' },
-    cache: 'no-store',
-  });
-  if (!res.ok) throw new Error(`Failed to fetch products: ${res.status}`);
-  const data = await res.json();
-  
-  productsCache = data.products; // store in cache
-  updateProductCounts(data.count); // update counts
-  return productsCache;
+    const res = await fetch('/dashboard/products-json/', {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        cache: 'no-store',
+    });
+    if (!res.ok) throw new Error(`Failed to fetch products: ${res.status}`);
+    const data = await res.json();
+
+    productsCache = data.products; // store in cache
+    updateProductCounts(data.count); // update counts
+    return productsCache;
 }
 
 function updateProductCounts(count) {
@@ -403,47 +399,47 @@ function updateProductCounts(count) {
 
 // Render products in table and list
 function renderProducts() {
-  const productsTableBody = document.getElementById('productsTableBody');
-  const productList = document.querySelector('.productList');
+    const productsTableBody = document.getElementById('productsTableBody');
+    const productList = document.querySelector('.productList');
 
-  loadProducts(productsCache, productsTableBody, editProduct, deleteProduct, productList);
+    loadProducts(productsCache, productsTableBody, editProduct, deleteProduct, productList);
 }
 
 
 // Refresh products from server if necessary
 async function refreshProducts(force = false) {
-  // Only fetch if cache is empty or forced
-  if (force || productsCache.length === 0) {
-    try {
-      await fetchProducts();
-    } catch (err) {
-      console.error('Failed to refresh products:', err);
+    // Only fetch if cache is empty or forced
+    if (force || productsCache.length === 0) {
+        try {
+            await fetchProducts();
+        } catch (err) {
+            console.error('Failed to refresh products:', err);
+        }
     }
-  }
-  updateProductCounts(productsCache.length);
-  renderProducts();
+    updateProductCounts(productsCache.length);
+    renderProducts();
 }
 
 // On page load
 document.addEventListener('DOMContentLoaded', () => {
-  refreshProducts().catch(console.error);
+    refreshProducts().catch(console.error);
 });
 
 // Handle BFCache (back/forward navigation)
 window.addEventListener('pageshow', (event) => {
-  if (event.persisted) {
-    refreshProducts(true).catch(console.error); // force fetch only if page restored from BFCache
-  }
+    if (event.persisted) {
+        refreshProducts(true).catch(console.error); // force fetch only if page restored from BFCache
+    }
 });
 
 // edit stock inside the product activity list
 export async function editAddAcitivity(activityId) {
-    console.log("yo activityId ho",activityId)
-     let activity = window.activities.find(
+    console.log("yo activityId ho", activityId)
+    let activity = window.activities.find(
         a => String(a.id) === String(activityId)
     );
-    console.log("yo activity xa ki naii",activity)
-    console.log("yo first letter haii",(String(activity.change)[0]));
+    console.log("yo activity xa ki naii", activity)
+    console.log("yo first letter haii", (String(activity.change)[0]));
     const addStockModal = document.getElementById('addStockModal');
     let quantityInput = document.getElementById('stockQuantity')
     let productSellingPrice = document.getElementById('productPrices');
@@ -463,7 +459,7 @@ export async function editAddAcitivity(activityId) {
     if (editStockBtn) editStockBtn.style.display = 'flex';
 
     //edit button to make the readonly into write
-    editStockBtn.onclick = () =>{
+    editStockBtn.onclick = () => {
         quantityInput.readOnly = false;
         productSellingPrice.readOnly = false;
         stockDate.readOnly = false;
@@ -482,46 +478,46 @@ export async function editAddAcitivity(activityId) {
     // })
     if (activity) {
         console.log("activity vetiyo")
-        updateStockBtn.onclick = () =>{
+        updateStockBtn.onclick = () => {
             console.log("okay here in update")
-            updateActivity(activity,addStockModal)
+            updateActivity(activity, addStockModal)
         }
-     // Populate form with product data
-        
+        // Populate form with product data
+
         quantityInput.readOnly = true;
         productSellingPrice.readOnly = true;
         stockDate.readOnly = true;
         stockRemarks.readOnly = true;
 
-        
 
-        stockRemarks.value= activity.remarks;
-        
-        if(String(activity.change)[0] == '-'){
+
+        stockRemarks.value = activity.remarks;
+
+        if (String(activity.change)[0] == '-') {
             console.log("This function is being called!!!")
             const afterRemovalNegation = String(activity.change).slice(1);
             quantityInput.value = afterRemovalNegation;
             document.querySelector('.product-price').textContent = 'Selling Price';
-            console.log('window  product ko value haii ',activity.product_selling_price)
+            console.log('window  product ko value haii ', activity.product_selling_price)
             productSellingPrice.value = activity.product_selling_price;
             stockDate.value = activity.date;
         }
-        if(String(activity.change)[0] == '+'){
+        if (String(activity.change)[0] == '+') {
             const afterRemovalAdd = String(activity.change).slice(1);
             quantityInput.value = afterRemovalAdd;
             document.querySelector('.product-price').textContent = 'Cost Price';
             document.getElementById('productPrices').value = activity.product_cost_price;
         }
 
-    //     // Change modal title and button
-    document.querySelector('#addStockModal .modal-header h3').textContent = 'Edit Product';
-    document.querySelector('.stock-label').textContent = 'Quantity';
-    //     document.getElementById('updateProductBtn').style.display = 'flex';
-    //     const quantity = document.querySelector('.productQuantities');
-    //     quantity.style.display = 'none';
+        //     // Change modal title and button
+        document.querySelector('#addStockModal .modal-header h3').textContent = 'Edit Product';
+        document.querySelector('.stock-label').textContent = 'Quantity';
+        //     document.getElementById('updateProductBtn').style.display = 'flex';
+        //     const quantity = document.querySelector('.productQuantities');
+        //     quantity.style.display = 'none';
 
         // Show modal
-        
+
         if (addStockModal) {
             addStockModal.style.display = 'flex';
         }
@@ -550,20 +546,20 @@ function updateActivityRowInTable(updatedActivity) {
 
 
 // Save product to database via AJAX
-export async function updateActivity(activity,addStockModal) {
+export async function updateActivity(activity, addStockModal) {
     const activityId = addStockModal.dataset.id;
-       const stockQuantity = document.getElementById('stockQuantity')?.value;
-       const productPrices = document.getElementById('productPrices')?.value;
-        const stockDate = document.getElementById('stockDate')?.value;
-        const stockRemarks = document.getElementById('stockRemarks')?.value;
+    const stockQuantity = document.getElementById('stockQuantity')?.value;
+    const productPrices = document.getElementById('productPrices')?.value;
+    const stockDate = document.getElementById('stockDate')?.value;
+    const stockRemarks = document.getElementById('stockRemarks')?.value;
 
-        if (!productPrices || parseFloat(productPrices) <= 0 || isNaN(productPrices)) {
+    if (!productPrices || parseFloat(productPrices) <= 0 || isNaN(productPrices)) {
         showAlert('Please enter a valid price', 'error');
     }
-     // Show loading state
+    // Show loading state
     const updateStockBtn = document.getElementById('UpdateStockBtn');
     const originalText = updateStockBtn.innerHTML;
-    
+
     updateStockBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
     updateStockBtn.disabled = true;
 
@@ -575,10 +571,10 @@ export async function updateActivity(activity,addStockModal) {
             productPrices: productPrices,
             stockDate: stockDate,
             stockRemarks: stockRemarks,
-            type:activity.type,
-            remarks:activity.remarks,
+            type: activity.type,
+            remarks: activity.remarks,
         };
-    
+
         // Send AJAX request to Django
         const response = await fetch(`/dashboard/update-stock/${activityId}/`, {
             method: 'POST',
@@ -608,11 +604,11 @@ export async function updateActivity(activity,addStockModal) {
                 };
                 closeStockModalFunc();
 
-            //     // Reset form
-            document.getElementById('stockQuantity').value = '';
-            document.getElementById('productPrices').value = '';
-            document.getElementById('stockDate').value = '';
-            document.getElementById('stockRemarks').value = '';
+                //     // Reset form
+                document.getElementById('stockQuantity').value = '';
+                document.getElementById('productPrices').value = '';
+                document.getElementById('stockDate').value = '';
+                document.getElementById('stockRemarks').value = '';
             }, 1500);
 
         } else {
@@ -630,35 +626,52 @@ export async function updateActivity(activity,addStockModal) {
 
 }
 //fetch Product to productsactivityTableBody
-async function fetchProductActivities(productUid,productsactivityTableBody){
-    if(!productUid || !productsactivityTableBody) return;
+async function fetchProductActivities(productUid, productsactivityTableBody) {
+    if (!productUid || !productsactivityTableBody) return;
     const res = await fetch(`/dashboard/fetch-activity/${productUid}/`)
 
     const result = await res.json();
     window.activities = result.activities
-    if(result.success){
-        loadProductActivity(window.activities,productsactivityTableBody)
+    if (result.success) {
+        loadProductActivity(window.activities, productsactivityTableBody)
     }
 
 }
 
+
+
+async function invoice_uid(id) {
+    const url = `/dashboard/invoice-uid/${id}/`;
+    console.log("i am in invoice_uid")
+    try {
+        const response = await fetch(url);
+        const data = await response.json();
+        console.log("this is uid aako ho.... ", data.uid)
+        return data.uid;
+
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
 function addProductActivityToTable(activity, productsactivityTableBody) {
     if (!productsactivityTableBody) return;
-    
+
     const row = document.createElement('tr');
-    
+
     // Base row styling
     row.classList.add(
-        "border-b", 
-        "border-gray-200", 
-        "hover:bg-gray-50", 
-        "transition-colors", 
+        "border-b",
+        "border-gray-200",
+        "hover:bg-gray-50",
+        "transition-colors",
         "duration-150"
     );
-    
+
     // Conditional styling for activity row
-        row.dataset.orderId = activity.order_id;
-        row.classList.add("cursor-pointer", "hover:bg-blue-100");
+    row.dataset.orderId = activity.order_id;
+    console.log("this is uid??", activity)
+    row.classList.add("cursor-pointer", "hover:bg-blue-100");
 
     // Table cells with proper Tailwind styling
     row.innerHTML = `
@@ -673,21 +686,25 @@ function addProductActivityToTable(activity, productsactivityTableBody) {
     row.addEventListener('click', () => {
         if (row.dataset.orderId && parseInt(row.dataset.orderId) > 0) {
             console.log("Opening order modal");
-            openModal(row.dataset.orderId);
+            invoice_uid(row.dataset.orderId).then(data => {
+                console.log(data);
+                openModal(data)
+            });
+
         } else if (row.dataset.activityId && (!row.dataset.orderId || row.dataset.orderId === '')) {
             console.log("Editing activity");
             editAddActivity(row.dataset.activityId);
         }
     });
-    
+
     productsactivityTableBody.prepend(row);
 }
-function loadProductActivity(activities,productsactivityTableBody){
- if(productsactivityTableBody){
-    productsactivityTableBody.innerHTML=``;
+function loadProductActivity(activities, productsactivityTableBody) {
+    if (productsactivityTableBody) {
+        productsactivityTableBody.innerHTML = ``;
 
-    activities.reverse().forEach((activity) => addProductActivityToTable(activity,productsactivityTableBody))
- }
+        activities.reverse().forEach((activity) => addProductActivityToTable(activity, productsactivityTableBody))
+    }
 }
 // Save product to database via AJAX
 export async function saveProduct(addProductModal) {
@@ -715,7 +732,7 @@ export async function saveProduct(addProductModal) {
     // Show loading state
     const saveBtn = document.getElementById('saveProductBtn');
     const originalText = saveBtn.innerHTML;
-    
+
     saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
     saveBtn.disabled = true;
     try {
@@ -726,7 +743,7 @@ export async function saveProduct(addProductModal) {
             selling_price: parseFloat(productSellingPrice || productPrice),
             category: productCategory,
             quantity: quantity,
-            lowStockQuantity:lowStockQuantity,
+            lowStockQuantity: lowStockQuantity,
         };
         console.log('Saving product:', productData);
         console.log('Sending this data:', productData);
@@ -742,20 +759,20 @@ export async function saveProduct(addProductModal) {
         });
         const result = await response.json();
         console.log('Server response:', result);
-        console.log("yo itemactivity ma k aayo",result.itemactivity)
+        console.log("yo itemactivity ma k aayo", result.itemactivity)
         if (result.success) {
             if (!result.product.uid) {
-        console.error("Saved product missing UID:", result.product);
-        showAlert("Product saved but UID missing. Please refresh.", "error");
-        return;
-    }
-           // Add product to local cache and render table/list
+                console.error("Saved product missing UID:", result.product);
+                showAlert("Product saved but UID missing. Please refresh.", "error");
+                return;
+            }
+            // Add product to local cache and render table/list
             productsCache.unshift(result.product);
             renderProducts(); // rebuild table/list from DB
-        
+
             updateProductCounts(productsCache.length);
-            
-            loadProductActivity(result.itemactivity,productsactivityTableBody)
+
+            loadProductActivity(result.itemactivity, productsactivityTableBody)
             // Show success message
 
             showAlert(result.message, 'success');
@@ -776,7 +793,7 @@ export async function saveProduct(addProductModal) {
                 document.getElementById('lowStockQuantity').value = '';
                 const lowStockConstraint = document.getElementById('lowStockConstraint');
                 const slider = document.getElementById('statusToggle');
-                if(slider){
+                if (slider) {
                     slider.checked = false
                     slider.dispatchEvent(new Event('change'));
                 }
@@ -794,18 +811,18 @@ export async function saveProduct(addProductModal) {
     }
 }
 
-export function addProductToTable(product, productsTableBody, index){
+export function addProductToTable(product, productsTableBody, index) {
     if (!productsTableBody) return;
-    
+
     const row = document.createElement('tr');
     row.classList.add('border-b', 'border-gray-200', 'hover:bg-gray-50', 'transition-colors');
-    
+
     // Determine stock status for styling
     const quantity = product.quantity || 0;
     let statusClass = '';
     let statusText = '';
     let statusColor = '';
-    
+
     if (quantity > 20) {
         statusClass = 'bg-green-100 text-green-800';
         statusText = 'In Stock';
@@ -823,13 +840,13 @@ export function addProductToTable(product, productsTableBody, index){
         statusText = 'Out of Stock';
         statusColor = 'red';
     }
-    
+
     // Calculate progress bar width
     let progressWidth = Math.min((quantity / 50) * 100, 100);
     if (quantity === 0) progressWidth = 0;
-    
+
     row.innerHTML = `
-        <td class="py-2 px-3 text-sm text-gray-600">${index+1}</td>
+        <td class="py-2 px-3 text-sm text-gray-600">${index + 1}</td>
         <td class="py-2 px-3">
             <div class="font-medium text-gray-800 text-sm">${product.name}</div>
         </td>
@@ -846,12 +863,12 @@ export function addProductToTable(product, productsTableBody, index){
         </td>
         <td class="py-2 px-3">
             <div class="flex items-center space-x-2">
-                <span class="text-sm font-medium ${product.quantity <= 0 ? 'text-red-600': 'text-gray-700'}">${String(product.quantity || 0)}</span>
+                <span class="text-sm font-medium ${product.quantity <= 0 ? 'text-red-600' : 'text-gray-700'}">${String(product.quantity || 0)}</span>
                 
             </div>
         </td>
     `;
-    
+
     row.addEventListener('click', () => {
         window.location.href = `/dashboard/product-detail/${product.uid}`;
     });
@@ -860,126 +877,125 @@ export function addProductToTable(product, productsTableBody, index){
 }
 
 export function addProductToList(product, productList) {
-  if (!productList) return;
-  
-  const tableBody = document.getElementById('productsactivityTableBody');
-  const li = document.createElement('li');
-  
-  // Base Tailwind styling
-  li.classList.add(
-    'productlists',
-    'px-4', 
-    'py-3',
-    'cursor-pointer',
-    'transition-colors',
-    'duration-150',
-    'rounded-lg',
-    'mb-1',
-    'border',
-    'border-gray-100',
-    'hover:border-gray-300',
-    'hover:bg-gray-50',
-    'truncate',
-    'text-gray-700'
-  );
-  
-  li.textContent = product.name;
-  li.dataset.id = product.id;
-  li.dataset.uid = product.uid;
-  productList.appendChild(li);
+    if (!productList) return;
 
-  // Auto-select based on URL
-  const uidInUrl = selectedIdFromUrl();
-  if (uidInUrl && String(uidInUrl) === String(product.uid)) {
-    // Remove selected state from all other items first
-    document.querySelectorAll('.productlists').forEach(item => {
-      item.classList.remove(
-        'selected',
-        'bg-blue-50',
-        'border-blue-200',
-        'text-blue-700',
-        'font-medium'
-      );
-      item.classList.add(
+    const tableBody = document.getElementById('productsactivityTableBody');
+    const li = document.createElement('li');
+
+    // Base Tailwind styling
+    li.classList.add(
+        'productlists',
+        'px-4',
+        'py-3',
+        'cursor-pointer',
+        'transition-colors',
+        'duration-150',
+        'rounded-lg',
+        'mb-1',
+        'border',
         'border-gray-100',
+        'hover:border-gray-300',
+        'hover:bg-gray-50',
+        'truncate',
         'text-gray-700'
-      );
-    });
-    
-    // Add selected state to current item
-    li.classList.add(
-      'selected',
-      'bg-blue-100',
-      'border-blue-200',
-      'text-blue-700',
-      'font-medium'
     );
-    li.classList.remove('text-gray-700', 'border-gray-100');
-    
-    const deleteBtn = document.querySelector('.delete-product-btn');
-    const editBtn = document.querySelector('.edit-product-btn');
-    const adjustBtn = document.querySelector('.adjust-stock-btn');
-    
-    if (deleteBtn) deleteBtn.dataset.productId = product.id;
-    if (editBtn) editBtn.dataset.productId = product.id;
-    if (adjustBtn) adjustBtn.dataset.productId = product.id;
-    
-    fetchProductActivities(product.uid, tableBody);
-  }
 
-  li.addEventListener('click', () => {
-    // Remove selected state from ALL other items first
-    document.querySelectorAll('.productlists').forEach(item => {
-      // Check if it's NOT the clicked item
-      if (item !== li) {
-        item.classList.remove(
-          'selected',
-          'bg-blue-100',
-          'border-blue-200',
-          'text-blue-700',
-          'font-medium'
+    li.textContent = product.name;
+    li.dataset.id = product.id;
+    li.dataset.uid = product.uid;
+    productList.appendChild(li);
+
+    // Auto-select based on URL
+    const uidInUrl = selectedIdFromUrl();
+    if (uidInUrl && String(uidInUrl) === String(product.uid)) {
+        // Remove selected state from all other items first
+        document.querySelectorAll('.productlists').forEach(item => {
+            item.classList.remove(
+                'selected',
+                'bg-blue-50',
+                'border-blue-200',
+                'text-blue-700',
+                'font-medium'
+            );
+            item.classList.add(
+                'border-gray-100',
+                'text-gray-700'
+            );
+        });
+
+        // Add selected state to current item
+        li.classList.add(
+            'selected',
+            'bg-blue-100',
+            'border-blue-200',
+            'text-blue-700',
+            'font-medium'
         );
-        // Re-add base styling
-        item.classList.add(
-          'border-gray-100',
-          'text-gray-700'
+        li.classList.remove('text-gray-700', 'border-gray-100');
+
+        const deleteBtn = document.querySelector('.delete-product-btn');
+        const editBtn = document.querySelector('.edit-product-btn');
+        const adjustBtn = document.querySelector('.adjust-stock-btn');
+
+        if (deleteBtn) deleteBtn.dataset.productId = product.id;
+        if (editBtn) editBtn.dataset.productId = product.id;
+        if (adjustBtn) adjustBtn.dataset.productId = product.id;
+
+        fetchProductActivities(product.uid, tableBody);
+    }
+
+    li.addEventListener('click', () => {
+        // Remove selected state from ALL other items first
+        document.querySelectorAll('.productlists').forEach(item => {
+            // Check if it's NOT the clicked item
+            if (item !== li) {
+                item.classList.remove(
+                    'selected',
+                    'bg-blue-100',
+                    'border-blue-200',
+                    'text-blue-700',
+                    'font-medium'
+                );
+                // Re-add base styling
+                item.classList.add(
+                    'border-gray-100',
+                    'text-gray-700'
+                );
+            }
+        });
+
+        // Now add selected state to clicked item
+        li.classList.add(
+            'selected',
+            'bg-blue-100',
+            'border-blue-200',
+            'text-blue-700',
+            'font-medium'
         );
-      }
+        li.classList.remove('text-gray-700', 'border-gray-100');
+
+        // Update buttons
+        const deleteBtn = document.querySelector('.delete-product-btn');
+        const editBtn = document.querySelector('.edit-product-btn');
+        const adjustBtn = document.querySelector('.adjust-stock-btn');
+
+        deleteBtn.dataset.productId = product.id;
+        editBtn.dataset.productId = product.id;
+        adjustBtn.dataset.productId = product.id;
+
+        console.log("Product ID:", editBtn.dataset.productId);
+
+        // Update URL
+        history.pushState({}, '', `/dashboard/product-detail/${product.uid}`);
+
+        // Immediately update the table
+        renderDetails(productsCache);
+        fetchProductActivities(product.uid, tableBody);
     });
-    
-    // Now add selected state to clicked item
-    li.classList.add(
-      'selected',
-      'bg-blue-100',
-      'border-blue-200',
-      'text-blue-700',
-      'font-medium'
-    );
-    li.classList.remove('text-gray-700', 'border-gray-100');
-    
-    // Update buttons
-    const deleteBtn = document.querySelector('.delete-product-btn');
-    const editBtn = document.querySelector('.edit-product-btn'); 
-    const adjustBtn = document.querySelector('.adjust-stock-btn');
-    
-    deleteBtn.dataset.productId = product.id;
-    editBtn.dataset.productId = product.id;
-    adjustBtn.dataset.productId = product.id;
-    
-    console.log("Product ID:", editBtn.dataset.productId);
-    
-    // Update URL
-    history.pushState({}, '', `/dashboard/product-detail/${product.uid}`);
-    
-    // Immediately update the table
-    renderDetails(productsCache);
-    fetchProductActivities(product.uid, tableBody);
-  });
 }
 
 
-window.addEventListener('popstate',() =>
-{
+window.addEventListener('popstate', () => {
     renderDetails(productsCache);
 
     // Highlight li again
@@ -995,73 +1011,73 @@ window.addEventListener('popstate',() =>
 
 
 function selectedIdFromUrl() {
-  const parts = window.location.pathname.split('/').filter(Boolean);
+    const parts = window.location.pathname.split('/').filter(Boolean);
 
-  const idx = parts.indexOf('product-detail');
-  if (idx === -1) return null;
+    const idx = parts.indexOf('product-detail');
+    if (idx === -1) return null;
 
-  // "/dashboard/product-detail/" => no uid
-  if (idx === parts.length - 1) return null;
+    // "/dashboard/product-detail/" => no uid
+    if (idx === parts.length - 1) return null;
 
-  return parts[idx + 1]; // uid
+    return parts[idx + 1]; // uid
 }
-    
+
 //function to get the selected product from URL
 function getSelectedProduct(products) {
-  const uid = selectedIdFromUrl();
-  if (!uid) return null;
+    const uid = selectedIdFromUrl();
+    if (!uid) return null;
 
-  return products.find(p => String(p.uid) === String(uid)) || null;
+    return products.find(p => String(p.uid) === String(uid)) || null;
 }
 
 
 // ajax to show the product details in page
 function renderDetails(products) {
-  const productDetailTableBody = document.getElementById('productDetailTableBody');
-  const productTitle = document.getElementById('productTitle');
-  if (!productDetailTableBody) return;
+    const productDetailTableBody = document.getElementById('productDetailTableBody');
+    const productTitle = document.getElementById('productTitle');
+    if (!productDetailTableBody) return;
 
-  const uid = selectedIdFromUrl();
-  const selectedProduct = getSelectedProduct(products);
+    const uid = selectedIdFromUrl();
+    const selectedProduct = getSelectedProduct(products);
 
-  // always clear current UI first
-  productDetailTableBody.innerHTML = '';
-  if (productTitle) productTitle.textContent = '';
+    // always clear current UI first
+    productDetailTableBody.innerHTML = '';
+    if (productTitle) productTitle.textContent = '';
 
-  // 1) No uid in URL => empty state
-  if (!uid) {
-    showEmptyState();
-    return;
-  }
+    // 1) No uid in URL => empty state
+    if (!uid) {
+        showEmptyState();
+        return;
+    }
 
-  // 2) uid present but product missing => not found
-  if (!selectedProduct) {
-    showNotFound();
-    return;
-  }
+    // 2) uid present but product missing => not found
+    if (!selectedProduct) {
+        showNotFound();
+        return;
+    }
 
-  // 3) product exists => show details
-  showProductDetail();
+    // 3) product exists => show details
+    showProductDetail();
 
-  if (productTitle) productTitle.textContent = selectedProduct.name;
-  addDetailToTable(selectedProduct, productDetailTableBody);
+    if (productTitle) productTitle.textContent = selectedProduct.name;
+    addDetailToTable(selectedProduct, productDetailTableBody);
 }
 
 //add product detail on table
-export function addDetailToTable(product,productDetailTableBody){
+export function addDetailToTable(product, productDetailTableBody) {
     if (!productDetailTableBody) return;
-      const rows = document.createElement('tr');
+    const rows = document.createElement('tr');
     //   rows.classList.add('thisDetailRows');
-      rows.dataset.id = product.id;
-      rows.innerHTML = `
+    rows.dataset.id = product.id;
+    rows.innerHTML = `
       <td>${String(product.quantity)}</td>
        <td>$${product.selling_price}</td>
         <td>$${product.cost_price}</td>
-        <td>$${product.cost_price*product.quantity}</td> 
+        <td>$${product.cost_price * product.quantity}</td> 
       `;
 
-      productDetailTableBody.appendChild(rows);
-  }
+    productDetailTableBody.appendChild(rows);
+}
 
 document.addEventListener('DOMContentLoaded', async () => {
     if (productsCache.length === 0) {
@@ -1072,41 +1088,41 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 export function loadProducts(products, productsTableBody, editProduct, deleteProduct, productList) {
-  // Render table 
-  if (productsTableBody) {
-    productsTableBody.innerHTML = '';
+    // Render table 
+    if (productsTableBody) {
+        productsTableBody.innerHTML = '';
 
-    products.forEach((product, index) => addProductToTable(product,productsTableBody,index));
-  }
-  // Render list (only if this page has it)
+        products.forEach((product, index) => addProductToTable(product, productsTableBody, index));
+    }
+    // Render list (only if this page has it)
 
     if (productList) {
-    productList.innerHTML = '';
-    products.forEach((product) => addProductToList(product, productList));
+        productList.innerHTML = '';
+        products.forEach((product) => addProductToList(product, productList));
     };
-    
-   
+
+
 }
 
 ///deleting inside product-detail page
 document.addEventListener('DOMContentLoaded', () => {
     const deleteBtn = document.querySelector('.delete-product-btn');
-    const editBtn = document.querySelector('.edit-product-btn'); 
+    const editBtn = document.querySelector('.edit-product-btn');
     // const adjustBtns = document.querySelector('.adjust-stock-btn');
-    deleteBtn.addEventListener('click', function() {
+    deleteBtn.addEventListener('click', function () {
         const id = deleteBtn.dataset.productId;
         console.log("Deleting product", id);
         deleteProduct(id);
-        });
-    editBtn.addEventListener('click',function(){
+    });
+    editBtn.addEventListener('click', function () {
         const id = editBtn.dataset.productId;
-        console.log("udpating the product",id);
+        console.log("udpating the product", id);
         editProduct(id);
     })
-    
-    });
 
-    
+});
+
+
 
 
 //reset addStockModal 
@@ -1130,7 +1146,7 @@ function resetAddStockModal() {
     if (updateBtn) updateBtn.style.display = 'none';
     if (cancelStockBtn) cancelStockBtn.style.display = 'flex';
     if (saveStockBtn) saveStockBtn.style.display = 'flex';
-    
+
 
     // Reset input fields
     const stockQuantity = document.getElementById('stockQuantity');
@@ -1142,39 +1158,39 @@ function resetAddStockModal() {
     if (productPrices) productPrices.value = '';
     if (stockRemarks) stockRemarks.value = '';
     if (stockDate) {
-            const today = new Date().toISOString().split('T')[0];
-            stockDate.value = today;
+        const today = new Date().toISOString().split('T')[0];
+        stockDate.value = today;
     }
     stockQuantity.readOnly = false;
     productPrices.readOnly = false;
     stockDate.readOnly = false;
     stockRemarks.readOnly = false;
 }
-  document.addEventListener('click', function(e) {
-        const addStock = e.target.id === 'addStock';
-        if(addStock){
-            resetAddStockModal();
-            const addStockModal = document.getElementById('addStockModal');
-            if (addStockModal) {
+document.addEventListener('click', function (e) {
+    const addStock = e.target.id === 'addStock';
+    if (addStock) {
+        resetAddStockModal();
+        const addStockModal = document.getElementById('addStockModal');
+        if (addStockModal) {
             addStockModal.style.display = 'flex';
         }
-        }
-        
-    })
+    }
 
-document.addEventListener('click', function(e) {
-        const reduceStock = e.target.id === 'reduceStock';
-        if(reduceStock){
-            const reduceStockModal = document.getElementById('reduceStockModal');
-            if (reduceStockModal) {
-                const stockDates = document.getElementById('stockDates');
-                const today = new Date().toISOString().split('T')[0];
-                stockDates.value = today
-                reduceStockModal.style.display = 'flex';
+})
+
+document.addEventListener('click', function (e) {
+    const reduceStock = e.target.id === 'reduceStock';
+    if (reduceStock) {
+        const reduceStockModal = document.getElementById('reduceStockModal');
+        if (reduceStockModal) {
+            const stockDates = document.getElementById('stockDates');
+            const today = new Date().toISOString().split('T')[0];
+            stockDates.value = today
+            reduceStockModal.style.display = 'flex';
         }
-        }
-        
-    })
+    }
+
+})
 
 //for add and reduce stock btn
 document.addEventListener('DOMContentLoaded', function () {
@@ -1189,10 +1205,10 @@ document.addEventListener('DOMContentLoaded', function () {
         if (adjustBtn) {
             console.log("am i getting clicked??")
             const productId = adjustBtn.dataset.productId;
-            console.log("yaa id ko value k ho??",productId);
+            console.log("yaa id ko value k ho??", productId);
             const modal = document.getElementById('addStockModal');
             const modal1 = document.getElementById('reduceStockModal');
-            modal.dataset.productId = productId; 
+            modal.dataset.productId = productId;
             modal1.dataset.productId = productId;
             // If popup is already open for the same product → close it
             if (currentProductId === productId && popup.style.display === 'flex') {
@@ -1222,20 +1238,20 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 const addStockBtn = document.getElementById('saveStockBtn');
-if(!addStockBtn){
-        console.log("are we here then??")
-    } 
-else{
-    addStockBtn.addEventListener('click',() => addStockFunc());
-}      
+if (!addStockBtn) {
+    console.log("are we here then??")
+}
+else {
+    addStockBtn.addEventListener('click', () => addStockFunc());
+}
 
 const reduceStockBtn = document.getElementById('reduceStockBtn');
-if(!reduceStockBtn){
-        console.log("are we here then??")
-    } 
-else{
-    reduceStockBtn.addEventListener('click',() => reduceStockFunc());
-} 
+if (!reduceStockBtn) {
+    console.log("are we here then??")
+}
+else {
+    reduceStockBtn.addEventListener('click', () => reduceStockFunc());
+}
 
 async function addStockFunc() {
     const productsactivityTableBody = document.getElementById('productsactivityTableBody');
@@ -1297,31 +1313,31 @@ async function addStockFunc() {
         if (result.success) {
             // Update local products array
             if (window.products && result.product) {
-               const index = window.products.findIndex(
-    p => String(p.uid) === String(result.product.uid)
-);
+                const index = window.products.findIndex(
+                    p => String(p.uid) === String(result.product.uid)
+                );
 
 
                 if (index !== -1) {
                     window.products[index].quantity = result.product.quantity;
                 }
             }
-            if(!window.activities){
+            if (!window.activities) {
                 window.activities = []
             }
-            
+
             //to update the product quantity above the table
-              const quantityCell = document.getElementById('quantityCell'); 
-                if (quantityCell) {
-                        quantityCell.textContent = result.product.quantity;
-                        }
+            const quantityCell = document.getElementById('quantityCell');
+            if (quantityCell) {
+                quantityCell.textContent = result.product.quantity;
+            }
             // renderDetails(window.products);
             result.itemactivity.forEach(activity => {
-            window.activities.unshift(activity)
-            addProductActivityToTable(activity, productsactivityTableBody);
-        });
-            
-            
+                window.activities.unshift(activity)
+                addProductActivityToTable(activity, productsactivityTableBody);
+            });
+
+
             // Refresh UI
             // if (window.loadProducts) {
             //     console.log("okay here in loadproduct")
@@ -1355,7 +1371,7 @@ async function reduceStockFunc() {
         console.error('reduceStockBtn not found');
         return;
     }
-    
+
     const productsactivityTableBody = document.getElementById('productsactivityTableBody');
     const modal1 = document.getElementById('reduceStockModal');
     const productId = modal1?.dataset.productId;
@@ -1383,7 +1399,7 @@ async function reduceStockFunc() {
     }
     // Store original button state
     const originalHTML = reduceStockBtn.innerHTML;
-    
+
     // Immediately disable and show loading
     reduceStockBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Reducing...';
     reduceStockBtn.disabled = true;
@@ -1433,22 +1449,22 @@ async function reduceStockFunc() {
                     window.products[index].quantity = result.product.quantity;
                 }
             }
-            if(!window.activities){
+            if (!window.activities) {
                 window.activities = []
             }
             // Render product quantity above in the detail
-                const quantityCell = document.getElementById('quantityCell'); 
-                if (quantityCell) {
-                        quantityCell.textContent = result.product.quantity;
-                        }
+            const quantityCell = document.getElementById('quantityCell');
+            if (quantityCell) {
+                quantityCell.textContent = result.product.quantity;
+            }
             // renderDetails(window.products);
-            
+
             if (result.itemactivity && Array.isArray(result.itemactivity)) {
                 // Clear existing table rows if needed
                 // productsactivityTableBody.innerHTML = '';
-                
+
                 result.itemactivity.forEach(activity => {
-                    console.log("yo itemactivity ko id kati ho??",activity.id);
+                    console.log("yo itemactivity ko id kati ho??", activity.id);
                     window.activities.unshift(activity)
                     addProductActivityToTable(activity, productsactivityTableBody);
                 });
@@ -1458,10 +1474,10 @@ async function reduceStockFunc() {
             document.getElementById('stockQuantities').value = '';
 
             // Show success state on button briefly
-            await new Promise(resolve => setTimeout(resolve,1200));
+            await new Promise(resolve => setTimeout(resolve, 1200));
             if (modal1) {
-                    modal1.style.display = 'none';
-                }
+                modal1.style.display = 'none';
+            }
 
         } else {
             showAlert(result.error || 'Failed to remove stock', 'error');
@@ -1470,9 +1486,9 @@ async function reduceStockFunc() {
     } catch (error) {
         console.error('Reduce stock error:', error);
         showAlert(error.message || 'Something went wrong. Please try again.', 'error');
-        
-    } finally{
-        reduceStockBtn.innerText= originalHTML
+
+    } finally {
+        reduceStockBtn.innerText = originalHTML
         reduceStockBtn.disabled = false;
     }
 }
@@ -1484,7 +1500,7 @@ export async function editProduct(productId) {
     addProductModal.dataset.id = productId
     if (product) {
         // Populate form with product data
-        
+
         document.getElementById('productName').value = product.name;
         document.getElementById('productCostPrice').value = product.cost_price;
         document.getElementById('productQuantity').value = product.quantity;
@@ -1493,8 +1509,8 @@ export async function editProduct(productId) {
 
         // Change modal title and button
         const editProductmodal = document.querySelector('#addProductModal .modal-header h3')
-        if(editProductmodal){
-        editProductmodal.textContent = 'Edit Product';
+        if (editProductmodal) {
+            editProductmodal.textContent = 'Edit Product';
         }
         document.getElementById('saveProductBtn').style.display = 'none';
         document.getElementById('updateProductBtn').style.display = 'flex';
@@ -1502,7 +1518,7 @@ export async function editProduct(productId) {
         quantity.style.display = 'none';
 
         // Show modal
-        
+
         if (addProductModal) {
             addProductModal.style.display = 'flex';
         }
@@ -1538,7 +1554,7 @@ export async function updateProduct(addProductModal) {
     // Show loading state
     const updateBtn = document.getElementById('updateProductBtn');
     const originalText = updateBtn.innerHTML;
-    
+
     updateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
     updateBtn.disabled = true;
 
@@ -1573,22 +1589,22 @@ export async function updateProduct(addProductModal) {
         if (result.success) {
             // // Add the new product to the local products array
             if (window.products) {
-                const index = window.products.findIndex(p  => p.id === result.product.id);
-                
-                if (index !== -1){
+                const index = window.products.findIndex(p => p.id === result.product.id);
+
+                if (index !== -1) {
                     window.products[index] = result.product
                 }
-                else{
+                else {
                     window.products.push(result.product);
                 }
-                
+
             }
 
             // Update UI
             if (window.loadProducts) {
                 window.loadProducts();
             }
-            
+
 
             // UPDATE PRODUCT NAME IN LIST 
             const productLi = document.querySelector(
@@ -1602,7 +1618,7 @@ export async function updateProduct(addProductModal) {
             const productTitle = document.getElementById('productTitle');
             productTitle.innerHTML = result.product.name;
 
-              // Update the single row directly
+            // Update the single row directly
             const productDetailTableBody = document.getElementById('productDetailTableBody');
             if (productDetailTableBody) {
                 let row = productDetailTableBody.querySelector('tr');
@@ -1617,7 +1633,7 @@ export async function updateProduct(addProductModal) {
                     <td>$${(result.product.cost_price * (result.product.quantity || 0)).toFixed(2)}</td>
                 `;
             }
-           
+
             // Show success message
             showAlert(result.message, 'success');
 
@@ -1653,35 +1669,35 @@ export async function updateProduct(addProductModal) {
 }
 
 // eventlistener for updateProductBtn
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const updateProductBtn = document.getElementById('updateProductBtn');
-    if(updateProductBtn){
+    if (updateProductBtn) {
         updateProductBtn.addEventListener('click', () => updateProduct(addProductModal));
     };
 });
 
 function showEmptyState() {
-  document.querySelector('.empty-state')?.classList.add('active');
-  document.querySelector('.not-found')?.classList.add('hidden');
-  document.querySelector('.product-selected')?.classList.add('deactivate');
+    document.querySelector('.empty-state')?.classList.add('active');
+    document.querySelector('.not-found')?.classList.add('hidden');
+    document.querySelector('.product-selected')?.classList.add('deactivate');
 }
 
 function showNotFound() {
-  document.querySelector('.empty-state')?.classList.remove('active');
-  document.querySelector('.not-found')?.classList.remove('hidden');
-  document.querySelector('.product-selected')?.classList.add('deactivate');
+    document.querySelector('.empty-state')?.classList.remove('active');
+    document.querySelector('.not-found')?.classList.remove('hidden');
+    document.querySelector('.product-selected')?.classList.add('deactivate');
 }
 
 function showProductDetail() {
-  document.querySelector('.empty-state')?.classList.remove('active');
-  document.querySelector('.not-found')?.classList.add('hidden');
-  document.querySelector('.product-selected')?.classList.remove('deactivate');
+    document.querySelector('.empty-state')?.classList.remove('active');
+    document.querySelector('.not-found')?.classList.add('hidden');
+    document.querySelector('.product-selected')?.classList.remove('deactivate');
 }
 
 export function deleteProduct(productId) {
     if (!productId) return;
 
-        Swal.fire({
+    Swal.fire({
         title: 'Are you sure?',
         text: "You won't be able to undo this!",
         icon: 'warning',
@@ -1691,57 +1707,57 @@ export function deleteProduct(productId) {
         confirmButtonText: 'Yes, delete it!'
     }).then((result) => {
         if (result.isConfirmed) {
-        fetch(`/dashboard/delete-product/${productId}/`, {
-            method: 'DELETE',
-            headers: {
-                'X-CSRFToken': csrfToken, 
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(res => {
-            if (!res.ok) throw new Error('Failed to delete product');
-            return res.json();
-        })
-        .then(data => {
-            Swal.fire({
-            title: 'Deleted!',
-            text: 'Product has been deleted.',
-            icon: 'success',
-            timer: 1500,  // disappears after 1.5 seconds
-            showConfirmButton: false
-        });
-            
-            // Remove from frontend cache
-            productsCache = productsCache.filter(p => String(p.id) !== String(productId));
-
-            //remove from url 
-           history.replaceState({}, '', `/dashboard/product-detail/`);
-            renderDetails(productsCache);
-            // Remove from DOM immediately
-            const li = document.querySelector(`.productlists[data-id="${productId}"]`);
-            if (li) li.remove();
-
-            const row = document.querySelector(`#productsTableBody-${productId}`);
-            if (row) row.remove();
-
-            // const detailRow = document.querySelector(`.thisDetailRows[data-id="${productId}"]`);
-            // if (detailRow) detailRow.remove();
-            // Update counts
-            updateProductCounts(productsCache.length);
+            fetch(`/dashboard/delete-product/${productId}/`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                    'Content-Type': 'application/json'
+                }
             })
-        .catch(err => {
-            console.error(err);
-            alert('Error deleting product. Check console.');
-        });
-    }
-});
+                .then(res => {
+                    if (!res.ok) throw new Error('Failed to delete product');
+                    return res.json();
+                })
+                .then(data => {
+                    Swal.fire({
+                        title: 'Deleted!',
+                        text: 'Product has been deleted.',
+                        icon: 'success',
+                        timer: 1500,  // disappears after 1.5 seconds
+                        showConfirmButton: false
+                    });
+
+                    // Remove from frontend cache
+                    productsCache = productsCache.filter(p => String(p.id) !== String(productId));
+
+                    //remove from url 
+                    history.replaceState({}, '', `/dashboard/product-detail/`);
+                    renderDetails(productsCache);
+                    // Remove from DOM immediately
+                    const li = document.querySelector(`.productlists[data-id="${productId}"]`);
+                    if (li) li.remove();
+
+                    const row = document.querySelector(`#productsTableBody-${productId}`);
+                    if (row) row.remove();
+
+                    // const detailRow = document.querySelector(`.thisDetailRows[data-id="${productId}"]`);
+                    // if (detailRow) detailRow.remove();
+                    // Update counts
+                    updateProductCounts(productsCache.length);
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert('Error deleting product. Check console.');
+                });
+        }
+    });
 }
 
 // AddStock modal section
 
 const stockdate = document.getElementById('stockDate');
-document.addEventListener('DOMContentLoaded', function(){
-    if(stockdate){
+document.addEventListener('DOMContentLoaded', function () {
+    if (stockdate) {
         const today = new Date().toISOString().split('T')[0];
         stockdate.value = today;
     }
@@ -1751,28 +1767,28 @@ const closeStockModal = document.getElementById('closeStockModal');
 const cancelStockBtn = document.getElementById('cancelStockBtn');
 const closereduceModal = document.getElementById('closeStockModals');
 const cancelStockBtns = document.getElementById('cancelStockBtns');
-if(closereduceModal){
+if (closereduceModal) {
     closereduceModal.addEventListener('click', () => closeModalFunc1(reduceStockModal))
 }
-if(closeStockModal){
+if (closeStockModal) {
     closeStockModal.addEventListener('click', () => closeModalFunc(addStockModal));
-    
+
 }
 
-if(cancelStockBtn){
-    cancelStockBtn.addEventListener('click',() => closeModalFunc(addStockModal));
-    
+if (cancelStockBtn) {
+    cancelStockBtn.addEventListener('click', () => closeModalFunc(addStockModal));
+
 }
 
-if(cancelStockBtns){
-    cancelStockBtns.addEventListener('click',() => closeModalFunc(reduceStockModal));
-    
+if (cancelStockBtns) {
+    cancelStockBtns.addEventListener('click', () => closeModalFunc(reduceStockModal));
+
 }
 //function to close stockmodal
-function closeModalFunc(addStockModal){
+function closeModalFunc(addStockModal) {
     addStockModal.style.display = 'none';
 }
 
-function closeModalFunc1(reduceStockModal){
+function closeModalFunc1(reduceStockModal) {
     reduceStockModal.style.display = 'none';
 }
