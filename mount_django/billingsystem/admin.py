@@ -15,7 +15,8 @@ from .models import (
     ProductCategory,
     RemainingAmount,
     User,
-    PaymentIn
+    PaymentIn,
+    PaymentOut,
 )
 
 
@@ -270,6 +271,16 @@ class PaymentInAdmin(admin.ModelAdmin):
         "customer",
         "date",
         "payment_in",
+        "remarks",
+    )
+    search_fields = ("customer_id",)
+
+@admin.register(PaymentOut)
+class PaymentOutAdmin(admin.ModelAdmin):
+    list_display = (
+        "customer",
+        "date",
+        "payment_out",
         "remarks",
     )
     search_fields = ("customer_id",)
