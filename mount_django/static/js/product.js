@@ -433,7 +433,7 @@ window.addEventListener('pageshow', (event) => {
 });
 
 // edit stock inside the product activity list
-export async function editAddAcitivity(activityId) {
+export async function editAddActivity(activityId) {
     console.log("yo activityId ho", activityId)
     let activity = window.activities.find(
         a => String(a.id) === String(activityId)
@@ -641,12 +641,10 @@ async function fetchProductActivities(productUid, productsactivityTableBody) {
 
 
 async function invoice_uid(id) {
-    const url = `/dashboard/invoice-uid/${id}/`;
-    console.log("i am in invoice_uid")
+    const url = `/dashboard/invoice-uid/${id}/`; 
     try {
         const response = await fetch(url);
         const data = await response.json();
-        console.log("this is uid aako ho.... ", data.uid)
         return data.uid;
 
     } catch (error) {
@@ -670,7 +668,7 @@ function addProductActivityToTable(activity, productsactivityTableBody) {
 
     // Conditional styling for activity row
     row.dataset.orderId = activity.order_id;
-    console.log("this is uid??", activity)
+    row.dataset.activityId = activity.id;
     row.classList.add("cursor-pointer", "hover:bg-blue-100");
 
     // Table cells with proper Tailwind styling
@@ -685,13 +683,13 @@ function addProductActivityToTable(activity, productsactivityTableBody) {
     // Click event handler
     row.addEventListener('click', () => {
         if (row.dataset.orderId && parseInt(row.dataset.orderId) > 0) {
-            console.log("Opening order modal");
+            
             invoice_uid(row.dataset.orderId).then(data => {
-                console.log(data);
+                
                 openModal(data)
             });
 
-        } else if (row.dataset.activityId && (!row.dataset.orderId || row.dataset.orderId === '')) {
+        } else if (row.dataset.activityId && (!row.dataset.orderId || row.dataset.orderId === 'null')) {
             console.log("Editing activity");
             editAddActivity(row.dataset.activityId);
         }
