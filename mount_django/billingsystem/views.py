@@ -146,13 +146,13 @@ def clients_json(request):
 
     return JsonResponse({"clients": clients_data, "client_count": clients.count()})
 
-def client_info_payment_id(request,id):
+def client_info_payment_id(request,id: UUID):
     user = request.user
     company = user.owned_company or user.active_company
     if not company:
         return JsonResponse({"client": [],"payment_id": 0})
     # for client name 
-    client = Customer.objects.get(id = id)
+    client = Customer.objects.get(uid = id)
     client_name = client.name
     # latest payment id
     latest_payment_id = PaymentIn.objects.aggregate(latest_id=Max('id'))['latest_id'] or 0

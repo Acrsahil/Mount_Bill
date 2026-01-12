@@ -148,6 +148,24 @@
 
 {% block extra_js %}
 <script>
+document.addEventListener('DOMContentLoaded', async () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const clientId = urlParams.get('clientId');
+
+    if (clientId) {
+        // fetch client info from backend
+        const res = await fetch(`/dashboard/clients-info/${clientId}/`);
+        const data = await res.json();
+
+        // populate the clientName field
+        const clientNameInput = document.getElementById('clientName');
+        if (clientNameInput) {
+            clientNameInput.value = data.client_name;
+        }
+    }
+});
+</script>
+<script>
 // Simple and safe data structure
 window.djangoData = {
     products: {{ product|safe }},

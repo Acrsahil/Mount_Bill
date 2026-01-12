@@ -365,7 +365,7 @@ function loadTransactions(transaction, tableBody) {
 }
 
 
-//add transaction button functions
+// all the add transaction button functions
 document.addEventListener('DOMContentLoaded', () => {
   const addTransaction = document.getElementById('addTransaction');
   const paymentTransactions = document.getElementById('paymentTransactions');
@@ -391,8 +391,8 @@ document.addEventListener('DOMContentLoaded', () => {
   paymentIn.addEventListener('click',async() => {
 
     //to fill up the form 
-    paymentIn.dataset.clientId = addTransaction.dataset.clientId
-    console.log("paymentIn ko id k xa",paymentIn.dataset.clientId)
+    paymentIn.dataset.clientId = getUidFromUrl()
+    
     //set the id of the save immediately after the paymentIn list is clicked 
     const savePaymentIn = document.getElementById('savePaymentIn');
     savePaymentIn.dataset.clientIds = addTransaction.dataset.clientId;
@@ -435,6 +435,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
         await savePaymentInFunc(savePaymentIn.dataset.clientIds);
     })
+
+     //for sales invoice 
+    const salesInvoice = document.getElementById('salesInvoice');
+    salesInvoice.addEventListener('click',async()=>{
+        salesInvoice.dataset.clientUid = getUidFromUrl()
+        
+        //go to the create-invoice with this query parameter
+        window.location.href = `/dashboard/create-invoice/?clientId=${salesInvoice.dataset.clientUid}`;
+
+})
 });
 
 //savePaymentIn funcion 
@@ -495,5 +505,6 @@ async function savePaymentInFunc(clientId){
             savePaymentIn.innerHTML = originalText;
             savePaymentIn.disabled = false;
         }
+
 }
 
