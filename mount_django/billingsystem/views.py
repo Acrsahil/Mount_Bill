@@ -1159,7 +1159,7 @@ def fetch_transactions(request,id:UUID):
 
     if not company:
         return JsonResponse({"transactions": []})
-    print("error yaa aako ho")
+   
     transactions = OrderList.objects.filter(customer__uid = id).order_by('-id')
     payment_in_transactions = PaymentIn.objects.filter(customer__uid =id)
    
@@ -1201,7 +1201,8 @@ def payment_in(request,id):
         payment_in_remark = data.get("payment_in_remark")
 
         remainingAmount = RemainingAmount.objects.filter(customer_id=id).order_by('-id').first()
-
+        # to send the uid of the customer 
+        customer = Customer.objects.get(id=id)
         # if the remaining amount is not there then create one
 
         if not remainingAmount:
@@ -1223,7 +1224,7 @@ def payment_in(request,id):
         paymentIn = PaymentIn.objects.create(customer_id=id,date=payment_in_date,remainings=remainingAmount,payment_in=payment_in,remarks=payment_in_remark)
         paymentIn.save()
 
-        return JsonResponse({"success":True})
+        return JsonResponse({"success":True,"uid":customer.uid})
     except Exception as e:
         return JsonResponse(
             {"success": False, "error": f"Server error: {str(e)}"}, status=500
