@@ -210,7 +210,10 @@
      class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 hidden">
 
   <!-- Modal -->
-  <div class="bg-white w-full max-w-3xl rounded-lg shadow-lg p-6">
+  <div
+  class="bg-white w-full max-w-3xl rounded-lg shadow-lg p-6"
+  onclick="event.stopPropagation()"
+>
 
     <!-- Header -->
     <div class="flex items-center justify-between mb-6">
@@ -241,7 +244,7 @@
           <input
             type="text"
             placeholder="ID from DB"
-            class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+            class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" id="receiptNumber">
         </div>
 
         <div>
@@ -257,7 +260,7 @@
         <label class="block text-sm text-gray-600 mb-1">Party Name</label>
         <input
           type="text"
-          class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+          class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" id="partyName">
       </div>
 
       <!-- Third Row -->
@@ -319,6 +322,7 @@
 </div>
 
 {% include "website/modal/client_add_modal.html" %}
+{% comment %} {% include "website/create_invoice.html" %} {% endcomment %}
 {% endblock %}
 {% block extra_js %}
 <script>

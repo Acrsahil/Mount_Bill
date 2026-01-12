@@ -4,7 +4,7 @@ from . import views
 
 urlpatterns = [
     path("", views.dashboard, name="dashboard"),
-   
+    path("invoice-uid/<int:id>/",views.invoice_uid,name="invoice_uid"),
     path("fetch-activity/<uuid:id>/", views.fetch_product_activities, name="fetch-activity"),
     path("fetch-transactions/<uuid:id>/",views.fetch_transactions,name="fetch_transactions"),
     path("payment-in/<int:id>/",views.payment_in,name="payment_in"),
@@ -15,6 +15,7 @@ urlpatterns = [
     path("product-detail/", views.product_detail, name="product_detail"),
     path("product-detail/<uuid:id>/", views.product_detail, name="product_detail"),
     path("clients-json/", views.clients_json, name="clients_json"),
+    path("clients-info/<uuid:id>/", views.client_info_payment_id, name="client_info_payment_id"),
     path("client-detail/", views.client_detail, name="client_detail"),
     path("client-detail/<uuid:id>/", views.client_detail, name="client_detail"),
     path("client-update/<int:id>/",views.update_client,name="update_client"),

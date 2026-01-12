@@ -70,7 +70,7 @@ function editClientFunc(clientId){
 
 //udpate function for client
 async function updateClientFunc(clientId){
-    console.log("ya id aayo tw???????",clientId)
+    
         const clientName= document.getElementById('clientNameInput').value.trim();
         const clientPhone = document.getElementById('clientPhoneInput')?.value;
         const clientAddress = document.getElementById('clientAddressInput')?.value;
@@ -128,21 +128,17 @@ async function updateClientFunc(clientId){
                 addClientsToList(clients)
 
                 // Close modal after short delay
-                setTimeout(() => {
-                    const closeClientModalFunc = () => {
-                        if (addClientModal) {
-                            addClientModal.style.display = 'none';
-                        }
-                    };
-                    closeClientModalFunc();
+                
+                addClientModal.style.display = 'none';
                     
-                    // Reset form
-                    document.getElementById('clientNameInput').value = '';
-                    document.getElementById('clientPhoneInput').value = '';
-                    document.getElementById('clientAddressInput').value = '';
-                    document.getElementById('clientPanNoInput').value = '';
-                    document.getElementById('clientEmailInput').value = '';
-                }, 1500);
+                await new Promise(resolve => setTimeout(resolve,1500));
+                // Reset form
+                document.getElementById('clientNameInput').value = '';
+                document.getElementById('clientPhoneInput').value = '';
+                document.getElementById('clientAddressInput').value = '';
+                document.getElementById('clientPanNoInput').value = '';
+                document.getElementById('clientEmailInput').value = '';
+                
     
             } else {
                 showAlert('Error: ' + (result.error || 'Failed to edit client'), 'error');
@@ -369,7 +365,7 @@ function loadTransactions(transaction, tableBody) {
 }
 
 
-//add transaction button functions
+// all the add transaction button functions
 document.addEventListener('DOMContentLoaded', () => {
   const addTransaction = document.getElementById('addTransaction');
   const paymentTransactions = document.getElementById('paymentTransactions');
@@ -392,17 +388,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
   //for payment in
   const paymentIn = document.getElementById('paymentIn');
-  paymentIn.addEventListener('click',() => {
+  paymentIn.addEventListener('click',async() => {
 
     //to fill up the form 
-    paymentIn.dataset.clientId = addTransaction.dataset.clientId
-
+    paymentIn.dataset.clientId = getUidFromUrl()
+    
     //set the id of the save immediately after the paymentIn list is clicked 
     const savePaymentIn = document.getElementById('savePaymentIn');
     savePaymentIn.dataset.clientIds = addTransaction.dataset.clientId;
 
     paymentTransactions.classList.add('hidden');
     paymentModal.classList.remove('hidden');
+
+
+    //populating the paymentModal 
+    const res = await fetch(`/dashboard/clients-info/${paymentIn.dataset.clientId}/`)
+    const data = await res.json()
+    console.log("yaa aauxa k",data)
+    document.getElementById('partyName').value = data.client_name;
+    document.getElementById('receiptNumber').value = data.latest_payment_id + 1
+    const paymentInDate = document.getElementById('paymentInDate')
+    if (paymentInDate) {
+        const today = new Date().toISOString().split('T')[0];
+        paymentInDate.value = today;
+    }
+
   })
 
   //clicking the close button
@@ -422,18 +432,40 @@ document.addEventListener('DOMContentLoaded', () => {
     //saving payment in transaction
     const savePaymentIn = document.getElementById('savePaymentIn');
     savePaymentIn.addEventListener('click',async() => {
-        console.log("esko id aako xaina po",savePaymentIn.dataset.clientIds)
+
         await savePaymentInFunc(savePaymentIn.dataset.clientIds);
-        paymentModal.classList.add('hidden');
     })
+
+     //for sales invoice 
+    const salesInvoice = document.getElementById('salesInvoice');
+    salesInvoice.addEventListener('click',async()=>{
+        salesInvoice.dataset.clientUid = getUidFromUrl()
+        
+        //go to the create-invoice with this query parameter
+        window.location.href = `/dashboard/create-invoice/?clientId=${salesInvoice.dataset.clientUid}`;
+
+})
 });
 
 //savePaymentIn funcion 
 async function savePaymentInFunc(clientId){
+    console.log("clientId",clientId)
     const receivedAmountIn = document.getElementById('receivedAmountIn')?.value;
     const paymentInDate = document.getElementById('paymentInDate')?.value;
     const paymentInRemarks = document.getElementById('paymentInRemarks')?.value;
-    
+    const paymentModal = document.getElementById('paymentModal');
+
+    if(!receivedAmountIn || receivedAmountIn.trim() === ""){
+        showAlert("Please, enter the amount");
+        document.getElementById('receivedAmountIn').focus();
+        return;
+    }
+
+    const savePaymentIn = document.getElementById('savePaymentIn');
+    const originalText = savePaymentIn.innerHTML;
+        
+    savePaymentIn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+    savePaymentIn.disabled = true;
     //preparing data to send
     try{
         const paymentIn = {
@@ -453,10 +485,26 @@ async function savePaymentInFunc(clientId){
         });
 
         const result = await response.json();
-        console.log('Server response:', result);
+        console.log('Server response:', result.uid);
 
+        //immediately load the transactions
+        if(result.success === true){
+            fetchTransactions(result.uid)
+            await new Promise(resolve => setTimeout(resolve,1500))
+            paymentModal.classList.add('hidden');
+        
+        
+        }else {
+            showAlert(result.message || "Payment failed");
+        }
+        
     }catch (error) {
         console.error('Error receiving amount:', error);
-}
+}finally {
+            // Restore button state
+            savePaymentIn.innerHTML = originalText;
+            savePaymentIn.disabled = false;
+        }
+
 }
 

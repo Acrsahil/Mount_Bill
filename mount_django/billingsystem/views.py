@@ -6,7 +6,7 @@ from uuid import UUID
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.db import transaction
-from django.db.models import F,Sum
+from django.db.models import F,Sum,Max
 from django.http import JsonResponse
 from django.shortcuts import get_list_or_404, get_object_or_404, render
 from django.utils import timezone
@@ -146,6 +146,18 @@ def clients_json(request):
 
     return JsonResponse({"clients": clients_data, "client_count": clients.count()})
 
+def client_info_payment_id(request,id: UUID):
+    user = request.user
+    company = user.owned_company or user.active_company
+    if not company:
+        return JsonResponse({"client": [],"payment_id": 0})
+    # for client name 
+    client = Customer.objects.get(uid = id)
+    client_name = client.name
+    # latest payment id
+    latest_payment_id = PaymentIn.objects.aggregate(latest_id=Max('id'))['latest_id'] or 0
+    return JsonResponse({"client_name":client_name,"latest_payment_id":latest_payment_id})
+    
 
 def get_serialized_data(user, active_tab="dashboard"):
     """Helper function to get serialized data for template"""
@@ -1159,7 +1171,7 @@ def fetch_transactions(request,id:UUID):
 
     if not company:
         return JsonResponse({"transactions": []})
-    print("error yaa aako ho")
+   
     transactions = OrderList.objects.filter(customer__uid = id).order_by('-id')
     payment_in_transactions = PaymentIn.objects.filter(customer__uid =id)
    
@@ -1201,7 +1213,8 @@ def payment_in(request,id):
         payment_in_remark = data.get("payment_in_remark")
 
         remainingAmount = RemainingAmount.objects.filter(customer_id=id).order_by('-id').first()
-
+        # to send the uid of the customer 
+        customer = Customer.objects.get(id=id)
         # if the remaining amount is not there then create one
 
         if not remainingAmount:
@@ -1223,7 +1236,7 @@ def payment_in(request,id):
         paymentIn = PaymentIn.objects.create(customer_id=id,date=payment_in_date,remainings=remainingAmount,payment_in=payment_in,remarks=payment_in_remark)
         paymentIn.save()
 
-        return JsonResponse({"success":True})
+        return JsonResponse({"success":True,"uid":customer.uid})
     except Exception as e:
         return JsonResponse(
             {"success": False, "error": f"Server error: {str(e)}"}, status=500
