@@ -388,17 +388,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
   //for payment in
   const paymentIn = document.getElementById('paymentIn');
-  paymentIn.addEventListener('click',() => {
+  paymentIn.addEventListener('click',async() => {
 
     //to fill up the form 
     paymentIn.dataset.clientId = addTransaction.dataset.clientId
-    
+    console.log("paymentIn ko id k xa",paymentIn.dataset.clientId)
     //set the id of the save immediately after the paymentIn list is clicked 
     const savePaymentIn = document.getElementById('savePaymentIn');
     savePaymentIn.dataset.clientIds = addTransaction.dataset.clientId;
 
     paymentTransactions.classList.add('hidden');
     paymentModal.classList.remove('hidden');
+
+
+    //populating the paymentModal 
+    const res = await fetch(`/dashboard/clients-info/${paymentIn.dataset.clientId}/`)
+    const data = await res.json()
+    console.log("yaa aauxa k",data)
+    document.getElementById('partyName').value = data.client_name;
+    document.getElementById('receiptNumber').value = data.latest_payment_id + 1
+    const paymentInDate = document.getElementById('paymentInDate')
+    if (paymentInDate) {
+        const today = new Date().toISOString().split('T')[0];
+        paymentInDate.value = today;
+    }
+
   })
 
   //clicking the close button

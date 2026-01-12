@@ -6,7 +6,7 @@ from uuid import UUID
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.db import transaction
-from django.db.models import F,Sum
+from django.db.models import F,Sum,Max
 from django.http import JsonResponse
 from django.shortcuts import get_list_or_404, get_object_or_404, render
 from django.utils import timezone
@@ -146,6 +146,18 @@ def clients_json(request):
 
     return JsonResponse({"clients": clients_data, "client_count": clients.count()})
 
+def client_info_payment_id(request,id):
+    user = request.user
+    company = user.owned_company or user.active_company
+    if not company:
+        return JsonResponse({"client": [],"payment_id": 0})
+    # for client name 
+    client = Customer.objects.get(id = id)
+    client_name = client.name
+    # latest payment id
+    latest_payment_id = PaymentIn.objects.aggregate(latest_id=Max('id'))['latest_id'] or 0
+    return JsonResponse({"client_name":client_name,"latest_payment_id":latest_payment_id})
+    
 
 def get_serialized_data(user, active_tab="dashboard"):
     """Helper function to get serialized data for template"""
