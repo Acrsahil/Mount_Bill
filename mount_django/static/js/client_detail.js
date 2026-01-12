@@ -462,19 +462,19 @@ document.addEventListener('DOMContentLoaded', () => {
         savePaymentIn.style.display ='none';
 
         //to fill the form up
-        paymentIn.dataset.clientId = getUidFromUrl()
-        //populating the paymentModal 
-        const res = await fetch(`/dashboard/clients-info/${paymentIn.dataset.clientId}/`)
-        const data = await res.json()
+        // paymentIn.dataset.clientId = getUidFromUrl()
+        // //populating the paymentModal 
+        // const res = await fetch(`/dashboard/clients-info/${paymentIn.dataset.clientId}/`)
+        // const data = await res.json()
         
-        document.getElementById('partyName').value = data.client_name;
-        document.getElementById('receiptNumber').value = data.latest_payment_id + 1
-        document.getElementById('amountInput').focus();
-        const paymentInDate = document.getElementById('paymentInDate')
-        if (paymentInDate) {
-            const today = new Date().toISOString().split('T')[0];
-            paymentInDate.value = today;
-        }
+        // document.getElementById('partyName').value = data.client_name;
+        // document.getElementById('receiptNumber').value = data.latest_payment_id + 1
+        // document.getElementById('amountInput').focus();
+        // const paymentInDate = document.getElementById('paymentInDate')
+        // if (paymentInDate) {
+        //     const today = new Date().toISOString().split('T')[0];
+        //     paymentInDate.value = today;
+        // }
 
         //opening the add payment Out modal
         paymentModal.classList.remove('hidden');
