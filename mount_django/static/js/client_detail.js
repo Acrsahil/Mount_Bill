@@ -429,6 +429,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeModalBtn = paymentModal.querySelector('button[aria-label="Close"]');
 
     closeModalBtn.addEventListener('click', () => {
+    //emptying the form
+    document.getElementById('receiptNumber').value ='';
+    document.getElementById('amountInput').value = '';
     paymentModal.classList.add('hidden');
     });
 
@@ -448,7 +451,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     //for payment out 
     const paymentOut = document.getElementById('paymentOut');
-    paymentOut.addEventListener('click',()=>{
+    paymentOut.addEventListener('click',async()=>{
 
         paymentTransactions.classList.add('hidden');
         //resetting the modal form for payment out
@@ -457,6 +460,21 @@ document.addEventListener('DOMContentLoaded', () => {
         const savePaymentIn = document.getElementById('savePaymentIn');
         savePaymentOut.style.display ='block';
         savePaymentIn.style.display ='none';
+
+        //to fill the form up
+        paymentIn.dataset.clientId = getUidFromUrl()
+        //populating the paymentModal 
+        const res = await fetch(`/dashboard/clients-info/${paymentIn.dataset.clientId}/`)
+        const data = await res.json()
+        
+        document.getElementById('partyName').value = data.client_name;
+        document.getElementById('receiptNumber').value = data.latest_payment_id + 1
+        document.getElementById('amountInput').focus();
+        const paymentInDate = document.getElementById('paymentInDate')
+        if (paymentInDate) {
+            const today = new Date().toISOString().split('T')[0];
+            paymentInDate.value = today;
+        }
 
         //opening the add payment Out modal
         paymentModal.classList.remove('hidden');
@@ -469,7 +487,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const savePaymentOut = document.getElementById('savePaymentOut');
     paymentOut.dataset.clientId = addTransaction.dataset.clientId;
     savePaymentOut.addEventListener('click',async()=>{
-        console.log(paymentOut.dataset.clientId)
         await savePaymentOutFunc(paymentOut.dataset.clientId)
     })
 
@@ -537,9 +554,14 @@ async function savePaymentInFunc(clientId){
         //immediately load the transactions
         if(result.success === true){
             fetchTransactions(result.uid)
-            await new Promise(resolve => setTimeout(resolve,1500))
+
+            await new Promise(resolve => {setTimeout(resolve,1500)})
+            //emptying the modal form
+            document.getElementById('receiptNumber').value ='';
+            document.getElementById('amountInput').value = '';
+           
             paymentModal.classList.add('hidden');
-        
+            
         
         }else {
             showAlert(result.message || "Payment failed");
@@ -599,10 +621,10 @@ async function savePaymentOutFunc(clientId){
         if(result.success === true){
             fetchTransactions(result.uid)
             await new Promise(resolve => setTimeout(resolve,1500))
+            //emptying the modal form
+            document.getElementById('amountInput').value = '';
             paymentModal.classList.add('hidden');
         
-             //emptying the modal form
-            // document.getElementById('amountInput')?.value = '';
         }else {
             showAlert(result.message || "Payment failed");
         }
