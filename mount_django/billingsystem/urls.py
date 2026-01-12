@@ -8,6 +8,7 @@ urlpatterns = [
     path("fetch-activity/<uuid:id>/", views.fetch_product_activities, name="fetch-activity"),
     path("fetch-transactions/<uuid:id>/",views.fetch_transactions,name="fetch_transactions"),
     path("payment-in/<int:id>/",views.payment_in,name="payment_in"),
+    path("payment-out/<int:id>/",views.payment_out,name="payment_out"),
     path("update-stock/<int:id>/", views.update_stock, name="update_stock"),
     path("products-json/", views.products_json, name="products_json"),
     path("category-json/", views.category_json, name="category_json"),

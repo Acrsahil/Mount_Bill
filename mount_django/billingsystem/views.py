@@ -25,6 +25,7 @@ from .models import (
     ProductCategory,
     RemainingAmount,
     PaymentIn,
+    PaymentOut,
 )
 
 
@@ -1174,7 +1175,7 @@ def fetch_transactions(request,id:UUID):
    
     transactions = OrderList.objects.filter(customer__uid = id).order_by('-id')
     payment_in_transactions = PaymentIn.objects.filter(customer__uid =id)
-   
+    payment_out_transactions = PaymentOut.objects.filter(customer__uid = id)
     invoiceData = []
     for transaction in transactions:
         summary = getattr(transaction,"summary",None)
@@ -1199,7 +1200,19 @@ def fetch_transactions(request,id:UUID):
             "remarks":paymentIn.remarks,
             "type": "payment"
         })
-    mergedData = invoiceData + paymentInData
+    
+    paymentOutData = []
+    for paymentOut in payment_out_transactions:
+        paymentOutData.append({
+            "id":paymentOut.id,
+            "date":paymentOut.date,
+            "payment_out":paymentOut.payment_out,
+            "remainingAmount": paymentOut.remainings.remaining_amount,
+            "remarks":paymentOut.remarks,
+            "type": "paymentOut"
+
+        })
+    mergedData = invoiceData + paymentInData + paymentOutData
     mergedData.sort(key=lambda x: x["date"], reverse=True)
     return JsonResponse({"success":True,
                          "transactions":mergedData})
@@ -1241,7 +1254,47 @@ def payment_in(request,id):
         return JsonResponse(
             {"success": False, "error": f"Server error: {str(e)}"}, status=500
         )
+
+
+@require_POST
+def payment_out(request,id):
+    try:
+        data = json.loads(request.body)
+        payment_out = Decimal(str(data.get("payment_out")))
+        payment_out_date = data.get("payment_out_date")
+        payment_out_remark = data.get("payment_out_remark")
+
+        remainingAmount = RemainingAmount.objects.filter(customer_id=id).order_by('-id').first()
+        # to send the uid of the customer 
+        customer = Customer.objects.get(id=id)
+        # if the remaining amount is not there then create one
+
+        if not remainingAmount:
+            remainingAmount = RemainingAmount.objects.create(
+            customer_id=id,
+            orders=None,
+            remaining_amount=Decimal("0.00")
+            )
+        else:
+            remainingAmount = RemainingAmount.objects.create(
+            customer_id=id,
+            orders=None,
+            remaining_amount=Decimal(remainingAmount.remaining_amount)
+            )
+        remainingAmount.remaining_amount += payment_out
+
+        remainingAmount.save()
+
+        paymentOut = PaymentOut.objects.create(customer_id=id,date=payment_out_date,remainings=remainingAmount,payment_out=payment_out,remarks=payment_out_remark)
+        paymentOut.save()
+
+        return JsonResponse({"success":True,"uid":customer.uid})
+    except Exception as e:
+        return JsonResponse(
+            {"success": False, "error": f"Server error: {str(e)}"}, status=500
+        )
     
+
 def product_detail(request, id: UUID = None):
     context = get_serialized_data(request.user, "dashboard")
     if id:
