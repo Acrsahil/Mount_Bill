@@ -1737,6 +1737,7 @@ export function deleteProduct(productId) {
 
                     const row = document.querySelector(`#productsTableBody-${productId}`);
                     if (row) row.remove();
+                    
 
                     // const detailRow = document.querySelector(`.thisDetailRows[data-id="${productId}"]`);
                     // if (detailRow) detailRow.remove();

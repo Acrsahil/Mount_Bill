@@ -4,7 +4,8 @@ import{ activateTabAll } from "./client.js";
 import { showAlert } from "./utils.js";
 document.addEventListener('DOMContentLoaded', () => {
     addClientsToList(window.djangoData.clients)
-    updateClientInfo(window.djangoData.clients)
+    // updateClientInfo(window.djangoData.clients)
+    renderFromUrl()
 
     //functional add new client inside the client detail page
     const addNewClientDetailBtn = document.getElementById('addNewClientDetailBtn');
@@ -35,9 +36,43 @@ export function resetClientModal(){
 document.addEventListener('DOMContentLoaded',()=>{
     const deleteClientBtn = document.getElementById('deleteClientBtn')
     deleteClientBtn.addEventListener('click',()=>{
+        console.log("kun delete hudae xa?",deleteClientBtn.dataset.clientId)
         deleteClient(deleteClientBtn.dataset.clientId)
     })
 })
+
+function showEmptyState() {
+    document.getElementById('emptyState').classList.remove('hidden');
+    document.getElementById('clientDetailContainer').classList.add('hidden');
+    document.getElementById('notFound').classList.add('hidden');
+}
+function showClientState() {
+    document.getElementById('emptyState').classList.add('hidden');
+    document.getElementById('clientDetailContainer').classList.remove('hidden');
+    document.getElementById('notFound').classList.add('hidden');
+}
+function showNotFound() {
+    document.getElementById('emptyState').classList.add('hidden');
+    document.getElementById('clientDetailContainer').classList.add('hidden');
+    document.getElementById('notFound').classList.remove('hidden');
+}
+
+function renderFromUrl(){
+    const uid = getUidFromUrl()
+    const selectedClient = getClientFromUid(uid,window.djangoData.clients)
+    if(!uid){
+        showEmptyState()
+        return;
+    }
+    else if(!selectedClient){
+        showNotFound()
+        return;
+    }
+    else{
+        showClientState()
+        return;
+    }
+}
 
 async function deleteClient(clientId){
     const confirmed = confirm("Are you sure you want to delete this client?")
@@ -55,13 +90,16 @@ async function deleteClient(clientId){
 
     if(data.success){
         
+        window.djangoData.clients = window.djangoData.clients.filter(
+        c => String(c.id) !== String(clientId)
+    );
         history.replaceState({}, '', `/dashboard/client-detail/`);
         const li = document.querySelector(`.clientlists[data-id="${clientId.toString()}"]`);
-        if(li)
-            {
-                li.remove()}
+        if(li) li.remove()
         
-     
+        const row = document.querySelector(`#clientsTableBody-${clientId.toString()}`);
+        if (row) row.remove();
+        renderFromUrl()        
         showAlert(data.message,'success');
     }
     else {
@@ -203,30 +241,36 @@ async function updateClientFunc(clientId){
 
 //to get uid from the url
 function getUidFromUrl(){
-    const urlUid = window.location.pathname.split('/').filter(Boolean);
-    return urlUid[urlUid.length - 1]
+    const parts = window.location.pathname.split('/').filter(Boolean);
+
+    const idx = parts.indexOf('client-detail');
+    if (idx === -1) return null;
+
+    // "/dashboard/client-detail/" => no uid
+    if (idx === parts.length - 1) return null;
+
+    return parts[idx + 1]; // uid
     
 }
 
 //get selected client from url
-function getClientFromUid(clients){
-    const uid = getUidFromUrl();
+function getClientFromUid(uid, clients){
+    if (!uid) return null;
     return clients.find(c => String(c.uid) === String(uid)) || null;
 }
-
 //now dynamically change the client info 
-async function updateClientInfo(clients){
-    const selectedClients = getClientFromUid(clients)
-    //fetching the remaining amount to update the receivabel and payable parts
-    const res = await fetch(`/dashboard/clients-info/${selectedClients.uid}/`)
+export async function updateClientInfo(clientId){
+    // const selectedClients = getClientFromUid(clients)
+    //fetching the remaining amount to update the receivable and payable parts
+    const res = await fetch(`/dashboard/clients-info/${clientId}/`)
     const data = await res.json();
     const clientName = document.getElementById('clientName');
     const clientDetail = document.getElementById('clientDetail');
     const clientBalance = document.getElementById('clientRemaining');
     const clientStatus = document.getElementById('clientStatus')
 
-    clientName.textContent = selectedClients.name;
-    clientDetail.textContent = selectedClients.address || selectedClients.phone || "---";
+    clientName.textContent = data.client_name;
+    clientDetail.textContent = data.client_address || data.client_phone || "---";
     if(data.remaining == 0){
         clientStatus.textContent = "Settled"
     }
@@ -315,6 +359,7 @@ export function renderClient(client) {
         //client id for editing client
         clientEditBtn.dataset.clientId = client.id;
         deleteClientBtn.dataset.clientId = client.id;
+
     }
     li.addEventListener('click', () => {
         fetchclients()
@@ -346,10 +391,11 @@ export function renderClient(client) {
         // if(clientDetail){
         //     clientDetail.textContent = client.address || client.phone || '---';
         // }
-        updateClientInfo(window.djangoData.clients)
+        updateClientInfo(client.uid)
         fetchTransactions(client.uid)
+        
         addTransaction.dataset.clientId = client.id;
-
+        deleteClientBtn.dataset.clientId = client.id;
         //client id for editing client
         clientEditBtn.dataset.clientId = client.id;
         
@@ -371,10 +417,16 @@ export function addClientsToList(clients) {
 
 //triggers the backward and forward event of the browser
 window.addEventListener('popstate',()=>{
-    updateClientInfo(window.djangoData.clients)
 
     //highlight the list again
     const urlUid = getUidFromUrl();
+    const selectedClient = getClientFromUid(urlUid,window.djangoData.clients);
+    console.log("selected client xa ki xaina??",selectedClient)
+    renderFromUrl()
+    if (!urlUid || !selectedClient) {
+        return;
+    }
+    updateClientInfo(urlUid);
     document.querySelectorAll('.clientlists').forEach(li => {
     if(String(li.dataset.clientUid) === String(urlUid)){
         li.classList.add('selected',

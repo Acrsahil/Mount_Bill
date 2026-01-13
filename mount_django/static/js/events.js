@@ -22,7 +22,7 @@ import {
 } from './dom.js';
 import { saveInvoice,renderInvoiceItems } from './create_invoice.js';
 import { editProduct,deleteProduct,saveProduct,loadProducts } from './product.js';
-import { renderClient, addClientsToList,resetClientModal,fetchTransactions } from './client_detail.js';
+import { renderClient, addClientsToList,resetClientModal,fetchTransactions,updateClientInfo } from './client_detail.js';
 // Track currently selected hint for keyboard navigation
 let currentSelectedHintIndex = -1;
 let currentSelectedProductHintIndex = -1;
@@ -263,14 +263,7 @@ if (clientEmail !== '') {
             history.pushState({}, '', `/dashboard/client-detail/${result.client.uid}`);
 
             //loading the transaction table 
-            const clientName = document.getElementById('clientName')
-            const clientDetail = document.getElementById('clientDetail')
-            if(clientName){
-                clientName.textContent = result.client.name;
-            }
-            if(clientDetail){
-                clientDetail.textContent = result.client.address || result.client.phone || '---';
-            }
+            updateClientInfo(result.client.uid)
             
             const clientList = document.querySelector('.clientList');
             if(clientList){
