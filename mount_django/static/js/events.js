@@ -22,7 +22,7 @@ import {
 } from './dom.js';
 import { saveInvoice,renderInvoiceItems } from './create_invoice.js';
 import { editProduct,deleteProduct,saveProduct,loadProducts } from './product.js';
-import { renderClient, addClientsToList,resetClientModal } from './client_detail.js';
+import { renderClient, addClientsToList,resetClientModal,fetchTransactions } from './client_detail.js';
 // Track currently selected hint for keyboard navigation
 let currentSelectedHintIndex = -1;
 let currentSelectedProductHintIndex = -1;
@@ -173,18 +173,21 @@ export function closeClientModalFunc(addClientModal) {
 // Save client to database via AJAX
 export async function saveClient(addClientModal, clientsTableBody) {
     // Only get fields that exist in the simplified modal
-      const clientNameInput = document.getElementById('clientNameInput');
+    const clientNameInput = document.getElementById('clientNameInput');
     const clientPhoneInput = document.getElementById('clientPhoneInput');
     const clientAddressInput = document.getElementById("clientAddressInput");
     const clientEmailInput = document.getElementById('clientEmailInput');
     const clientPanNoInput = document.getElementById('clientPanNoInput');
+    const clientOpeningBalance = document.getElementById('clientOpeningBalance');
 
     const clientName = clientNameInput.value.trim();
     const clientPhone = clientPhoneInput.value.trim();
     const clientAddress = clientAddressInput.value.trim();
     const clientEmail = clientEmailInput.value.trim();
-    console.log("yo clientEmail k ho",clientEmail)
     const clientPanNo = clientPanNoInput.value.trim();
+    const clientBalance = clientOpeningBalance.value;
+    
+
     if (!clientName || !clientPhone) {
         showAlert('Please fill in all required fields (Name, Phone)', 'error');
         return;
@@ -215,6 +218,7 @@ if (clientEmail !== '') {
             phone: clientPhone,
             address: clientAddress,
             pan_id: clientPanNo,
+            balance: clientBalance,
         };
 
         console.log('Saving client to database:', clientData);
@@ -255,6 +259,11 @@ if (clientEmail !== '') {
             // Update UI
             loadClients(window.clients, clientsTableBody);
 
+            //to dynamically change the url uid at the top
+            history.pushState({}, '', `/dashboard/client-detail/${result.client.uid}`);
+
+            //loading the transaction table 
+            await fetchTransactions(result.client.uid)
             const clientList = document.querySelector('.clientList');
             if(clientList){
                 clientList.prepend(renderClient(newClient));

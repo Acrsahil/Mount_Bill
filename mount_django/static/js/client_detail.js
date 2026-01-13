@@ -21,6 +21,7 @@ export function resetClientModal(){
     document.getElementById('updateClientBtn').style.display = 'none';
     document.getElementById('additionalInfo').style.display = 'none';
     document.getElementById('additionInfoBtn').style.display = 'block';
+    document.getElementById('openingBalance').style.display = 'block';
 
     //resetting the form field
     document.getElementById('clientNameInput').value = '';
@@ -65,6 +66,7 @@ function editClientFunc(clientId){
     addClientModal.style.display = 'flex';
     document.getElementById('additionalInfo').style.display = 'block';
     document.getElementById('additionInfoBtn').style.display = 'none';
+    document.getElementById('openingBalance').style.display = 'none';
     activateTabAll();
 }
 
@@ -325,7 +327,7 @@ window.addEventListener('popstate',()=>{
 
 
 //Transaction table fill up 
-async function fetchTransactions(clientUid){
+export async function fetchTransactions(clientUid){
     const clientTransactionTableBody = document.getElementById('clientTransactionTableBody');
     const res = await fetch(`/dashboard/fetch-transactions/${clientUid}`);
     const data = await res.json();
@@ -367,6 +369,14 @@ function loadTransactions(transaction, tableBody) {
         <td>Payment</td>
         <td>${transaction.remainingAmount}</td>
         <td>${transaction.remarks || "---"}</td>`;
+    }else if (transaction.type === 'Opening') {
+        row.innerHTML = `
+        <td>Opening Balance</td>
+        <td>${transaction.date.split('T')[0]}</td>
+        <td>${transaction.balance}</td>
+        <td>--</td>
+        <td>${transaction.balance}</td>
+        <td>--</td>`;
     }
 
     tableBody.appendChild(row);

@@ -834,6 +834,8 @@ def save_client(request):
         email = data.get("email", "").strip()
         pan_id = data.get("pan_id", "").strip()
         address = data.get("address", "").strip()
+        balance = float(data.get("balance"))
+        
         user = request.user
 
         company = None
@@ -848,6 +850,11 @@ def save_client(request):
                 pan_id=pan_id,
                 address=address,
             )
+            remaining = RemainingAmount.objects.create(
+                customer = client,
+                orders = None,
+                remaining_amount = balance,
+            )
             return JsonResponse(
                 {
                     "success": True,
@@ -861,6 +868,7 @@ def save_client(request):
                         "pan_id": client.pan_id,
                         "address": client.address,
                     },
+
                 }
             )
 
@@ -1180,6 +1188,7 @@ def fetch_transactions(request,id:UUID):
     transactions = OrderList.objects.filter(customer__uid = id).order_by('-id')
     payment_in_transactions = PaymentIn.objects.filter(customer__uid =id)
     payment_out_transactions = PaymentOut.objects.filter(customer__uid = id)
+    client = Customer.objects.get(uid = id)
     invoiceData = []
     for transaction in transactions:
         summary = getattr(transaction,"summary",None)
@@ -1216,7 +1225,15 @@ def fetch_transactions(request,id:UUID):
             "type": "paymentOut"
 
         })
-    mergedData = invoiceData + paymentInData + paymentOutData
+    
+    clientData =[]
+    remaining = RemainingAmount.objects.filter(customer__uid = id).order_by('id').first()
+    clientData.append({
+        "date":client.date,
+        "balance":remaining.remaining_amount,
+        "type": "Opening"
+    })
+    mergedData = invoiceData + paymentInData + paymentOutData + clientData
     mergedData.sort(key=lambda x: x["date"], reverse=True)
     return JsonResponse({"success":True,
                          "transactions":mergedData})
