@@ -154,6 +154,7 @@ def client_info_payment_id(request,id: UUID):
         return JsonResponse({"client": [],"payment_id": 0})
     # for client name 
     client = Customer.objects.get(uid = id)
+    remaining = RemainingAmount.objects.filter(customer__uid = id).order_by('-id').first()
     client_name = client.name
     # latest payment id
     latest_payment_id = PaymentIn.objects.aggregate(latest_id=Max('id'))['latest_id'] or 0
@@ -161,7 +162,7 @@ def client_info_payment_id(request,id: UUID):
     # latest payment out id
     latest_paymentout_id = PaymentOut.objects.aggregate(latest_id=Max('id'))['latest_id'] or 0
 
-    return JsonResponse({"client_name":client_name,"latest_payment_id":latest_payment_id,"latest_paymentout_id":latest_paymentout_id})
+    return JsonResponse({"client_name":client_name,"latest_payment_id":latest_payment_id,"latest_paymentout_id":latest_paymentout_id,"remaining":remaining.remaining_amount})
     
 
 def get_serialized_data(user, active_tab="dashboard"):
@@ -878,9 +879,9 @@ def save_client(request):
     
    
 @require_http_methods(["DELETE"])
-def delete_client(request,id: UUID):
+def delete_client(request,id: UUID = None):
     try:
-        client = get_object_or_404(Customer,uid = id)
+        client = get_object_or_404(Customer,id = id)
         print(client)
         client.delete()
         print(client)
@@ -1188,7 +1189,9 @@ def client_detail(request,id: UUID):
     context = get_serialized_data(request.user, "dashboard")
     if id:
         customer = get_object_or_404(Customer,uid=id)
+        remaining = RemainingAmount.objects.filter(customer__uid = id).order_by('-id').first()
         context["customer_info"] = customer
+        context["customer_balance"] = remaining
     return render(request, "website/client_detail.html", context)
 
 def fetch_transactions(request,id:UUID):

@@ -90,7 +90,14 @@
       </div>
 
       <div class="ml-auto text-right">
-        <div class="text-xl text-500 font-semibold">Receivable</div>
+        <div class="text-xl text-500 font-semibold" id="clientStatus">{%if customer_balance.remaining_amount == 0 %}
+          Settled
+          {%elif customer_balance.remaining_amount < 0 %}
+          Payable
+          {%elif customer_balance.remaining_amount > 0 %}
+          Receivable
+          {%endif%}
+        </div>
        
       </div>
     </div>
@@ -104,8 +111,7 @@
             {%else%}
               ---
             {%endif%}</div>
-        <div class="text-xl font-semibold text-emerald-600 ml-auto text-right">-----
-          {{ client_transaction }}
+        <div class="text-xl font-semibold text-emerald-600 ml-auto text-right" id="clientRemaining">{{ customer_balance.remaining_amount }}
         </div>
     </div>
 
@@ -184,6 +190,9 @@
     </tbody>
   </table>
 </div>
+
+
+{% comment %} payment transactions {% endcomment %}
 <div
   id="paymentTransactions"
   class="absolute hidden mt-0.5 z-50 w-44
@@ -318,7 +327,16 @@
 
 
   </div>
-
+ {% comment %} for empty page after deletion
+<div class="empty-state hidden flex flex-col items-center justify-center h-full text-center text-gray-500 px-8">
+            <div class="illustration mb-6 opacity-50">
+                <div class="w-24 h-24 bg-gray-200 rounded-lg mx-auto"></div>
+                <div class="w-40 h-3 bg-gray-200 rounded mt-4 mx-auto"></div>
+                <div class="w-32 h-3 bg-gray-200 rounded mt-3 mx-auto"></div>
+            </div>
+            <h2 class="text-xl font-medium mb-2">No clients found</h2>
+            <p class="text-sm">Click any client to see their transactions</p>
+</div> {% endcomment %}
 
 
 </main>

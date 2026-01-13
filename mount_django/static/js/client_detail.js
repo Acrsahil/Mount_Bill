@@ -35,13 +35,14 @@ export function resetClientModal(){
 document.addEventListener('DOMContentLoaded',()=>{
     const deleteClientBtn = document.getElementById('deleteClientBtn')
     deleteClientBtn.addEventListener('click',()=>{
-        deleteClientBtn.dataset.clientId = getUidFromUrl()
         deleteClient(deleteClientBtn.dataset.clientId)
     })
 })
 
 async function deleteClient(clientId){
-     const res = await fetch(`/dashboard/delete-client/${clientId}/`, {
+    const confirmed = confirm("Are you sure you want to delete this client?")
+    if(confirmed){
+        const res = await fetch(`/dashboard/delete-client/${clientId}/`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
@@ -53,12 +54,23 @@ async function deleteClient(clientId){
     console.log(data.success)
 
     if(data.success){
-        showAlert(data.message,'success')
+        
+        history.replaceState({}, '', `/dashboard/client-detail/`);
+        const li = document.querySelector(`.clientlists[data-id="${clientId.toString()}"]`);
+        if(li)
+            {
+                li.remove()}
+        
+     
+        showAlert(data.message,'success');
     }
     else {
         showAlert('Error: ' + (data.error || 'Failed to delete client'), 'error');
         }
+    }
+     
 }
+
 
 //editing the client 
 
@@ -203,12 +215,31 @@ function getClientFromUid(clients){
 }
 
 //now dynamically change the client info 
-function updateClientInfo(clients){
+async function updateClientInfo(clients){
     const selectedClients = getClientFromUid(clients)
+    //fetching the remaining amount to update the receivabel and payable parts
+    const res = await fetch(`/dashboard/clients-info/${selectedClients.uid}/`)
+    const data = await res.json();
     const clientName = document.getElementById('clientName');
     const clientDetail = document.getElementById('clientDetail');
+    const clientBalance = document.getElementById('clientRemaining');
+    const clientStatus = document.getElementById('clientStatus')
+
     clientName.textContent = selectedClients.name;
     clientDetail.textContent = selectedClients.address || selectedClients.phone || "---";
+    if(data.remaining == 0){
+        clientStatus.textContent = "Settled"
+    }
+    else if(data.remaining < 0){
+        clientStatus.textContent = "Payable"
+    }
+    else if(data.remaining > 0){
+        clientStatus.textContent = "Receivable"
+    }
+    clientBalance.textContent = data.remaining;
+
+    
+
 
 }
 
@@ -231,7 +262,7 @@ window.addEventListener('pageshow',() =>{
 })
 
 const addTransaction = document.getElementById('addTransaction')
-
+const deleteClientBtn = document.getElementById('deleteClientBtn')
 //function to add the client to the list
 export function renderClient(client) {
     const li = document.createElement('li');
@@ -255,6 +286,7 @@ export function renderClient(client) {
 
     li.textContent = client.name;
     li.dataset.clientUid = client.uid;
+    li.dataset.id = client.id;
     //select the list according to the uid
     
     const clientUid = getUidFromUrl()
@@ -282,6 +314,7 @@ export function renderClient(client) {
 
         //client id for editing client
         clientEditBtn.dataset.clientId = client.id;
+        deleteClientBtn.dataset.clientId = client.id;
     }
     li.addEventListener('click', () => {
         fetchclients()
@@ -305,15 +338,15 @@ export function renderClient(client) {
         );
 
         history.pushState({}, '', `/dashboard/client-detail/${client.uid}`);
-        const clientName = document.getElementById('clientName')
-        const clientDetail = document.getElementById('clientDetail')
-        if(clientName){
-            clientName.textContent = client.name;
-        }
-        if(clientDetail){
-            clientDetail.textContent = client.address || client.phone || '---';
-        }
-        
+        // const clientName = document.getElementById('clientName')
+        // const clientDetail = document.getElementById('clientDetail')
+        // if(clientName){
+        //     clientName.textContent = client.name;
+        // }
+        // if(clientDetail){
+        //     clientDetail.textContent = client.address || client.phone || '---';
+        // }
+        updateClientInfo(window.djangoData.clients)
         fetchTransactions(client.uid)
         addTransaction.dataset.clientId = client.id;
 
