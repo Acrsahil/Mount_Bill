@@ -868,12 +868,26 @@ def save_client(request):
                         "pan_id": client.pan_id,
                         "address": client.address,
                     },
+                    "remaining":remaining.remaining_amount
 
                 }
             )
 
     except Exception as e:
         return JsonResponse({"success": False, "error": f"Server error: {str(e)}"})
+    
+   
+@require_http_methods(["DELETE"])
+def delete_client(request,id: UUID):
+    try:
+        client = get_object_or_404(Customer,uid = id)
+        print(client)
+        client.delete()
+        print(client)
+        return JsonResponse({"success": True,"message":"Client deleted Successfully!!"})
+    except Exception as e:
+        print("Delete Client Error:", e)
+        return JsonResponse({"success":False, "error":f"Server error: {str(e)}"})
 
 @require_POST
 @csrf_exempt
@@ -912,7 +926,6 @@ def delete_invoice(request, id):
 
 @require_http_methods(["DELETE"])
 def delete_product(request, id):
-    print("this is id-> ", id)
     product = get_object_or_404(Product, id=id)
     product.delete()
     return JsonResponse({"success": True})

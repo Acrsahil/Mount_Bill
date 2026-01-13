@@ -30,6 +30,36 @@ export function resetClientModal(){
     document.getElementById('clientPanNoInput').value = '';
     document.getElementById('clientEmailInput').value = '';
 }
+
+//deleting the client 
+document.addEventListener('DOMContentLoaded',()=>{
+    const deleteClientBtn = document.getElementById('deleteClientBtn')
+    deleteClientBtn.addEventListener('click',()=>{
+        deleteClientBtn.dataset.clientId = getUidFromUrl()
+        deleteClient(deleteClientBtn.dataset.clientId)
+    })
+})
+
+async function deleteClient(clientId){
+     const res = await fetch(`/dashboard/delete-client/${clientId}/`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': window.djangoData.csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+            });
+    const data = await res.json()
+    console.log(data.success)
+
+    if(data.success){
+        showAlert(data.message,'success')
+    }
+    else {
+        showAlert('Error: ' + (data.error || 'Failed to delete client'), 'error');
+        }
+}
+
 //editing the client 
 
 const clientEditBtn = document.getElementById('clientEditBtn')
@@ -275,9 +305,15 @@ export function renderClient(client) {
         );
 
         history.pushState({}, '', `/dashboard/client-detail/${client.uid}`);
-
-        document.getElementById('clientName').textContent = client.name;
-        document.getElementById('clientDetail').textContent = client.address || client.phone || '---';
+        const clientName = document.getElementById('clientName')
+        const clientDetail = document.getElementById('clientDetail')
+        if(clientName){
+            clientName.textContent = client.name;
+        }
+        if(clientDetail){
+            clientDetail.textContent = client.address || client.phone || '---';
+        }
+        
         fetchTransactions(client.uid)
         addTransaction.dataset.clientId = client.id;
 
@@ -331,7 +367,7 @@ export async function fetchTransactions(clientUid){
     const clientTransactionTableBody = document.getElementById('clientTransactionTableBody');
     const res = await fetch(`/dashboard/fetch-transactions/${clientUid}`);
     const data = await res.json();
-    
+    if(!clientTransactionTableBody) return;
     clientTransactionTableBody.innerHTML = '';
 
     // Load each row
@@ -369,7 +405,7 @@ function loadTransactions(transaction, tableBody) {
         <td>Payment</td>
         <td>${transaction.remainingAmount}</td>
         <td>${transaction.remarks || "---"}</td>`;
-    }else if (transaction.type === 'Opening') {
+    }else if (transaction.type === 'Opening' && Number(transaction.balance) !== 0 ) {
         row.innerHTML = `
         <td>Opening Balance</td>
         <td>${transaction.date.split('T')[0]}</td>

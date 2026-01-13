@@ -185,7 +185,7 @@ export async function saveClient(addClientModal, clientsTableBody) {
     const clientAddress = clientAddressInput.value.trim();
     const clientEmail = clientEmailInput.value.trim();
     const clientPanNo = clientPanNoInput.value.trim();
-    const clientBalance = clientOpeningBalance.value;
+    const clientBalance = clientOpeningBalance.value || 0;
     
 
     if (!clientName || !clientPhone) {
@@ -263,7 +263,15 @@ if (clientEmail !== '') {
             history.pushState({}, '', `/dashboard/client-detail/${result.client.uid}`);
 
             //loading the transaction table 
-            await fetchTransactions(result.client.uid)
+            const clientName = document.getElementById('clientName')
+            const clientDetail = document.getElementById('clientDetail')
+            if(clientName){
+                clientName.textContent = result.client.name;
+            }
+            if(clientDetail){
+                clientDetail.textContent = result.client.address || result.client.phone || '---';
+            }
+            
             const clientList = document.querySelector('.clientList');
             if(clientList){
                 clientList.prepend(renderClient(newClient));
