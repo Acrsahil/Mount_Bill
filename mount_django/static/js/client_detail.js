@@ -632,6 +632,24 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.href = `/dashboard/create-invoice/?clientId=${salesInvoice.dataset.clientUid}`;
 
 })
+
+//for adjust balance 
+const adjustBalance = document.getElementById('adjustBalance');
+adjustBalance.addEventListener('click',()=>{
+    document.getElementById('adjustBalanceModal').classList.remove('hidden');
+    paymentTransactions.classList.add('hidden');
+
+})
+
+//closing the adjust balance modal
+const closeAdjustBalance = document.getElementById('closeAdjustBalance');
+const cancelAdjustBalance = document.getElementById('cancelAdjustBalance');
+closeAdjustBalance.addEventListener('click',()=>{
+    document.getElementById('adjustBalanceModal').classList.add('hidden');
+})
+cancelAdjustBalance.addEventListener('click',()=>{
+    document.getElementById('adjustBalanceModal').classList.add('hidden');
+})
 });
 
 

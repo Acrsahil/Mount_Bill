@@ -210,6 +210,9 @@
     <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer" id= "paymentOut">
       Payment Out
     </li>
+    <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer" id= "adjustBalance">
+      Adjust Balance
+    </li>
   </ul>
 </div>
 
@@ -348,6 +351,74 @@
 
 </main>
  
+<!-- Modal Background -->
+<div id="adjustBalanceModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+  <!-- Modal Container -->
+  <div class="bg-white rounded-xl shadow-lg w-4/5 max-w-3xl p-8 relative">
+
+    <!-- Header with Close Button -->
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-2xl font-semibold text-gray-800">Adjust Balance</h2>
+      <!-- Cross Button -->
+      <button id="closeAdjustBalance" class="text-gray-500 hover:text-gray-700 text-2xl font-bold">&times;</button>
+    </div>
+
+    <!-- Adjustment Type Label -->
+    <div class="mb-2">
+      <p class="text-gray-600">Adjustment Type</p>
+    </div>
+
+    <!-- Add/Reduce Buttons -->
+    <div class="flex space-x-4 mb-6">
+      <button class="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300">Add Balance</button>
+      <button class="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300">Reduce Balance</button>
+    </div>
+
+    <!-- Adjustment Amount & As of Date Labels -->
+    <div class="flex justify-between mb-1">
+      <label class="text-gray-600">Adjustment Amount</label>
+      <label class="text-gray-600">As of Date</label>
+    </div>
+
+    <!-- Adjustment Amount & Date Inputs -->
+    <div class="flex justify-between mb-6">
+      <input type="number" class="border rounded px-3 py-2 w-5/12" placeholder="Amount">
+      <input type="date" class="border rounded px-3 py-2 w-5/12">
+    </div>
+
+    <!-- Remarks Label -->
+    <div class="mb-1">
+      <label class="text-gray-600">Remarks</label>
+    </div>
+
+    <!-- Remarks Input -->
+    <div class="mb-6">
+      <input type="text" class="border rounded px-3 py-2 w-full" placeholder="Remarks">
+    </div>
+
+    <!-- Current Balance Label & Input (Right Aligned, No Border) -->
+    <div class="flex justify-between items-center mb-3">
+      <label class="text-gray-600">Current Balance</label>
+      <input type="number" class="text-right w-1/3 bg-transparent text-gray-800" placeholder="0" readonly>
+    </div>
+
+    <!-- Adjusted Balance Label & Input (Right Aligned, No Border) -->
+    <div class="flex justify-between items-center mb-6">
+      <label class="text-gray-600">Adjusted Balance</label>
+      <input type="number" class="text-right w-1/3 bg-transparent text-gray-800" placeholder="0" readonly>
+    </div>
+
+    <!-- Action Buttons (Right Aligned) -->
+    <div class="flex justify-end space-x-2">
+      <button id="cancelAdjustBalance" class="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300">Cancel</button>
+      <button class="px-4 py-2 rounded bg-gray-400 hover:bg-gray-500 text-white">Confirm Adjustment</button>
+    </div>
+
+  </div>
+</div>
+
+
+
 
 </div>
 
