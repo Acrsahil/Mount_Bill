@@ -157,7 +157,11 @@ def client_info_payment_id(request,id: UUID):
     client_name = client.name
     # latest payment id
     latest_payment_id = PaymentIn.objects.aggregate(latest_id=Max('id'))['latest_id'] or 0
-    return JsonResponse({"client_name":client_name,"latest_payment_id":latest_payment_id})
+
+    # latest payment out id
+    latest_paymentout_id = PaymentOut.objects.aggregate(latest_id=Max('id'))['latest_id'] or 0
+
+    return JsonResponse({"client_name":client_name,"latest_payment_id":latest_payment_id,"latest_paymentout_id":latest_paymentout_id})
     
 
 def get_serialized_data(user, active_tab="dashboard"):
