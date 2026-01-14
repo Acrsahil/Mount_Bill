@@ -840,8 +840,9 @@ def save_client(request):
         email = data.get("email", "").strip()
         pan_id = data.get("pan_id", "").strip()
         address = data.get("address", "").strip()
-        balance = float(data.get("balance"))
-        
+        toReceive = float(data.get("toReceiveAmount"))
+        print(toReceive)
+        toGive = float(data.get("toGiveAmount"))
         user = request.user
 
         company = None
@@ -856,11 +857,20 @@ def save_client(request):
                 pan_id=pan_id,
                 address=address,
             )
-            remaining = RemainingAmount.objects.create(
-                customer = client,
-                orders = None,
-                remaining_amount = balance,
-            )
+            if toReceive > 0 and toGive == 0:
+                remaining = RemainingAmount.objects.create(
+                    customer = client,
+                    orders = None,
+                    remaining_amount = toReceive,
+                )
+            elif toGive > 0 and toReceive == 0:
+                remaining = RemainingAmount.objects.create(
+                    customer = client,
+                    orders = None,
+                    remaining_amount = float(0.0),
+                )
+                remaining.remaining_amount -= toGive
+                remaining.save()
             return JsonResponse(
                 {
                     "success": True,
