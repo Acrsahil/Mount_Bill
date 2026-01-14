@@ -220,7 +220,7 @@ function selectType(selectedBtn, otherBtn) {
    selectedBtn.classList.add('border-blue-700', 'text-blue-700', 'bg-blue-100');
     selectedBtn.classList.remove('bg-gray-200', 'text-black', 'border-gray-300');
 
-    // Unselected button: grey background & border, black text
+    // Unselected button
     otherBtn.classList.add('bg-gray-200', 'text-black', 'border-gray-300');
     otherBtn.classList.remove('border-blue-700', 'text-blue-700', 'bg-blue-100');
 
