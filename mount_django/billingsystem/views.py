@@ -1254,6 +1254,15 @@ def fetch_transactions(request,id:UUID):
         "balance":remaining.remaining_amount,
         "type": "Opening"
     })
+
+    # addAdjustmentBalance = []
+    # remaining = RemainingAmount.objects.filter(customer__uid = id).order_by('-id').first()
+    # addAdjustmentBalance.append({
+    #     "date":remaining.date,
+    #     "balance":remaining.remaining_amount,
+    #     "type":"Balance(+)"
+    # })
+
     mergedData = invoiceData + paymentInData + paymentOutData + clientData
     mergedData.sort(key=lambda x: x["date"], reverse=True)
     return JsonResponse({"success":True,
@@ -1336,6 +1345,30 @@ def payment_out(request,id):
             {"success": False, "error": f"Server error: {str(e)}"}, status=500
         )
     
+@require_POST
+def balance_adjustment(request,id):
+    try:
+        data = json.loads(request.body)
+        toAddAmount = Decimal(str(data.get("toAddAmount")))
+        toReduceAmount = Decimal(str(data.get("toReduceAmount")))
+        remaining = RemainingAmount.objects.filter(customer__id = id).order_by('-id').first()
+        
+        
+        if not remaining:
+            remaining = RemainingAmount.objects.create(customer_id = id,orders=None,remaining_amount = Decimal("0.0"))
+        else:
+            remaining = RemainingAmount.objects.create(customer_id =id,orders = None,remaining_amount = remaining.remaining_amount)
+        if toAddAmount > 0 and toReduceAmount == 0:
+            remaining.remaining_amount +=toAddAmount
+        elif toReduceAmount > 0 and toAddAmount == 0:
+            remaining.remaining_amount -=toReduceAmount
+        remaining.save()
+        return JsonResponse({"success":True})
+    except Exception as e:
+        return JsonResponse(
+            {"success":False, "error":f"Server error: {str(e)}"},status = 500
+        )    
+
 
 def product_detail(request, id: UUID = None):
     context = get_serialized_data(request.user, "dashboard")

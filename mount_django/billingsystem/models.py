@@ -275,6 +275,9 @@ class RemainingAmount(models.Model):
         OrderList, on_delete=models.CASCADE, related_name="remaining",null=True,blank=True
     )
     remaining_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
+    date = models.DateTimeField(auto_now_add=True)
+    # remark = models.CharField()
+    # adjustment_type = models.CharField()
 
     def __str__(self):
         return f"remaining amount:{self.remaining_amount}"

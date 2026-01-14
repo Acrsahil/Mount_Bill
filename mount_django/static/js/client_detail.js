@@ -383,14 +383,6 @@ export function renderClient(client) {
         );
 
         history.pushState({}, '', `/dashboard/client-detail/${client.uid}`);
-        // const clientName = document.getElementById('clientName')
-        // const clientDetail = document.getElementById('clientDetail')
-        // if(clientName){
-        //     clientName.textContent = client.name;
-        // }
-        // if(clientDetail){
-        //     clientDetail.textContent = client.address || client.phone || '---';
-        // }
         updateClientInfo(client.uid)
         fetchTransactions(client.uid)
         
@@ -636,6 +628,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //for adjust balance 
 const adjustBalance = document.getElementById('adjustBalance');
 adjustBalance.addEventListener('click',()=>{
+    
     document.getElementById('adjustBalanceModal').classList.remove('hidden');
     paymentTransactions.classList.add('hidden');
 
@@ -650,9 +643,69 @@ closeAdjustBalance.addEventListener('click',()=>{
 cancelAdjustBalance.addEventListener('click',()=>{
     document.getElementById('adjustBalanceModal').classList.add('hidden');
 })
+
+//add Balance
+const addAmount = document.getElementById('addAmount');
+const reduceAmount = document.getElementById('reduceAmount');
+const addBtn = document.getElementById('addBalance');
+const reduceBtn = document.getElementById('reduceBalance');
+
+//default addBalance btn selected
+addAmount.classList.remove('hidden');
+reduceAmount.classList.add('hidden');
+
+addBtn.addEventListener('click', () => {
+    addAmount.classList.remove('hidden');
+    reduceAmount.classList.add('hidden');
 });
 
+reduceBtn.addEventListener('click', () => {
+    addAmount.classList.add('hidden');
+    reduceAmount.classList.remove('hidden');
+});
 
+//after form fill up and confirm adjustment btn clicked 
+const balanceAdjustment = document.getElementById('balanceAdjust')
+balanceAdjustment.addEventListener('click',async()=>{
+    balanceAdjustment.dataset.clientId = addTransaction.dataset.clientId;
+    
+    await balanceAdjustmentFunc(balanceAdjustment.dataset.clientId);
+})
+});
+
+//balanceAdjustment function
+async function balanceAdjustmentFunc(clientId){
+const addAmount = document.getElementById('addAmount')?.value;
+const reduceAmount = document.getElementById('reduceAmount')?.value;
+const adjustmentRemark = document.getElementById('adjustmentRemarks').value;
+
+//preparing to send the data
+try{
+    const adjustmentAmount = {
+            toAddAmount:addAmount || 0,
+            toReduceAmount:reduceAmount || 0,
+            adjustment_remark:adjustmentRemark,
+        }
+    // Send AJAX request to Django
+        const response = await fetch(`/dashboard/balance-adjustment/${clientId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': window.djangoData.csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify(adjustmentAmount)
+        });
+        const data = await response.json()
+        if(data.success){
+            console.log("succesfully adjusted the balance")
+            document.getElementById('adjustBalanceModal').classList.add('hidden');
+        }
+
+}catch (error) {
+        console.error('Error adjusting amount:', error);
+}
+}
 //reset payment modal
 function resetPaymentModal(){
     const savePaymentOut = document.getElementById('savePaymentOut');

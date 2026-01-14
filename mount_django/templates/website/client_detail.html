@@ -370,8 +370,8 @@
 
     <!-- Add/Reduce Buttons -->
     <div class="flex space-x-4 mb-6">
-      <button class="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300">Add Balance</button>
-      <button class="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300">Reduce Balance</button>
+      <button class="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300" id="addBalance">Add Balance</button>
+      <button class="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300" id="reduceBalance">Reduce Balance</button>
     </div>
 
     <!-- Adjustment Amount & As of Date Labels -->
@@ -382,7 +382,8 @@
 
     <!-- Adjustment Amount & Date Inputs -->
     <div class="flex justify-between mb-6">
-      <input type="number" class="border rounded px-3 py-2 w-5/12" placeholder="Amount">
+      <input type="number" class="border rounded px-3 py-2 w-5/12 hidden" placeholder="Amount" id="addAmount">
+      <input type="number" class="border rounded px-3 py-2 w-5/12 hidden" placeholder="Amount" id="reduceAmount">
       <input type="date" class="border rounded px-3 py-2 w-5/12">
     </div>
 
@@ -393,7 +394,7 @@
 
     <!-- Remarks Input -->
     <div class="mb-6">
-      <input type="text" class="border rounded px-3 py-2 w-full" placeholder="Remarks">
+      <input type="text" class="border rounded px-3 py-2 w-full" placeholder="Remarks" id ="adjustmentRemarks">
     </div>
 
     <!-- Current Balance Label & Input (Right Aligned, No Border) -->
@@ -411,7 +412,9 @@
     <!-- Action Buttons (Right Aligned) -->
     <div class="flex justify-end space-x-2">
       <button id="cancelAdjustBalance" class="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300">Cancel</button>
-      <button class="px-4 py-2 rounded bg-gray-400 hover:bg-gray-500 text-white">Confirm Adjustment</button>
+      <button class="btn px-3 py-1 text-white rounded
+         !bg-gradient-to-r !from-[#4361ee] !to-[#3a0ca3]
+         hover:!from-[#3f5bdc] hover:!to-[#320b8f]" id="balanceAdjust">Confirm Adjustment</button>
     </div>
 
   </div>
