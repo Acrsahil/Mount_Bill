@@ -258,12 +258,21 @@ function getClientFromUid(uid, clients){
     if (!uid) return null;
     return clients.find(c => String(c.uid) === String(uid)) || null;
 }
+
+//function to get latest client remaining amount
+async function clientLatestRemaining(clientId){
+    const res = await fetch(`/dashboard/clients-info/${clientId}/`);
+    if (!res.ok) {
+        throw new Error("Failed to fetch client info");
+    }
+    const data = await res.json();
+    return data;
+}
 //now dynamically change the client info 
 export async function updateClientInfo(clientId){
     // const selectedClients = getClientFromUid(clients)
     //fetching the remaining amount to update the receivable and payable parts
-    const res = await fetch(`/dashboard/clients-info/${clientId}/`)
-    const data = await res.json();
+    const data = await clientLatestRemaining(clientId);
     const clientName = document.getElementById('clientName');
     const clientDetail = document.getElementById('clientDetail');
     const clientBalance = document.getElementById('clientRemaining');
@@ -490,6 +499,22 @@ function loadTransactions(transaction, tableBody) {
         <td>--</td>
         <td>${transaction.balance}</td>
         <td>--</td>`;
+    }else if (transaction.type === 'add' ) {
+        row.innerHTML = `
+        <td>Balance Adjustment(+)</td>
+        <td>${transaction.date.split('T')[0]}</td>
+        <td>${transaction.amount}</td>
+        <td>--</td>
+        <td>${transaction.balance}</td>
+        <td>${transaction.remarks}</td>`;
+    }else if (transaction.type === 'reduce' ) {
+        row.innerHTML = `
+        <td>Balance Adjustment(-)</td>
+        <td>${transaction.date.split('T')[0]}</td>
+        <td>${transaction.amount}</td>
+        <td>--</td>
+        <td>${transaction.balance}</td>
+        <td>${transaction.remarks}</td>`;
     }
 
     tableBody.appendChild(row);
@@ -534,8 +559,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     //populating the paymentModal 
-    const res = await fetch(`/dashboard/clients-info/${paymentIn.dataset.clientId}/`)
-    const data = await res.json()
+    const data = await clientLatestRemaining(paymentIn.dataset.clientId);
     
     document.getElementById('partyName').value = data.client_name;
     document.getElementById('receiptNumber').value = data.latest_payment_id + 1
@@ -587,9 +611,7 @@ document.addEventListener('DOMContentLoaded', () => {
         //to fill the form up
         paymentOut.dataset.clientId = getUidFromUrl()
         //populating the paymentModal 
-        const res = await fetch(`/dashboard/clients-info/${paymentOut.dataset.clientId}/`)
-        const data = await res.json()
-        
+        const data = await clientLatestRemaining(paymentOut.dataset.clientId);
         document.getElementById('partyName').value = data.client_name;
         document.getElementById('receiptNumber').value = data.latest_paymentout_id + 1
         document.getElementById('amountInput').focus();
@@ -601,8 +623,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         //opening the add payment Out modal
         paymentModal.classList.remove('hidden');
-
-       
 
     })
 
@@ -627,9 +647,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
 //for adjust balance 
 const adjustBalance = document.getElementById('adjustBalance');
+
 adjustBalance.addEventListener('click',()=>{
-    
     document.getElementById('adjustBalanceModal').classList.remove('hidden');
+     const adjustmentDate = document.getElementById('adjustmentDate');
+    if (adjustmentDate) {
+        const today = new Date().toISOString().split('T')[0];
+        adjustmentDate.value = today;
+    }
     paymentTransactions.classList.add('hidden');
 
 })
@@ -638,74 +663,146 @@ adjustBalance.addEventListener('click',()=>{
 const closeAdjustBalance = document.getElementById('closeAdjustBalance');
 const cancelAdjustBalance = document.getElementById('cancelAdjustBalance');
 closeAdjustBalance.addEventListener('click',()=>{
+    activateButton(addBtn, reduceBtn);
     document.getElementById('adjustBalanceModal').classList.add('hidden');
 })
 cancelAdjustBalance.addEventListener('click',()=>{
+    activateButton(addBtn, reduceBtn);
     document.getElementById('adjustBalanceModal').classList.add('hidden');
 })
 
 //add Balance
+// Elements
 const addAmount = document.getElementById('addAmount');
 const reduceAmount = document.getElementById('reduceAmount');
 const addBtn = document.getElementById('addBalance');
 const reduceBtn = document.getElementById('reduceBalance');
 
-//default addBalance btn selected
+// Function to activate button
+function activateButton(selectedBtn, otherBtn) {
+    // Selected button: dark blue text & border, light blue background
+    selectedBtn.classList.add('border-blue-700', 'text-blue-700', 'bg-blue-100');
+    selectedBtn.classList.remove('bg-gray-200', 'text-black', 'border-gray-300');
+
+    // Unselected button: grey background & border, black text
+    otherBtn.classList.add('bg-gray-200', 'text-black', 'border-gray-300');
+    otherBtn.classList.remove('border-blue-700', 'text-blue-700', 'bg-blue-100');
+}
+
+// Default: Add Balance selected
+activateButton(addBtn, reduceBtn);
 addAmount.classList.remove('hidden');
 reduceAmount.classList.add('hidden');
 
+
 addBtn.addEventListener('click', () => {
+    activateButton(addBtn, reduceBtn);
     addAmount.classList.remove('hidden');
     reduceAmount.classList.add('hidden');
+    addAmount.value = '';
+    reduceAmount.value = '';
 });
 
 reduceBtn.addEventListener('click', () => {
-    addAmount.classList.add('hidden');
+    activateButton(reduceBtn, addBtn);
     reduceAmount.classList.remove('hidden');
+    addAmount.classList.add('hidden');
+    addAmount.value = '';
+    reduceAmount.value = '';
 });
 
 //after form fill up and confirm adjustment btn clicked 
 const balanceAdjustment = document.getElementById('balanceAdjust')
+balanceAdjustment.dataset.clientId = addTransaction.dataset.clientId;
 balanceAdjustment.addEventListener('click',async()=>{
-    balanceAdjustment.dataset.clientId = addTransaction.dataset.clientId;
-    
     await balanceAdjustmentFunc(balanceAdjustment.dataset.clientId);
 })
 });
 
 //balanceAdjustment function
 async function balanceAdjustmentFunc(clientId){
-const addAmount = document.getElementById('addAmount')?.value;
-const reduceAmount = document.getElementById('reduceAmount')?.value;
-const adjustmentRemark = document.getElementById('adjustmentRemarks').value;
+    const addBtn = document.getElementById('addBalance');
+    const reduceBtn = document.getElementById('reduceBalance');
+    const addAmount = document.getElementById('addAmount')?.value || 0;
+    const reduceAmount = document.getElementById('reduceAmount')?.value || 0;
+    const adjustmentRemark = document.getElementById('adjustmentRemarks').value;
 
-//preparing to send the data
-try{
-    const adjustmentAmount = {
-            toAddAmount:addAmount || 0,
-            toReduceAmount:reduceAmount || 0,
-            adjustment_remark:adjustmentRemark,
-        }
-    // Send AJAX request to Django
-        const response = await fetch(`/dashboard/balance-adjustment/${clientId}/`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': window.djangoData.csrfToken,
-                'X-Requested-With': 'XMLHttpRequest'
-            },
-            body: JSON.stringify(adjustmentAmount)
-        });
-        const data = await response.json()
-        if(data.success){
-            console.log("succesfully adjusted the balance")
-            document.getElementById('adjustBalanceModal').classList.add('hidden');
+     const balanceAdjust = document.getElementById('balanceAdjust');
+    const originalText = balanceAdjust.innerHTML;
+        
+    balanceAdjust.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adjusting...';
+    balanceAdjust.disabled = true;
+    //preparing to send the data
+    try{
+        const adjustmentAmount = {
+                toAddAmount:addAmount,
+                toReduceAmount:reduceAmount,
+                adjustment_remark:adjustmentRemark,
+            }
+        // Send AJAX request to Django
+            const response = await fetch(`/dashboard/balance-adjustment/${clientId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': window.djangoData.csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify(adjustmentAmount)
+            });
+            const data = await response.json()
+            if(data.success){
+                
+                fetchTransactions(data.uid);
+                updateClientInfo(data.uid);
+                await new Promise(resolve => setTimeout(resolve,1500));
+
+                //resetting the form
+                document.getElementById('addAmount').value = '';
+                document.getElementById('reduceAmount').value = '';
+                document.getElementById('adjustmentRemarks').value = '';
+                document.getElementById('adjustBalanceModal').classList.add('hidden');
+                activateButton(addBtn, reduceBtn);
+            }else {
+            showAlert(result.message || "Adjustment failed");
         }
 
-}catch (error) {
-        console.error('Error adjusting amount:', error);
+    }catch (error) {
+            console.error('Error adjusting amount:', error);
+    }finally {
+            // Restore button state
+            balanceAdjust.innerHTML = originalText;
+            balanceAdjust.disabled = false;
+        }
 }
+
+//footer of the adjust balance
+const addAmount = document.getElementById('addAmount');
+const reduceAmount = document.getElementById('reduceAmount');
+const adjustedBalance = document.getElementById('adjustedBalance');
+const currentBalance = document.getElementById('currentBalance');
+
+//dynamic change at the footer
+if(addAmount){
+    const clientId = getUidFromUrl();
+    const data = await clientLatestRemaining(clientId)
+
+    addAmount.addEventListener('input',async()=>{
+        adjustedBalance.value = addAmount.value
+        currentBalance.value = Number(data.remaining) + Number(adjustedBalance.value)
+
+    })
 }
+if(reduceAmount){
+    const clientId = getUidFromUrl();
+    const data = await clientLatestRemaining(clientId)
+
+    reduceAmount.addEventListener('input',async()=>{
+        adjustedBalance.value = reduceAmount.value
+        currentBalance.value = Number(data.remaining) - Number(adjustedBalance.value)
+
+    })
+}
+
 //reset payment modal
 function resetPaymentModal(){
     const savePaymentOut = document.getElementById('savePaymentOut');
@@ -758,7 +855,7 @@ async function savePaymentInFunc(clientId){
         //immediately load the transactions
         if(result.success === true){
             fetchTransactions(result.uid)
-
+            updateClientInfo(result.uid)
             await new Promise(resolve => {setTimeout(resolve,1500)})
             //emptying the modal form
             document.getElementById('receiptNumber').value ='';
@@ -819,11 +916,11 @@ async function savePaymentOutFunc(clientId){
         });
 
         const result = await response.json();
-        console.log('Server response:', result.uid);
 
         //immediately load the transactions
         if(result.success === true){
             fetchTransactions(result.uid)
+            updateClientInfo(result.uid)
             await new Promise(resolve => setTimeout(resolve,1500))
             //emptying the modal form
             document.getElementById('amountInput').value = '';

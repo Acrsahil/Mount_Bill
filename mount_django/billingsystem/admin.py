@@ -17,6 +17,7 @@ from .models import (
     User,
     PaymentIn,
     PaymentOut,
+    BalanceAdjustment,
 )
 
 
@@ -282,5 +283,14 @@ class PaymentOutAdmin(admin.ModelAdmin):
         "date",
         "payment_out",
         "remarks",
+    )
+    search_fields = ("customer_id",)
+
+@admin.register(BalanceAdjustment)
+class BalanceAdjustmentAdmin(admin.ModelAdmin):
+    list_display = (
+        "customer",
+        "amount",
+        "date",
     )
     search_fields = ("customer_id",)
