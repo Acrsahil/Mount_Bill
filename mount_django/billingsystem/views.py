@@ -851,29 +851,38 @@ def save_client(request):
         company = user.owned_company or user.active_company
 
         if company:
-            client = Customer.objects.create(
-                company=company,
-                name=name,
-                phone=phone,
-                email=email,
-                pan_id=pan_id,
-                address=address,
-                customer_type = customer_type,
-            )
-            if toReceive > 0 and toGive == 0:
-                remaining = RemainingAmount.objects.create(
-                    customer = client,
-                    orders = None,
-                    remaining_amount = toReceive,
+            with transaction.atomic():
+                client = Customer.objects.create(
+                    company=company,
+                    name=name,
+                    phone=phone,
+                    email=email,
+                    pan_id=pan_id,
+                    address=address,
+                    customer_type = customer_type,
                 )
-            elif toGive > 0 and toReceive == 0:
+                if toReceive > 0 and toGive == 0:
+                    remaining = RemainingAmount.objects.create(
+                        customer = client,
+                        orders = None,
+                        remaining_amount = toReceive,
+                    )
+                elif toGive > 0 and toReceive == 0:
+                    remaining = RemainingAmount.objects.create(
+                        customer = client,
+                        orders = None,
+                        remaining_amount = float(0.0),
+                    )
+                    remaining.remaining_amount -= toGive
+                    remaining.save()
+                else:
+                    remaining_amount = 0  # both are 0
+
                 remaining = RemainingAmount.objects.create(
-                    customer = client,
-                    orders = None,
-                    remaining_amount = float(0.0),
+                    customer=client,
+                    orders=None,
+                    remaining_amount=remaining_amount,
                 )
-                remaining.remaining_amount -= toGive
-                remaining.save()
             return JsonResponse(
                 {
                     "success": True,
