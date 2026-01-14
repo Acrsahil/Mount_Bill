@@ -28,6 +28,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveClientBtn = document.getElementById('saveClientBtn');
     saveClientBtn.addEventListener('click',async()=>{
         await saveClient()
+        addClientModal.style.display = 'none';
+
     })
 });
 

@@ -878,11 +878,11 @@ def save_client(request):
                 else:
                     remaining_amount = 0  # both are 0
 
-                remaining = RemainingAmount.objects.create(
-                    customer=client,
-                    orders=None,
-                    remaining_amount=remaining_amount,
-                )
+                    remaining = RemainingAmount.objects.create(
+                        customer=client,
+                        orders=None,
+                        remaining_amount=remaining_amount,
+                    )
             return JsonResponse(
                 {
                     "success": True,
