@@ -82,7 +82,9 @@ export function setupEventListeners(
                 slider.dispatchEvent(new Event('change'));
             }
         closeProductModalFunc(addProductModal)});
-    if (closeClientModal) closeClientModal.addEventListener('click', () => closeClientModalFunc(addClientModal));
+    if (closeClientModal) closeClientModal.addEventListener('click', () => {
+        console.log("clicking or not");
+        closeClientModalFunc(addClientModal)});
     if (cancelInvoiceBtn) cancelInvoiceBtn.addEventListener('click', () => closeInvoiceModalFunc(createInvoiceModal));
     if (cancelProductBtn) cancelProductBtn.addEventListener('click', () =>
         {
@@ -207,6 +209,29 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
+//selecting customer type
+let selectedType = "CUSTOMER"; // default selection
+
+const customerBtn = document.getElementById("customerBtn");
+const supplierBtn = document.getElementById("supplierBtn");
+
+function selectType(selectedBtn, otherBtn) {
+    // style selected button
+   selectedBtn.classList.add('border-blue-700', 'text-blue-700', 'bg-blue-100');
+    selectedBtn.classList.remove('bg-gray-200', 'text-black', 'border-gray-300');
+
+    // Unselected button: grey background & border, black text
+    otherBtn.classList.add('bg-gray-200', 'text-black', 'border-gray-300');
+    otherBtn.classList.remove('border-blue-700', 'text-blue-700', 'bg-blue-100');
+
+    // store selection
+    selectedType = selectedBtn.dataset.type;
+}
+
+// click events
+customerBtn.addEventListener("click", () => selectType(customerBtn, supplierBtn));
+supplierBtn.addEventListener("click", () => selectType(supplierBtn, customerBtn));
+
 
 // Save client to database via AJAX
 export async function saveClient(addClientModal, clientsTableBody) {
@@ -262,6 +287,7 @@ if (clientEmail !== '') {
             balance: clientBalance,
             toReceiveAmount:toReceiveAmount,
             toGiveAmount: toGiveAmount,
+            customer_type:selectedType,
         };
 
         console.log('Saving client to database:', clientData);

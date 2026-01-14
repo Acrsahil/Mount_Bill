@@ -844,6 +844,7 @@ def save_client(request):
         toReceive = float(data.get("toReceiveAmount"))
         print(toReceive)
         toGive = float(data.get("toGiveAmount"))
+        customer_type = data.get("customer_type")
         user = request.user
 
         company = None
@@ -857,6 +858,7 @@ def save_client(request):
                 email=email,
                 pan_id=pan_id,
                 address=address,
+                customer_type = customer_type,
             )
             if toReceive > 0 and toGive == 0:
                 remaining = RemainingAmount.objects.create(

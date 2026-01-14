@@ -1,5 +1,5 @@
 import { loadClients } from "./dom.js";
-import { selectClientFromHint } from "./events.js";
+import { selectClientFromHint,saveClient } from "./events.js";
 import{ activateTabAll } from "./client.js";
 import { showAlert } from "./utils.js";
 document.addEventListener('DOMContentLoaded', () => {
@@ -13,6 +13,21 @@ document.addEventListener('DOMContentLoaded', () => {
         const addClientModal = document.getElementById('addClientModal')
         resetClientModal()
         addClientModal.style.display = 'flex';
+    })
+    const closeClientModal = document.getElementById('closeClientModal');
+    closeClientModal.addEventListener('click',()=>{
+        resetClientModal()
+        addClientModal.style.display = 'none';
+    })
+    const cancelClientBtn = document.getElementById('cancelClientBtn');
+    cancelClientBtn.addEventListener('click',()=>{
+        resetClientModal()
+        addClientModal.style.display = 'none';
+    })
+
+    const saveClientBtn = document.getElementById('saveClientBtn');
+    saveClientBtn.addEventListener('click',async()=>{
+        await saveClient()
     })
 });
 
