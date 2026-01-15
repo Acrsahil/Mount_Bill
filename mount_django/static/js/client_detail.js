@@ -1,8 +1,14 @@
 import { loadClients } from "./dom.js";
-import { selectClientFromHint,saveClient } from "./events.js";
+import { selectClientFromHint,saveClient,selectType,selectedType } from "./events.js";
 import{ activateTabAll } from "./client.js";
 import { showAlert } from "./utils.js";
 document.addEventListener('DOMContentLoaded', () => {
+
+    const toReceiveBtn = document.getElementById("toReceive");
+    const toGiveBtn = document.getElementById("toGive");
+    
+    activateButton(toReceiveBtn, toGiveBtn); 
+
     addClientsToList(window.djangoData.clients)
     // updateClientInfo(window.djangoData.clients)
     renderFromUrl()
@@ -11,36 +17,39 @@ document.addEventListener('DOMContentLoaded', () => {
     const addNewClientDetailBtn = document.getElementById('addNewClientDetailBtn');
     if(!addNewClientDetailBtn) return;
     addNewClientDetailBtn.addEventListener('click',() => {
-        const addClientModal = document.getElementById('addClientModal')
+        const addClientModal = document.getElementById('addClientModal');
         resetClientModal()
         addClientModal.style.display = 'flex';
     })
-    const closeClientModal = document.getElementById('closeClientModal');
-    closeClientModal.addEventListener('click',()=>{
-        resetClientModal()
-        addClientModal.style.display = 'none';
-    })
-    const cancelClientBtn = document.getElementById('cancelClientBtn');
-    cancelClientBtn.addEventListener('click',()=>{
-        resetClientModal()
-        addClientModal.style.display = 'none';
-    })
+    // const closeClientModal = document.getElementById('closeClientModal');
+    // closeClientModal.addEventListener('click',()=>{
+    //     selectType(customerBtn, supplierBtn)
+    //     activateButton(toReceiveBtn, toGiveBtn); 
+    //     resetClientModal()
+    //     addClientModal.style.display = 'none';
+    // })
+    // const cancelClientBtn = document.getElementById('cancelClientBtn');
+    // cancelClientBtn.addEventListener('click',()=>{
+    //     selectType(customerBtn, supplierBtn)
+    //     activateButton(toReceiveBtn, toGiveBtn); 
+    //     resetClientModal()
+    //     addClientModal.style.display = 'none';
+    // })
 
-    const saveClientBtn = document.getElementById('saveClientBtn');
-    saveClientBtn.addEventListener('click',async()=>{
-        await saveClient()
-        addClientModal.style.display = 'none';
-
-    })
 });
 
+
 export function resetClientModal(){
+    const customerBtn = document.getElementById("customerBtn");
+    const supplierBtn = document.getElementById("supplierBtn");
     document.querySelector('.app-modal-header h3').textContent = "Add New Client";
     document.getElementById('saveClientBtn').style.display = 'block';
     document.getElementById('updateClientBtn').style.display = 'none';
     document.getElementById('additionalInfo').style.display = 'none';
     document.getElementById('additionInfoBtn').style.display = 'block';
     document.getElementById('openingBalance').style.display = 'block';
+    document.getElementById('toReceive').style.display = 'block';
+    document.getElementById('toGive').style.display = 'block';
 
     //resetting the form field
     document.getElementById('clientNameInput').value = '';
@@ -48,6 +57,7 @@ export function resetClientModal(){
     document.getElementById('clientAddressInput').value = '';
     document.getElementById('clientPanNoInput').value = '';
     document.getElementById('clientEmailInput').value = '';
+    selectType(customerBtn, supplierBtn);
 }
 
 //deleting the client 
@@ -55,7 +65,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     const deleteClientBtn = document.getElementById('deleteClientBtn')
     if(!deleteClientBtn) return;
     deleteClientBtn.addEventListener('click',()=>{
-        console.log("kun delete hudae xa?",deleteClientBtn.dataset.clientId)
+        
         deleteClient(deleteClientBtn.dataset.clientId)
     })
 })
@@ -161,6 +171,8 @@ document.addEventListener('DOMContentLoaded',() =>{
 })
 
 function editClientFunc(clientId){
+    const customerBtn = document.getElementById("customerBtn");
+    const supplierBtn = document.getElementById("supplierBtn");
     const client = window.djangoData.clients.find(c => String(c.id) === String(clientId))
     //populating the form 
 
@@ -179,10 +191,26 @@ function editClientFunc(clientId){
     document.getElementById('additionalInfo').style.display = 'block';
     document.getElementById('additionInfoBtn').style.display = 'none';
     document.getElementById('openingBalance').style.display = 'none';
+    document.getElementById('toReceive').style.display = 'none';
+    document.getElementById('toGive').style.display = 'none';
+
+    console.log("yo esko type",client.customer_type)
+    if(client.customer_type == "CUSTOMER"){
+        selectType(customerBtn,supplierBtn)
+    }
+    else if(client.customer_type == "SUPPLIER"){
+        selectType(supplierBtn,customerBtn)
+    }
     activateTabAll();
 }
 
 //udpate function for client
+
+const customerBtn = document.getElementById("customerBtn");
+const supplierBtn = document.getElementById("supplierBtn");
+customerBtn.addEventListener('click', () => selectType(customerBtn, supplierBtn));
+supplierBtn.addEventListener('click', () => selectType(supplierBtn, customerBtn));
+
 async function updateClientFunc(clientId){
     
         const clientName= document.getElementById('clientNameInput').value.trim();
@@ -190,7 +218,7 @@ async function updateClientFunc(clientId){
         const clientAddress = document.getElementById('clientAddressInput')?.value;
         const clientPanNo = document.getElementById('clientPanNoInput')?.value;
         const clientEmail = document.getElementById('clientEmailInput').value.trim();
-    
+        
         // Client-side validation
         if (!clientName) {
             showAlert('Please enter client name', 'error');
@@ -214,6 +242,7 @@ async function updateClientFunc(clientId){
                 clientAddress: clientAddress,
                 clientPan: clientPanNo,
                 clientEmail: clientEmail,
+                customer_type:selectedType,
     
             };
             // Send AJAX request to Django
@@ -293,6 +322,7 @@ function getClientFromUid(uid, clients){
 
 //function to get latest client remaining amount
 async function clientLatestRemaining(clientId){
+    console.log("Fetching client info for:", clientId);
     const res = await fetch(`/dashboard/clients-info/${clientId}/`);
     if (!res.ok) {
         throw new Error("Failed to fetch client info");
@@ -456,12 +486,13 @@ window.addEventListener('popstate',()=>{
     //highlight the list again
     const urlUid = getUidFromUrl();
     const selectedClient = getClientFromUid(urlUid,window.djangoData.clients);
-    console.log("selected client xa ki xaina??",selectedClient)
+    
     renderFromUrl()
     if (!urlUid || !selectedClient) {
         return;
     }
     updateClientInfo(urlUid);
+    fetchTransactions(urlUid)
     document.querySelectorAll('.clientlists').forEach(li => {
     if(String(li.dataset.clientUid) === String(urlUid)){
         li.classList.add('selected',
@@ -554,6 +585,16 @@ function loadTransactions(transaction, tableBody) {
     tableBody.appendChild(row);
 }
 
+// Function to activate button
+export function activateButton(selectedBtn, otherBtn) {
+    // Selected button: dark blue text & border, light blue background
+    selectedBtn.classList.add('border-blue-700', 'text-blue-700', 'bg-blue-100');
+    selectedBtn.classList.remove('bg-gray-200', 'text-black', 'border-gray-300');
+
+    // Unselected button: grey background & border, black text
+    otherBtn.classList.add('bg-gray-200', 'text-black', 'border-gray-300');
+    otherBtn.classList.remove('border-blue-700', 'text-blue-700', 'bg-blue-100');
+}
 
 // all the add transaction button functions
 document.addEventListener('DOMContentLoaded', () => {
@@ -712,17 +753,6 @@ const reduceAmount = document.getElementById('reduceAmount');
 const addBtn = document.getElementById('addBalance');
 const reduceBtn = document.getElementById('reduceBalance');
 
-// Function to activate button
-function activateButton(selectedBtn, otherBtn) {
-    // Selected button: dark blue text & border, light blue background
-    selectedBtn.classList.add('border-blue-700', 'text-blue-700', 'bg-blue-100');
-    selectedBtn.classList.remove('bg-gray-200', 'text-black', 'border-gray-300');
-
-    // Unselected button: grey background & border, black text
-    otherBtn.classList.add('bg-gray-200', 'text-black', 'border-gray-300');
-    otherBtn.classList.remove('border-blue-700', 'text-blue-700', 'bg-blue-100');
-}
-
 // Default: Add Balance selected
 activateButton(addBtn, reduceBtn);
 addAmount.classList.remove('hidden');
@@ -810,32 +840,33 @@ async function balanceAdjustmentFunc(clientId){
 }
 
 //footer of the adjust balance
+document.addEventListener('DOMContentLoaded',async()=>{
 const addAmount = document.getElementById('addAmount');
 const reduceAmount = document.getElementById('reduceAmount');
 const adjustedBalance = document.getElementById('adjustedBalance');
 const currentBalance = document.getElementById('currentBalance');
 
+const clientId = getUidFromUrl();
+if(!clientId) return;
+const data = await clientLatestRemaining(clientId)
+currentBalance.value = Number(data.remaining)
+adjustedBalance.value = Number(data.remaining) 
 //dynamic change at the footer
 if(addAmount){
-    const clientId = getUidFromUrl();
-    const data = await clientLatestRemaining(clientId)
-
     addAmount.addEventListener('input',async()=>{
-        adjustedBalance.value = addAmount.value
-        currentBalance.value = Number(data.remaining) + Number(adjustedBalance.value)
+        adjustedBalance.value = Number(data.remaining) + Number(addAmount.value)
 
     })
 }
 if(reduceAmount){
-    const clientId = getUidFromUrl();
-    const data = await clientLatestRemaining(clientId)
-
     reduceAmount.addEventListener('input',async()=>{
-        adjustedBalance.value = reduceAmount.value
-        currentBalance.value = Number(data.remaining) - Number(adjustedBalance.value)
+        adjustedBalance.value  = Number(data.remaining) - Number(reduceAmount.value)
 
     })
 }
+
+})
+
 
 //reset payment modal
 function resetPaymentModal(){

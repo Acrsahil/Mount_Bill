@@ -22,7 +22,7 @@ import {
 } from './dom.js';
 import { saveInvoice,renderInvoiceItems } from './create_invoice.js';
 import { editProduct,deleteProduct,saveProduct,loadProducts } from './product.js';
-import { renderClient, addClientsToList,resetClientModal,fetchTransactions, } from './client_detail.js';
+import { renderClient, addClientsToList,resetClientModal,fetchTransactions,activateButton } from './client_detail.js';
 // Track currently selected hint for keyboard navigation
 let currentSelectedHintIndex = -1;
 let currentSelectedProductHintIndex = -1;
@@ -181,15 +181,6 @@ document.addEventListener("DOMContentLoaded", () => {
         toReceiveInput.classList.remove('hidden');
         toGiveInput.classList.add("hidden")
         activateButton(toReceiveBtn, toGiveBtn); 
-        function activateButton(selectedBtn, otherBtn) {
-            // Reset the other button
-            otherBtn.classList.remove("bg-blue-100", "text-blue-700", "border-blue-700");
-            otherBtn.classList.add("bg-gray-200", "text-black", "border-gray-300");
-
-            // Activate clicked button
-            selectedBtn.classList.remove("bg-gray-200", "text-black", "border-gray-300");
-            selectedBtn.classList.add("bg-blue-100", "text-blue-700", "border-blue-700");
-        }
 
         toReceiveBtn.addEventListener("click", () => {
             activateButton(toReceiveBtn, toGiveBtn);
@@ -207,30 +198,41 @@ document.addEventListener("DOMContentLoaded", () => {
             document.getElementById('clientPayableOpeningBalance').value = '';
             activateButton(toGiveBtn, toReceiveBtn);
         });
-    });
 
-//selecting customer type
-let selectedType = "CUSTOMER"; // default selection
+ //selecting customer type
 
 const customerBtn = document.getElementById("customerBtn");
 const supplierBtn = document.getElementById("supplierBtn");
+//default customer btn clicked
+selectType(customerBtn, supplierBtn)
 
-function selectType(selectedBtn, otherBtn) {
+
+// click events
+customerBtn.addEventListener("click", () => {
+    selectType(customerBtn, supplierBtn);
+    toReceiveBtn.click(); 
+    
+});
+supplierBtn.addEventListener("click", () => { 
+    selectType(supplierBtn, customerBtn);
+    toGiveBtn.click();
+});
+
+    });
+
+export let selectedType = "CUSTOMER"; // default selection
+export function selectType(selectedBtn, otherBtn) {
     // style selected button
-   selectedBtn.classList.add('border-blue-700', 'text-blue-700', 'bg-blue-100');
+    selectedBtn.classList.add('border-blue-700', 'text-blue-700', 'bg-blue-100');
     selectedBtn.classList.remove('bg-gray-200', 'text-black', 'border-gray-300');
 
-    // Unselected button
+    // Unselected button: grey background & border, black text
     otherBtn.classList.add('bg-gray-200', 'text-black', 'border-gray-300');
     otherBtn.classList.remove('border-blue-700', 'text-blue-700', 'bg-blue-100');
 
     // store selection
     selectedType = selectedBtn.dataset.type;
 }
-
-// click events
-customerBtn.addEventListener("click", () => selectType(customerBtn, supplierBtn));
-supplierBtn.addEventListener("click", () => selectType(supplierBtn, customerBtn));
 
 
 // Save client to database via AJAX
@@ -340,9 +342,10 @@ if (clientEmail !== '') {
             document.getElementById('clientOpeningBalance').value = '';
             document.getElementById('clientPayableOpeningBalance').value = '';
             // Close modal after short delay
-            setTimeout(() => {
-                closeClientModalFunc(addClientModal);
-            }, 1500);
+            await new Promise(resolve => setTimeout(resolve,1500));
+            
+            closeClientModalFunc(addClientModal);
+          
 
         } else {
             showAlert('Error: ' + (result.error || 'Failed to save client'), 'error');

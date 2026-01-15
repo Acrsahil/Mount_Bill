@@ -219,6 +219,7 @@ def get_serialized_data(user, active_tab="dashboard"):
             "phone": c.phone,
             "email": c.email,
             "address": c.address,
+            "customer_type":c.customer_type,
         }
         for c in customers
     ]
@@ -842,7 +843,6 @@ def save_client(request):
         pan_id = data.get("pan_id", "").strip()
         address = data.get("address", "").strip()
         toReceive = float(data.get("toReceiveAmount"))
-        print(toReceive)
         toGive = float(data.get("toGiveAmount"))
         customer_type = data.get("customer_type")
         user = request.user
@@ -927,6 +927,8 @@ def update_client(request,id):
         address = data.get("clientAddress")
         pan_number = data.get("clientPan")
         email = data.get("clientEmail")
+        customer_type = data.get("customer_type")
+        print(customer_type)
 
         customers = Customer.objects.get(id = id)
         customers.name = name
@@ -934,6 +936,7 @@ def update_client(request,id):
         customers.phone = phone
         customers.address = address
         customers.pan_id = pan_number
+        customers.customer_type = customer_type
         customers.save()
         return JsonResponse({"success":True,"message": "Client updated successfully"})
     except Exception as e:
