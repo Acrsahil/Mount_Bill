@@ -426,6 +426,89 @@
 
 
 </div>
+<!--opening balance edit modal-->
+<div id="openingBalanceModal"
+     class="fixed inset-0 bg-black/40 flex items-center justify-center hidden">
+
+  <!-- Modal Box -->
+  <div class="bg-white w-[380px] rounded-lg p-6 space-y-4">
+
+    <!-- Row 1 -->
+<div class="flex items-center justify-between">
+  <h2 class="text-lg font-semibold text-gray-800">
+    Edit Opening Balance
+  </h2>
+
+  <button
+    id ="closeOpeningBalanceModal"
+    class="text-gray-400 hover:text-gray-700 text-xl leading-none">
+    &times;
+  </button>
+</div>
+
+    <!-- Row 2 -->
+    <div class="grid grid-cols-2 text-sm font-medium text-gray-600">
+      <label>Opening Balance</label>
+      <label>Date</label>
+    </div>
+
+    <!-- Row 3 -->
+    <div class="grid grid-cols-2 gap-3">
+      <input
+        type="number"
+        id="openingAmount"
+        readonly
+        class="border rounded px-3 py-2 text-sm bg-gray-100 focus:outline-none"
+      />
+
+      <input
+        type="date"
+        id="openingDate"
+        readonly
+        class="border rounded px-3 py-2 text-sm bg-gray-100 focus:outline-none"
+      />
+    </div>
+
+    <!-- Row 4 -->
+<label class="text-sm font-medium text-gray-700 block">
+  Opening Balance Type
+</label>
+
+<!-- Row 5 -->
+<div class="flex gap-3 justify-start">
+  <button
+    id="receive"
+    disabled
+    class="type-btn border border-black px-4 py-2 rounded text-sm text-black disabled:opacity-50">
+    To Receive
+  </button>
+
+  <button
+    id="give"
+    disabled
+    class="type-btn border border-black px-4 py-2 rounded text-sm text-black disabled:opacity-50">
+    To Give
+  </button>
+</div>
+
+<!-- Row 6 -->
+<div class="flex justify-end gap-2 pt-4">
+  <button
+    class="border border-black px-4 py-2 rounded text-sm text-black">
+    Delete
+  </button>
+
+  <button
+    id="editBtn"
+    class="border border-black px-4 py-2 rounded text-sm text-black">
+    Edit Details
+  </button>
+</div>
+
+
+  </div>
+</div>
+
 
 {% include "website/modal/client_add_modal.html" %}
 {% comment %} {% include "website/create_invoice.html" %} {% endcomment %}

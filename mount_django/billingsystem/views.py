@@ -155,6 +155,7 @@ def client_info_payment_id(request,id: UUID):
         return JsonResponse({"client": [],"payment_id": 0})
     # for client name 
     client = Customer.objects.get(uid = id)
+    
     remaining = RemainingAmount.objects.filter(customer__uid = id).order_by('-id').first()
     client_name = client.name
     client_address = client.address

@@ -533,7 +533,9 @@ function loadTransactions(transaction, tableBody) {
     if (!tableBody) return;
 
     const row = document.createElement('tr');
-
+    
+    row.dataset.type = transaction.type;
+    row.dataset.id = transaction.id || "";
     if (transaction.type === 'sale') {
         row.innerHTML = `
         <td>Sales Invoice #${transaction.id}>
@@ -586,7 +588,25 @@ function loadTransactions(transaction, tableBody) {
     }
 
     tableBody.appendChild(row);
+    row.addEventListener('click',()=>{
+        if(row.dataset.type === "Opening"){
+            const openingBalanceModal = document.getElementById('openingBalanceModal');
+            openingBalanceModal.classList.remove('hidden');
+        }
+    })
 }
+
+//editing the opening balance row
+
+//closing the opening balance modal 
+document.addEventListener('DOMContentLoaded',()=>{
+const openingBalanceModal = document.getElementById('openingBalanceModal');
+const closeOpeningBalanceModal = document.getElementById('closeOpeningBalanceModal');
+closeOpeningBalanceModal.addEventListener('click',()=>{
+    openingBalanceModal.classList.add('hidden')
+})
+})
+
 
 // Function to activate button
 export function activateButton(selectedBtn, otherBtn) {
