@@ -22,7 +22,7 @@ import {
 } from './dom.js';
 import { saveInvoice,renderInvoiceItems } from './create_invoice.js';
 import { editProduct,deleteProduct,saveProduct,loadProducts } from './product.js';
-import { renderClient, addClientsToList,resetClientModal,fetchTransactions,updateClientInfo } from './client_detail.js';
+import { renderClient, addClientsToList,resetClientModal,fetchTransactions, } from './client_detail.js';
 // Track currently selected hint for keyboard navigation
 let currentSelectedHintIndex = -1;
 let currentSelectedProductHintIndex = -1;
@@ -327,22 +327,10 @@ if (clientEmail !== '') {
             
             // Update UI
             loadClients(window.clients, clientsTableBody);
-
-            //to dynamically change the url uid at the top
-            history.pushState({}, '', `/dashboard/client-detail/${result.client.uid}`);
-
-            //loading the transaction table 
-            updateClientInfo(result.client.uid)
             
-            const clientList = document.querySelector('.clientList');
-            if(clientList){
-                clientList.prepend(renderClient(newClient));
-                
-            }
-            else{
-                addClientsToList(window.clients)
-            }
-            
+            //add client to the lists
+            addClientsToList(window.clients)
+    
             updateClientStats(window.clients);
             // Show success message
             showAlert(result.message, 'success');

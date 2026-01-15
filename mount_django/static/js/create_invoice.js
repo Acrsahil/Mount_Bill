@@ -98,7 +98,11 @@ document.addEventListener('DOMContentLoaded', () => {
     addInvoiceItem();
     //for notes or remarks
 
-    document.getElementById('addnoteBtn').onclick = () => {
+    const addNoteBtn = document.getElementById('addnoteBtn');
+
+    if (!addNoteBtn) return;
+
+    addNoteBtn.onclick = () => {
         is_addnotebtn = true;
         document.getElementById('additionalNotes').innerHTML = `
         <div class='form-group'>
@@ -252,6 +256,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const addChargeBtn = document.getElementById('addChargeBtn');
 
     // Limit additional charge amount input (dynamic safe)
+    if(!window.additionalContainer) return;
     window.additionalContainer.addEventListener('keydown', function (e) {
         const input = e.target;
 
@@ -682,6 +687,7 @@ function selectProductFromHint(itemId, hintElement) {
 }
 
 export function renderInvoiceItems(invoiceItems, invoiceItemsBody, setupProductSearchHandlers, handleItemUpdate, handleRemoveItem) {
+    if(!invoiceItemsBody) return;
     invoiceItemsBody.innerHTML = '';
 
     invoiceItems.forEach((item, index) => {
@@ -949,7 +955,7 @@ export function updateTotals(invoiceItems, globalDiscount, globalTax) {
     //for due amount
     const balanceDueAmount = document.getElementById('balanceDueAmount');
     const balanceDue = document.getElementById('balanceDue');
-
+    if(!window.receivableAmount) return;
     window.receivableAmount.addEventListener('input', () => {
         if (window.receivableAmount.value == "" || window.receivableAmount.value >= total) {
             balanceDueAmount.style.display = "none";

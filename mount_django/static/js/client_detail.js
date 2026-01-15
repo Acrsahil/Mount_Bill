@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     //functional add new client inside the client detail page
     const addNewClientDetailBtn = document.getElementById('addNewClientDetailBtn');
+    if(!addNewClientDetailBtn) return;
     addNewClientDetailBtn.addEventListener('click',() => {
         const addClientModal = document.getElementById('addClientModal')
         resetClientModal()
@@ -52,6 +53,7 @@ export function resetClientModal(){
 //deleting the client 
 document.addEventListener('DOMContentLoaded',()=>{
     const deleteClientBtn = document.getElementById('deleteClientBtn')
+    if(!deleteClientBtn) return;
     deleteClientBtn.addEventListener('click',()=>{
         console.log("kun delete hudae xa?",deleteClientBtn.dataset.clientId)
         deleteClient(deleteClientBtn.dataset.clientId)
@@ -59,19 +61,31 @@ document.addEventListener('DOMContentLoaded',()=>{
 })
 
 function showEmptyState() {
-    document.getElementById('emptyState').classList.remove('hidden');
-    document.getElementById('clientDetailContainer').classList.add('hidden');
-    document.getElementById('notFound').classList.add('hidden');
+    const emptyState = document.getElementById('emptyState');
+    const clientDetailContainer = document.getElementById('clientDetailContainer');
+    const notFound = document.getElementById('notFound');
+
+    if (emptyState) emptyState.classList.remove('hidden');
+    if (clientDetailContainer) clientDetailContainer.classList.add('hidden');
+    if (notFound) notFound.classList.add('hidden');
 }
 function showClientState() {
-    document.getElementById('emptyState').classList.add('hidden');
-    document.getElementById('clientDetailContainer').classList.remove('hidden');
-    document.getElementById('notFound').classList.add('hidden');
+     const emptyState = document.getElementById('emptyState');
+    const clientDetailContainer = document.getElementById('clientDetailContainer');
+    const notFound = document.getElementById('notFound');
+
+    if (emptyState) emptyState.classList.add('hidden');
+    if (clientDetailContainer) clientDetailContainer.classList.remove('hidden');
+    if (notFound) notFound.classList.add('hidden');
 }
 function showNotFound() {
-    document.getElementById('emptyState').classList.add('hidden');
-    document.getElementById('clientDetailContainer').classList.add('hidden');
-    document.getElementById('notFound').classList.remove('hidden');
+    const emptyState = document.getElementById('emptyState');
+    const clientDetailContainer = document.getElementById('clientDetailContainer');
+    const notFound = document.getElementById('notFound');
+
+    if (emptyState) emptyState.classList.add('hidden');
+    if (clientDetailContainer) clientDetailContainer.classList.add('hidden');
+    if (notFound) notFound.classList.remove('hidden');
 }
 
 function renderFromUrl(){
@@ -133,6 +147,7 @@ const clientEditBtn = document.getElementById('clientEditBtn')
 
 //calling edit function after the edit button is clicked
 document.addEventListener('DOMContentLoaded',() =>{
+    if(!clientEditBtn) return;
     clientEditBtn.addEventListener('click',async() => {
         editClientFunc(clientEditBtn.dataset.clientId)
 })
@@ -294,9 +309,9 @@ export async function updateClientInfo(clientId){
     const clientDetail = document.getElementById('clientDetail');
     const clientBalance = document.getElementById('clientRemaining');
     const clientStatus = document.getElementById('clientStatus')
-
+    if(!clientName || !clientDetail || !clientBalance || !clientStatus) return;
     clientName.textContent = data.client_name;
-    clientDetail.textContent = data.client_address || data.client_phone || "---";
+    clientDetail.textContent = data.client_address || data.client_phone || "---";    
     if(data.remaining == 0){
         clientStatus.textContent = "Settled"
     }
@@ -430,6 +445,8 @@ export function addClientsToList(clients) {
     clients.forEach(client => {
         clientdetaillist.appendChild(renderClient(client));
     });
+    
+    
 }
 
 
@@ -542,7 +559,7 @@ function loadTransactions(transaction, tableBody) {
 document.addEventListener('DOMContentLoaded', () => {
   const addTransaction = document.getElementById('addTransaction');
   const paymentTransactions = document.getElementById('paymentTransactions');
-
+  if(!addTransaction) return;
   addTransaction.addEventListener('click', (e) => {
     e.stopPropagation()
     const rect = addTransaction.getBoundingClientRect();
