@@ -1,5 +1,5 @@
 import { loadClients } from "./dom.js";
-import { selectClientFromHint,saveClient,selectType,selectedType } from "./events.js";
+import { selectClientFromHint,saveClient,selectType,selectedType,selectedOpeningType,selectOpeningType } from "./events.js";
 import{ activateTabAll } from "./client.js";
 import { showAlert } from "./utils.js";
 document.addEventListener('DOMContentLoaded', () => {
@@ -21,20 +21,6 @@ document.addEventListener('DOMContentLoaded', () => {
         resetClientModal()
         addClientModal.style.display = 'flex';
     })
-    // const closeClientModal = document.getElementById('closeClientModal');
-    // closeClientModal.addEventListener('click',()=>{
-    //     selectType(customerBtn, supplierBtn)
-    //     activateButton(toReceiveBtn, toGiveBtn); 
-    //     resetClientModal()
-    //     addClientModal.style.display = 'none';
-    // })
-    // const cancelClientBtn = document.getElementById('cancelClientBtn');
-    // cancelClientBtn.addEventListener('click',()=>{
-    //     selectType(customerBtn, supplierBtn)
-    //     activateButton(toReceiveBtn, toGiveBtn); 
-    //     resetClientModal()
-    //     addClientModal.style.display = 'none';
-    // })
 
 });
 
@@ -194,7 +180,6 @@ function editClientFunc(clientId){
     document.getElementById('toReceive').style.display = 'none';
     document.getElementById('toGive').style.display = 'none';
 
-    console.log("yo esko type",client.customer_type)
     if(client.customer_type == "CUSTOMER"){
         selectType(customerBtn,supplierBtn)
     }
@@ -590,24 +575,124 @@ function loadTransactions(transaction, tableBody) {
     tableBody.appendChild(row);
     row.addEventListener('click',()=>{
         if(row.dataset.type === "Opening"){
-            const openingBalanceModal = document.getElementById('openingBalanceModal');
-            openingBalanceModal.classList.remove('hidden');
+            
+            openUpdateOpeningFunc()
+            
+            
         }
     })
 }
 
+//opening the updateOpeningBalance
+async function openUpdateOpeningFunc(){
+    const openingBalanceModal = document.getElementById('openingBalanceModal');
+    const receiveBtn = document.getElementById("receive");
+    const giveBtn = document.getElementById("give");
+    const openingAmount = document.getElementById('openingAmount');
+    //populating the form first
+    const clientId = getUidFromUrl();
+    const data = await clientLatestRemaining(clientId);
+    openingAmount.value = data.oldest_remaining;
+    console.log("client ko opening type",data.client_opening_type)
+    if(data.client_opening_type === "TORECEIVE"){
+        selectOpeningType(receiveBtn,giveBtn);
+    }
+    else if(data.client_opening_type === "TOGIVE"){
+        selectOpeningType(giveBtn,receiveBtn);
+    }
+
+
+    openingBalanceModal.classList.remove('hidden');
+}
 //editing the opening balance row
 
-//closing the opening balance modal 
+
 document.addEventListener('DOMContentLoaded',()=>{
-const openingBalanceModal = document.getElementById('openingBalanceModal');
-const closeOpeningBalanceModal = document.getElementById('closeOpeningBalanceModal');
-closeOpeningBalanceModal.addEventListener('click',()=>{
-    openingBalanceModal.classList.add('hidden')
-})
+    const openingBalanceModal = document.getElementById('openingBalanceModal');
+    const closeOpeningBalanceModal = document.getElementById('closeOpeningBalanceModal');
+
+    const editBtn = document.getElementById('editBtn');
+    const openingAmount = document.getElementById('openingAmount');
+    const openingDate = document.getElementById('openingDate')
+    const deleteOpening = document.getElementById('deleteOpening');
+    const cancelOpeningEdit = document.getElementById('cancelOpeningEdit');
+    const updateOpening = document.getElementById('updateOpening');
+    const receiveBtn = document.getElementById("receive");
+    const giveBtn = document.getElementById("give");
+    if(!receiveBtn || !giveBtn) return ;
+
+    editBtn.addEventListener('click',()=>{
+        editBtn.classList.add('hidden');
+        deleteOpening.classList.add('hidden');
+        cancelOpeningEdit.classList.remove('hidden');
+        updateOpening.classList.remove('hidden');
+
+        //readonly to write
+        openingAmount.readOnly = false;
+        openingDate.readOnly = false;
+        receiveBtn.disabled = false;
+        giveBtn.disabled = false;
+
+    })
+    
+    updateOpening.addEventListener('click',()=>{
+        const clientId = getUidFromUrl();
+        updateOpeningFunc(clientId)
+    })
+
+    //closing the opening balance modal 
+    closeOpeningBalanceModal.addEventListener('click',()=>{
+        
+        openingBalanceModal.classList.add('hidden')
+    })
+
+    //for update
+    receiveBtn.addEventListener("click", () => {
+            selectOpeningType(receiveBtn, giveBtn)
+        });
+
+    giveBtn.addEventListener("click", () => {
+        console.log("i am trying to click")
+           selectOpeningType(giveBtn, receiveBtn)
+        });
 })
 
 
+//updating the opening balance function 
+async function updateOpeningFunc(clientId){
+    const openingAmountInput = document.getElementById('openingAmount');
+    const openingAmount = openingAmountInput.value
+
+    //preparing to send the data
+    try{
+        const updatedOpeningAmount = {
+                openingAmount:openingAmount,
+                customer_opening_type:selectedOpeningType,
+            }
+        // Send AJAX request to Django
+            const response = await fetch(`/dashboard/update-opening/${clientId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': window.djangoData.csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify(updatedOpeningAmount)
+            });
+            const data = await response.json()
+            if(data.success){
+                
+                updateClientInfo(clientId)
+                fetchTransactions(clientId)
+                openingBalanceModal.classList.add('hidden')
+            }
+    }catch (error) {
+            console.error('Error adjusting amount:', error);
+    }
+
+
+
+}
 // Function to activate button
 export function activateButton(selectedBtn, otherBtn) {
     if(!selectedBtn || !otherBtn) return;

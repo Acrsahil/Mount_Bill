@@ -170,34 +170,32 @@ export function closeClientModalFunc(addClientModal) {
 }
 
 //to save the client 
+export let selectedOpeningType = "TORECEIVE";
+export function selectOpeningType(selectedBtn, otherBtn){
+     selectedBtn.classList.add('border-blue-700', 'text-blue-700', 'bg-blue-100');
+    selectedBtn.classList.remove('bg-gray-200', 'text-black', 'border-gray-300');
+
+    // Unselected button: grey background & border, black text
+    otherBtn.classList.add('bg-gray-200', 'text-black', 'border-gray-300');
+    otherBtn.classList.remove('border-blue-700', 'text-blue-700', 'bg-blue-100');
+
+    // store selection
+    selectedOpeningType = selectedBtn.dataset.type;
+
+}
 
 document.addEventListener("DOMContentLoaded", () => {
         const toReceiveBtn = document.getElementById("toReceive");
         const toGiveBtn = document.getElementById("toGive");
         if(!toReceiveBtn || !toGiveBtn) return ;
-        //inputs
-        const toReceiveInput = document.getElementById('clientOpeningBalance');
-        const toGiveInput = document.getElementById('clientPayableOpeningBalance')
 
-        toReceiveInput.classList.remove('hidden');
-        toGiveInput.classList.add("hidden")
-        activateButton(toReceiveBtn, toGiveBtn); 
 
         toReceiveBtn.addEventListener("click", () => {
-            activateButton(toReceiveBtn, toGiveBtn);
-            document.getElementById('clientOpeningBalance').value = '';
-            document.getElementById('clientPayableOpeningBalance').value = '';
-            toReceiveInput.classList.remove('hidden');
-            toGiveInput.classList.add("hidden");
-
+            selectOpeningType(toReceiveBtn, toGiveBtn)
         });
 
         toGiveBtn.addEventListener("click", () => {
-            toReceiveInput.classList.add('hidden');
-            toGiveInput.classList.remove("hidden");
-            document.getElementById('clientOpeningBalance').value = '';
-            document.getElementById('clientPayableOpeningBalance').value = '';
-            activateButton(toGiveBtn, toReceiveBtn);
+           selectOpeningType(toGiveBtn, toReceiveBtn)
         });
 
  //selecting customer type
@@ -221,7 +219,8 @@ supplierBtn.addEventListener("click", () => {
 
     });
 
-export let selectedType = "CUSTOMER"; // default selection
+// default selection
+export let selectedType = "CUSTOMER";
 export function selectType(selectedBtn, otherBtn) {
     // style selected button
     selectedBtn.classList.add('border-blue-700', 'text-blue-700', 'bg-blue-100');
@@ -244,17 +243,14 @@ export async function saveClient(addClientModal, clientsTableBody) {
     const clientAddressInput = document.getElementById("clientAddressInput");
     const clientEmailInput = document.getElementById('clientEmailInput');
     const clientPanNoInput = document.getElementById('clientPanNoInput');
-    const toReceiveInput = document.getElementById('clientOpeningBalance');
-    const toGiveInput = document.getElementById('clientPayableOpeningBalance')
+    const openingAmountInput = document.getElementById('clientOpeningBalance');
 
     const clientName = clientNameInput.value.trim();
     const clientPhone = clientPhoneInput.value.trim();
     const clientAddress = clientAddressInput.value.trim();
     const clientEmail = clientEmailInput.value.trim();
     const clientPanNo = clientPanNoInput.value.trim();
-    const clientBalance = clientOpeningBalance.value || 0;
-    const toReceiveAmount = toReceiveInput.value || 0;
-    const toGiveAmount = toGiveInput.value || 0;
+    const openingAmount = openingAmountInput.value || 0;   
     
 
     if (!clientName || !clientPhone) {
@@ -287,9 +283,8 @@ if (clientEmail !== '') {
             phone: clientPhone,
             address: clientAddress,
             pan_id: clientPanNo,
-            balance: clientBalance,
-            toReceiveAmount:toReceiveAmount,
-            toGiveAmount: toGiveAmount,
+            openingAmount:openingAmount,
+            customer_opening_type:selectedOpeningType,
             customer_type:selectedType,
         };
 
@@ -341,7 +336,6 @@ if (clientEmail !== '') {
             document.getElementById('clientNameInput').value = '';
             document.getElementById('clientPhoneInput').value = '';
             document.getElementById('clientOpeningBalance').value = '';
-            document.getElementById('clientPayableOpeningBalance').value = '';
             // Close modal after short delay
             await new Promise(resolve => setTimeout(resolve,1500));
             

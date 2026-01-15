@@ -440,7 +440,7 @@
   </h2>
 
   <button
-    id ="closeOpeningBalanceModal"
+    id="closeOpeningBalanceModal"
     class="text-gray-400 hover:text-gray-700 text-xl leading-none">
     &times;
   </button>
@@ -479,14 +479,17 @@
   <button
     id="receive"
     disabled
-    class="type-btn border border-black px-4 py-2 rounded text-sm text-black disabled:opacity-50">
+    class="type-btn border border-black px-4 py-2 rounded text-sm text-black disabled:opacity-50"
+    data-type="TORECEIVE">
     To Receive
+   
   </button>
 
   <button
     id="give"
     disabled
-    class="type-btn border border-black px-4 py-2 rounded text-sm text-black disabled:opacity-50">
+    class="type-btn border border-black px-4 py-2 rounded text-sm text-black disabled:opacity-50"
+    data-type="TOGIVE">
     To Give
   </button>
 </div>
@@ -494,7 +497,7 @@
 <!-- Row 6 -->
 <div class="flex justify-end gap-2 pt-4">
   <button
-    class="border border-black px-4 py-2 rounded text-sm text-black">
+    class="border border-black px-4 py-2 rounded text-sm text-black" id ="deleteOpening">
     Delete
   </button>
 
@@ -502,6 +505,16 @@
     id="editBtn"
     class="border border-black px-4 py-2 rounded text-sm text-black">
     Edit Details
+  </button>
+  <button
+    class="border border-black px-4 py-2 rounded text-sm text-black hidden" id="cancelOpeningEdit">
+    Cancel
+  </button>
+
+  <button
+   
+    class="border border-black px-4 py-2 rounded text-sm text-black hidden" id = "updateOpening">
+    Update
   </button>
 </div>
 
