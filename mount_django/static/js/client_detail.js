@@ -205,11 +205,14 @@ function editClientFunc(clientId){
 }
 
 //udpate function for client
+document.addEventListener('DOMContentLoaded',()=>{
+    const customerBtn = document.getElementById("customerBtn");
+    const supplierBtn = document.getElementById("supplierBtn");
+    if(!customerBtn || !supplierBtn) return;
+    customerBtn.addEventListener('click', () => selectType(customerBtn, supplierBtn));
+    supplierBtn.addEventListener('click', () => selectType(supplierBtn, customerBtn));
+})
 
-const customerBtn = document.getElementById("customerBtn");
-const supplierBtn = document.getElementById("supplierBtn");
-customerBtn.addEventListener('click', () => selectType(customerBtn, supplierBtn));
-supplierBtn.addEventListener('click', () => selectType(supplierBtn, customerBtn));
 
 async function updateClientFunc(clientId){
     
@@ -587,6 +590,7 @@ function loadTransactions(transaction, tableBody) {
 
 // Function to activate button
 export function activateButton(selectedBtn, otherBtn) {
+    if(!selectedBtn || !otherBtn) return;
     // Selected button: dark blue text & border, light blue background
     selectedBtn.classList.add('border-blue-700', 'text-blue-700', 'bg-blue-100');
     selectedBtn.classList.remove('bg-gray-200', 'text-black', 'border-gray-300');

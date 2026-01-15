@@ -174,6 +174,7 @@ export function closeClientModalFunc(addClientModal) {
 document.addEventListener("DOMContentLoaded", () => {
         const toReceiveBtn = document.getElementById("toReceive");
         const toGiveBtn = document.getElementById("toGive");
+        if(!toReceiveBtn || !toGiveBtn) return ;
         //inputs
         const toReceiveInput = document.getElementById('clientOpeningBalance');
         const toGiveInput = document.getElementById('clientPayableOpeningBalance')
