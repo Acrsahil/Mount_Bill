@@ -1,10 +1,11 @@
 import { loadClients } from "./dom.js";
-import { selectClientFromHint } from "./events.js";
+import { selectClientFromHint,saveClient } from "./events.js";
 import{ activateTabAll } from "./client.js";
 import { showAlert } from "./utils.js";
 document.addEventListener('DOMContentLoaded', () => {
     addClientsToList(window.djangoData.clients)
-    updateClientInfo(window.djangoData.clients)
+    // updateClientInfo(window.djangoData.clients)
+    renderFromUrl()
 
     //functional add new client inside the client detail page
     const addNewClientDetailBtn = document.getElementById('addNewClientDetailBtn');
@@ -12,6 +13,23 @@ document.addEventListener('DOMContentLoaded', () => {
         const addClientModal = document.getElementById('addClientModal')
         resetClientModal()
         addClientModal.style.display = 'flex';
+    })
+    const closeClientModal = document.getElementById('closeClientModal');
+    closeClientModal.addEventListener('click',()=>{
+        resetClientModal()
+        addClientModal.style.display = 'none';
+    })
+    const cancelClientBtn = document.getElementById('cancelClientBtn');
+    cancelClientBtn.addEventListener('click',()=>{
+        resetClientModal()
+        addClientModal.style.display = 'none';
+    })
+
+    const saveClientBtn = document.getElementById('saveClientBtn');
+    saveClientBtn.addEventListener('click',async()=>{
+        await saveClient()
+        addClientModal.style.display = 'none';
+
     })
 });
 
@@ -21,6 +39,7 @@ export function resetClientModal(){
     document.getElementById('updateClientBtn').style.display = 'none';
     document.getElementById('additionalInfo').style.display = 'none';
     document.getElementById('additionInfoBtn').style.display = 'block';
+    document.getElementById('openingBalance').style.display = 'block';
 
     //resetting the form field
     document.getElementById('clientNameInput').value = '';
@@ -29,6 +48,85 @@ export function resetClientModal(){
     document.getElementById('clientPanNoInput').value = '';
     document.getElementById('clientEmailInput').value = '';
 }
+
+//deleting the client 
+document.addEventListener('DOMContentLoaded',()=>{
+    const deleteClientBtn = document.getElementById('deleteClientBtn')
+    deleteClientBtn.addEventListener('click',()=>{
+        console.log("kun delete hudae xa?",deleteClientBtn.dataset.clientId)
+        deleteClient(deleteClientBtn.dataset.clientId)
+    })
+})
+
+function showEmptyState() {
+    document.getElementById('emptyState').classList.remove('hidden');
+    document.getElementById('clientDetailContainer').classList.add('hidden');
+    document.getElementById('notFound').classList.add('hidden');
+}
+function showClientState() {
+    document.getElementById('emptyState').classList.add('hidden');
+    document.getElementById('clientDetailContainer').classList.remove('hidden');
+    document.getElementById('notFound').classList.add('hidden');
+}
+function showNotFound() {
+    document.getElementById('emptyState').classList.add('hidden');
+    document.getElementById('clientDetailContainer').classList.add('hidden');
+    document.getElementById('notFound').classList.remove('hidden');
+}
+
+function renderFromUrl(){
+    const uid = getUidFromUrl()
+    const selectedClient = getClientFromUid(uid,window.djangoData.clients)
+    if(!uid){
+        showEmptyState()
+        return;
+    }
+    else if(!selectedClient){
+        showNotFound()
+        return;
+    }
+    else{
+        showClientState()
+        return;
+    }
+}
+
+async function deleteClient(clientId){
+    const confirmed = confirm("Are you sure you want to delete this client?")
+    if(confirmed){
+        const res = await fetch(`/dashboard/delete-client/${clientId}/`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': window.djangoData.csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+            });
+    const data = await res.json()
+    console.log(data.success)
+
+    if(data.success){
+        
+        window.djangoData.clients = window.djangoData.clients.filter(
+        c => String(c.id) !== String(clientId)
+    );
+        history.replaceState({}, '', `/dashboard/client-detail/`);
+        const li = document.querySelector(`.clientlists[data-id="${clientId.toString()}"]`);
+        if(li) li.remove()
+        
+        const row = document.querySelector(`#clientsTableBody-${clientId.toString()}`);
+        if (row) row.remove();
+        renderFromUrl()        
+        showAlert(data.message,'success');
+    }
+    else {
+        showAlert('Error: ' + (data.error || 'Failed to delete client'), 'error');
+        }
+    }
+     
+}
+
+
 //editing the client 
 
 const clientEditBtn = document.getElementById('clientEditBtn')
@@ -65,6 +163,7 @@ function editClientFunc(clientId){
     addClientModal.style.display = 'flex';
     document.getElementById('additionalInfo').style.display = 'block';
     document.getElementById('additionInfoBtn').style.display = 'none';
+    document.getElementById('openingBalance').style.display = 'none';
     activateTabAll();
 }
 
@@ -159,24 +258,58 @@ async function updateClientFunc(clientId){
 
 //to get uid from the url
 function getUidFromUrl(){
-    const urlUid = window.location.pathname.split('/').filter(Boolean);
-    return urlUid[urlUid.length - 1]
+    const parts = window.location.pathname.split('/').filter(Boolean);
+
+    const idx = parts.indexOf('client-detail');
+    if (idx === -1) return null;
+
+    // "/dashboard/client-detail/" => no uid
+    if (idx === parts.length - 1) return null;
+
+    return parts[idx + 1]; // uid
     
 }
 
 //get selected client from url
-function getClientFromUid(clients){
-    const uid = getUidFromUrl();
+function getClientFromUid(uid, clients){
+    if (!uid) return null;
     return clients.find(c => String(c.uid) === String(uid)) || null;
 }
 
+//function to get latest client remaining amount
+async function clientLatestRemaining(clientId){
+    const res = await fetch(`/dashboard/clients-info/${clientId}/`);
+    if (!res.ok) {
+        throw new Error("Failed to fetch client info");
+    }
+    const data = await res.json();
+    return data;
+}
 //now dynamically change the client info 
-function updateClientInfo(clients){
-    const selectedClients = getClientFromUid(clients)
+export async function updateClientInfo(clientId){
+    // const selectedClients = getClientFromUid(clients)
+    //fetching the remaining amount to update the receivable and payable parts
+    const data = await clientLatestRemaining(clientId);
     const clientName = document.getElementById('clientName');
     const clientDetail = document.getElementById('clientDetail');
-    clientName.textContent = selectedClients.name;
-    clientDetail.textContent = selectedClients.address || selectedClients.phone || "---";
+    const clientBalance = document.getElementById('clientRemaining');
+    const clientStatus = document.getElementById('clientStatus')
+
+    clientName.textContent = data.client_name;
+    clientDetail.textContent = data.client_address || data.client_phone || "---";
+    if(data.remaining == 0){
+        clientStatus.textContent = "Settled"
+    }
+    else if(data.remaining < 0){
+        clientStatus.textContent = "Payable"
+    }
+    else if(data.remaining > 0){
+        clientStatus.textContent = "Receivable"
+    }
+    clientBalance.textContent = data.remaining;
+
+    
+
 
 }
 
@@ -199,7 +332,7 @@ window.addEventListener('pageshow',() =>{
 })
 
 const addTransaction = document.getElementById('addTransaction')
-
+const deleteClientBtn = document.getElementById('deleteClientBtn')
 //function to add the client to the list
 export function renderClient(client) {
     const li = document.createElement('li');
@@ -223,6 +356,7 @@ export function renderClient(client) {
 
     li.textContent = client.name;
     li.dataset.clientUid = client.uid;
+    li.dataset.id = client.id;
     //select the list according to the uid
     
     const clientUid = getUidFromUrl()
@@ -250,6 +384,8 @@ export function renderClient(client) {
 
         //client id for editing client
         clientEditBtn.dataset.clientId = client.id;
+        deleteClientBtn.dataset.clientId = client.id;
+
     }
     li.addEventListener('click', () => {
         fetchclients()
@@ -273,12 +409,11 @@ export function renderClient(client) {
         );
 
         history.pushState({}, '', `/dashboard/client-detail/${client.uid}`);
-
-        document.getElementById('clientName').textContent = client.name;
-        document.getElementById('clientDetail').textContent = client.address || client.phone || '---';
+        updateClientInfo(client.uid)
         fetchTransactions(client.uid)
+        
         addTransaction.dataset.clientId = client.id;
-
+        deleteClientBtn.dataset.clientId = client.id;
         //client id for editing client
         clientEditBtn.dataset.clientId = client.id;
         
@@ -300,10 +435,16 @@ export function addClientsToList(clients) {
 
 //triggers the backward and forward event of the browser
 window.addEventListener('popstate',()=>{
-    updateClientInfo(window.djangoData.clients)
 
     //highlight the list again
     const urlUid = getUidFromUrl();
+    const selectedClient = getClientFromUid(urlUid,window.djangoData.clients);
+    console.log("selected client xa ki xaina??",selectedClient)
+    renderFromUrl()
+    if (!urlUid || !selectedClient) {
+        return;
+    }
+    updateClientInfo(urlUid);
     document.querySelectorAll('.clientlists').forEach(li => {
     if(String(li.dataset.clientUid) === String(urlUid)){
         li.classList.add('selected',
@@ -325,11 +466,11 @@ window.addEventListener('popstate',()=>{
 
 
 //Transaction table fill up 
-async function fetchTransactions(clientUid){
+export async function fetchTransactions(clientUid){
     const clientTransactionTableBody = document.getElementById('clientTransactionTableBody');
     const res = await fetch(`/dashboard/fetch-transactions/${clientUid}`);
     const data = await res.json();
-    
+    if(!clientTransactionTableBody) return;
     clientTransactionTableBody.innerHTML = '';
 
     // Load each row
@@ -367,6 +508,30 @@ function loadTransactions(transaction, tableBody) {
         <td>Payment</td>
         <td>${transaction.remainingAmount}</td>
         <td>${transaction.remarks || "---"}</td>`;
+    }else if (transaction.type === 'Opening' && Number(transaction.balance) !== 0 ) {
+        row.innerHTML = `
+        <td>Opening Balance</td>
+        <td>${transaction.date.split('T')[0]}</td>
+        <td>${transaction.balance}</td>
+        <td>--</td>
+        <td>${transaction.balance}</td>
+        <td>--</td>`;
+    }else if (transaction.type === 'add' ) {
+        row.innerHTML = `
+        <td>Balance Adjustment(+)</td>
+        <td>${transaction.date.split('T')[0]}</td>
+        <td>${transaction.amount}</td>
+        <td>--</td>
+        <td>${transaction.balance}</td>
+        <td>${transaction.remarks}</td>`;
+    }else if (transaction.type === 'reduce' ) {
+        row.innerHTML = `
+        <td>Balance Adjustment(-)</td>
+        <td>${transaction.date.split('T')[0]}</td>
+        <td>${transaction.amount}</td>
+        <td>--</td>
+        <td>${transaction.balance}</td>
+        <td>${transaction.remarks}</td>`;
     }
 
     tableBody.appendChild(row);
@@ -411,8 +576,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     //populating the paymentModal 
-    const res = await fetch(`/dashboard/clients-info/${paymentIn.dataset.clientId}/`)
-    const data = await res.json()
+    const data = await clientLatestRemaining(paymentIn.dataset.clientId);
     
     document.getElementById('partyName').value = data.client_name;
     document.getElementById('receiptNumber').value = data.latest_payment_id + 1
@@ -464,9 +628,7 @@ document.addEventListener('DOMContentLoaded', () => {
         //to fill the form up
         paymentOut.dataset.clientId = getUidFromUrl()
         //populating the paymentModal 
-        const res = await fetch(`/dashboard/clients-info/${paymentOut.dataset.clientId}/`)
-        const data = await res.json()
-        
+        const data = await clientLatestRemaining(paymentOut.dataset.clientId);
         document.getElementById('partyName').value = data.client_name;
         document.getElementById('receiptNumber').value = data.latest_paymentout_id + 1
         document.getElementById('amountInput').focus();
@@ -478,8 +640,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         //opening the add payment Out modal
         paymentModal.classList.remove('hidden');
-
-       
 
     })
 
@@ -501,8 +661,164 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.href = `/dashboard/create-invoice/?clientId=${salesInvoice.dataset.clientUid}`;
 
 })
+
+//for adjust balance 
+const adjustBalance = document.getElementById('adjustBalance');
+
+adjustBalance.addEventListener('click',()=>{
+    document.getElementById('adjustBalanceModal').classList.remove('hidden');
+     const adjustmentDate = document.getElementById('adjustmentDate');
+    if (adjustmentDate) {
+        const today = new Date().toISOString().split('T')[0];
+        adjustmentDate.value = today;
+    }
+    paymentTransactions.classList.add('hidden');
+
+})
+
+//closing the adjust balance modal
+const closeAdjustBalance = document.getElementById('closeAdjustBalance');
+const cancelAdjustBalance = document.getElementById('cancelAdjustBalance');
+closeAdjustBalance.addEventListener('click',()=>{
+    activateButton(addBtn, reduceBtn);
+    document.getElementById('adjustBalanceModal').classList.add('hidden');
+})
+cancelAdjustBalance.addEventListener('click',()=>{
+    activateButton(addBtn, reduceBtn);
+    document.getElementById('adjustBalanceModal').classList.add('hidden');
+})
+
+//add Balance
+// Elements
+const addAmount = document.getElementById('addAmount');
+const reduceAmount = document.getElementById('reduceAmount');
+const addBtn = document.getElementById('addBalance');
+const reduceBtn = document.getElementById('reduceBalance');
+
+// Function to activate button
+function activateButton(selectedBtn, otherBtn) {
+    // Selected button: dark blue text & border, light blue background
+    selectedBtn.classList.add('border-blue-700', 'text-blue-700', 'bg-blue-100');
+    selectedBtn.classList.remove('bg-gray-200', 'text-black', 'border-gray-300');
+
+    // Unselected button: grey background & border, black text
+    otherBtn.classList.add('bg-gray-200', 'text-black', 'border-gray-300');
+    otherBtn.classList.remove('border-blue-700', 'text-blue-700', 'bg-blue-100');
+}
+
+// Default: Add Balance selected
+activateButton(addBtn, reduceBtn);
+addAmount.classList.remove('hidden');
+reduceAmount.classList.add('hidden');
+
+
+addBtn.addEventListener('click', () => {
+    activateButton(addBtn, reduceBtn);
+    addAmount.classList.remove('hidden');
+    reduceAmount.classList.add('hidden');
+    addAmount.value = '';
+    reduceAmount.value = '';
 });
 
+reduceBtn.addEventListener('click', () => {
+    activateButton(reduceBtn, addBtn);
+    reduceAmount.classList.remove('hidden');
+    addAmount.classList.add('hidden');
+    addAmount.value = '';
+    reduceAmount.value = '';
+});
+
+//after form fill up and confirm adjustment btn clicked 
+const balanceAdjustment = document.getElementById('balanceAdjust')
+balanceAdjustment.dataset.clientId = addTransaction.dataset.clientId;
+balanceAdjustment.addEventListener('click',async()=>{
+    await balanceAdjustmentFunc(balanceAdjustment.dataset.clientId);
+})
+});
+
+//balanceAdjustment function
+async function balanceAdjustmentFunc(clientId){
+    const addBtn = document.getElementById('addBalance');
+    const reduceBtn = document.getElementById('reduceBalance');
+    const addAmount = document.getElementById('addAmount')?.value || 0;
+    const reduceAmount = document.getElementById('reduceAmount')?.value || 0;
+    const adjustmentRemark = document.getElementById('adjustmentRemarks').value;
+
+     const balanceAdjust = document.getElementById('balanceAdjust');
+    const originalText = balanceAdjust.innerHTML;
+        
+    balanceAdjust.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adjusting...';
+    balanceAdjust.disabled = true;
+    //preparing to send the data
+    try{
+        const adjustmentAmount = {
+                toAddAmount:addAmount,
+                toReduceAmount:reduceAmount,
+                adjustment_remark:adjustmentRemark,
+            }
+        // Send AJAX request to Django
+            const response = await fetch(`/dashboard/balance-adjustment/${clientId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': window.djangoData.csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify(adjustmentAmount)
+            });
+            const data = await response.json()
+            if(data.success){
+                
+                fetchTransactions(data.uid);
+                updateClientInfo(data.uid);
+                await new Promise(resolve => setTimeout(resolve,1500));
+
+                //resetting the form
+                document.getElementById('addAmount').value = '';
+                document.getElementById('reduceAmount').value = '';
+                document.getElementById('adjustmentRemarks').value = '';
+                document.getElementById('adjustBalanceModal').classList.add('hidden');
+                activateButton(addBtn, reduceBtn);
+            }else {
+            showAlert(result.message || "Adjustment failed");
+        }
+
+    }catch (error) {
+            console.error('Error adjusting amount:', error);
+    }finally {
+            // Restore button state
+            balanceAdjust.innerHTML = originalText;
+            balanceAdjust.disabled = false;
+        }
+}
+
+//footer of the adjust balance
+const addAmount = document.getElementById('addAmount');
+const reduceAmount = document.getElementById('reduceAmount');
+const adjustedBalance = document.getElementById('adjustedBalance');
+const currentBalance = document.getElementById('currentBalance');
+
+//dynamic change at the footer
+if(addAmount){
+    const clientId = getUidFromUrl();
+    const data = await clientLatestRemaining(clientId)
+
+    addAmount.addEventListener('input',async()=>{
+        adjustedBalance.value = addAmount.value
+        currentBalance.value = Number(data.remaining) + Number(adjustedBalance.value)
+
+    })
+}
+if(reduceAmount){
+    const clientId = getUidFromUrl();
+    const data = await clientLatestRemaining(clientId)
+
+    reduceAmount.addEventListener('input',async()=>{
+        adjustedBalance.value = reduceAmount.value
+        currentBalance.value = Number(data.remaining) - Number(adjustedBalance.value)
+
+    })
+}
 
 //reset payment modal
 function resetPaymentModal(){
@@ -556,7 +872,7 @@ async function savePaymentInFunc(clientId){
         //immediately load the transactions
         if(result.success === true){
             fetchTransactions(result.uid)
-
+            updateClientInfo(result.uid)
             await new Promise(resolve => {setTimeout(resolve,1500)})
             //emptying the modal form
             document.getElementById('receiptNumber').value ='';
@@ -617,11 +933,11 @@ async function savePaymentOutFunc(clientId){
         });
 
         const result = await response.json();
-        console.log('Server response:', result.uid);
 
         //immediately load the transactions
         if(result.success === true){
             fetchTransactions(result.uid)
+            updateClientInfo(result.uid)
             await new Promise(resolve => setTimeout(resolve,1500))
             //emptying the modal form
             document.getElementById('amountInput').value = '';

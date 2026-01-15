@@ -9,6 +9,7 @@ urlpatterns = [
     path("fetch-transactions/<uuid:id>/",views.fetch_transactions,name="fetch_transactions"),
     path("payment-in/<int:id>/",views.payment_in,name="payment_in"),
     path("payment-out/<int:id>/",views.payment_out,name="payment_out"),
+    path("balance-adjustment/<int:id>/",views.balance_adjustment,name="balance_adjustment"),
     path("update-stock/<int:id>/", views.update_stock, name="update_stock"),
     path("products-json/", views.products_json, name="products_json"),
     path("category-json/", views.category_json, name="category_json"),
@@ -43,5 +44,6 @@ urlpatterns = [
     path("reports/", views.reports, name="reports"),
     path("settings/", views.settings, name="settings"),
     path("save-client/", views.save_client, name="save_client"),
+    path("delete-client/<int:id>/",views.delete_client,name="delete_client"),
     path("create-invoice/", views.create_invoice_page, name="create_invoice_page"),
 ]

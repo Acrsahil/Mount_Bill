@@ -280,17 +280,55 @@
                             <input type="tel" id="clientPhoneInput" class="app-form-control" placeholder="Enter phone number" required>
                         </div>
                     </div>
-                     <div class="app-form-col">
-                        <div class="app-form-group">
+                       
+                        </div>
+                         <div class="app-form-group">
                             <label for="clientType">Client Type</label>
-                            <select id="clientType" class="app-form-control">
-                                <option value="regular">Regular</option>
-                                <option value="business">Business</option>
-                                <option value="wholesale">Wholesale</option>
-                            </select>
+                           <div class="flex gap-3">
+                      <button
+            type="button"
+            class="px-4 py-2 rounded border bg-blue-100 text-blue-700 border-blue-300 active-btn"
+            id="customerBtn"
+            data-type="CUSTOMER"
+        >
+            Customer
+        </button>
+
+        <button
+            type="button"
+            class="px-4 py-2 rounded border bg-gray-200 text-black border-gray-300"
+            id="supplierBtn"
+            data-type="SUPPLIER"
+        >
+            Supplier
+        </button>
+                </div>
+                </div>
+                <div class="app-form-col" id="openingBalance">
+                        <div class="app-form-group">
+                            <label for="clientPhoneInput">Opening Balance *</label>
+                            <input type="number" id="clientOpeningBalance" class="app-form-control" placeholder="Rs. 0" required>
+                            <input type="number" id="clientPayableOpeningBalance" class="app-form-control" placeholder="Rs. 0" required>
                         </div>
                     </div>
+                    <div class="flex gap-3">
+                        <button
+                            type="button"
+                            class=" px-4 py-2 rounded border bg-gray-200 text-black border-gray-300"
+                            data-type="receive" id ="toReceive"
+                        >
+                            To Receive
+                        </button>
+
+                        <button
+                            type="button"
+                            class="px-4 py-2 rounded border bg-gray-200 text-black border-gray-300"
+                            data-type="give" id="toGive"
+                        >
+                            To Give
+                        </button>
                 </div>
+
             </div>
             <div id="additional-info" class="app-tab-content">
                 <label id="additionalInfo" class="underline decoration-blue-500" >Additional Info</label>

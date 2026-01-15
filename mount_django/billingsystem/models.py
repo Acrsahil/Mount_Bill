@@ -55,12 +55,16 @@ class Customer(models.Model):  # sabina
     company = models.ForeignKey(
         Company, on_delete=models.CASCADE, related_name="customers"
     )
+    CUSTOMER_TYPE_CHOICES = [('CUSTOMER','Customer'),
+                             ('SUPPLIER','Supplier')]
     uid = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=100)
     phone = models.CharField(max_length=15, blank=True)
     email = models.EmailField(blank=True)
     pan_id = models.CharField(max_length=15, blank=True)
     address = models.CharField(max_length=15, blank=True)
+    date = models.DateTimeField(auto_now_add=True)
+    customer_type = models.CharField(max_length=10,choices=CUSTOMER_TYPE_CHOICES,default="CUSTOMER")
 
     def __str__(self):
         return f"{self.name} ({self.company})"
@@ -316,3 +320,10 @@ class PaymentOut(models.Model):
     
     def __str__(self):
         return f"payment out amount: {self.payment_out}"
+    
+class BalanceAdjustment(models.Model):
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
+    remainings = models.OneToOneField(RemainingAmount,on_delete=models.CASCADE,related_name="balanceAdustRemaining")
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    date = models.DateTimeField(auto_now_add=True)
+    remarks = models.TextField(blank=True)

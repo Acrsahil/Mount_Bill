@@ -22,7 +22,7 @@ import {
 } from './dom.js';
 import { saveInvoice,renderInvoiceItems } from './create_invoice.js';
 import { editProduct,deleteProduct,saveProduct,loadProducts } from './product.js';
-import { renderClient, addClientsToList,resetClientModal } from './client_detail.js';
+import { renderClient, addClientsToList,resetClientModal,fetchTransactions,updateClientInfo } from './client_detail.js';
 // Track currently selected hint for keyboard navigation
 let currentSelectedHintIndex = -1;
 let currentSelectedProductHintIndex = -1;
@@ -82,7 +82,9 @@ export function setupEventListeners(
                 slider.dispatchEvent(new Event('change'));
             }
         closeProductModalFunc(addProductModal)});
-    if (closeClientModal) closeClientModal.addEventListener('click', () => closeClientModalFunc(addClientModal));
+    if (closeClientModal) closeClientModal.addEventListener('click', () => {
+        console.log("clicking or not");
+        closeClientModalFunc(addClientModal)});
     if (cancelInvoiceBtn) cancelInvoiceBtn.addEventListener('click', () => closeInvoiceModalFunc(createInvoiceModal));
     if (cancelProductBtn) cancelProductBtn.addEventListener('click', () =>
         {
@@ -147,10 +149,7 @@ export function openClientModal(addClientModal) {
         console.error('Client modal not found!');
         return;
     }
-    
-    // Reset only the fields that exist in the simplified modal
-    document.getElementById('clientNameInput').value = '';
-    document.getElementById('clientPhoneInput').value = '';
+
     
     // Show the modal
     addClientModal.style.display = 'flex';
@@ -170,21 +169,91 @@ export function closeClientModalFunc(addClientModal) {
     }
 }
 
+//to save the client 
+
+document.addEventListener("DOMContentLoaded", () => {
+        const toReceiveBtn = document.getElementById("toReceive");
+        const toGiveBtn = document.getElementById("toGive");
+        //inputs
+        const toReceiveInput = document.getElementById('clientOpeningBalance');
+        const toGiveInput = document.getElementById('clientPayableOpeningBalance')
+
+        toReceiveInput.classList.remove('hidden');
+        toGiveInput.classList.add("hidden")
+        activateButton(toReceiveBtn, toGiveBtn); 
+        function activateButton(selectedBtn, otherBtn) {
+            // Reset the other button
+            otherBtn.classList.remove("bg-blue-100", "text-blue-700", "border-blue-700");
+            otherBtn.classList.add("bg-gray-200", "text-black", "border-gray-300");
+
+            // Activate clicked button
+            selectedBtn.classList.remove("bg-gray-200", "text-black", "border-gray-300");
+            selectedBtn.classList.add("bg-blue-100", "text-blue-700", "border-blue-700");
+        }
+
+        toReceiveBtn.addEventListener("click", () => {
+            activateButton(toReceiveBtn, toGiveBtn);
+            document.getElementById('clientOpeningBalance').value = '';
+            document.getElementById('clientPayableOpeningBalance').value = '';
+            toReceiveInput.classList.remove('hidden');
+            toGiveInput.classList.add("hidden");
+
+        });
+
+        toGiveBtn.addEventListener("click", () => {
+            toReceiveInput.classList.add('hidden');
+            toGiveInput.classList.remove("hidden");
+            document.getElementById('clientOpeningBalance').value = '';
+            document.getElementById('clientPayableOpeningBalance').value = '';
+            activateButton(toGiveBtn, toReceiveBtn);
+        });
+    });
+
+//selecting customer type
+let selectedType = "CUSTOMER"; // default selection
+
+const customerBtn = document.getElementById("customerBtn");
+const supplierBtn = document.getElementById("supplierBtn");
+
+function selectType(selectedBtn, otherBtn) {
+    // style selected button
+   selectedBtn.classList.add('border-blue-700', 'text-blue-700', 'bg-blue-100');
+    selectedBtn.classList.remove('bg-gray-200', 'text-black', 'border-gray-300');
+
+    // Unselected button
+    otherBtn.classList.add('bg-gray-200', 'text-black', 'border-gray-300');
+    otherBtn.classList.remove('border-blue-700', 'text-blue-700', 'bg-blue-100');
+
+    // store selection
+    selectedType = selectedBtn.dataset.type;
+}
+
+// click events
+customerBtn.addEventListener("click", () => selectType(customerBtn, supplierBtn));
+supplierBtn.addEventListener("click", () => selectType(supplierBtn, customerBtn));
+
+
 // Save client to database via AJAX
 export async function saveClient(addClientModal, clientsTableBody) {
     // Only get fields that exist in the simplified modal
-      const clientNameInput = document.getElementById('clientNameInput');
+    const clientNameInput = document.getElementById('clientNameInput');
     const clientPhoneInput = document.getElementById('clientPhoneInput');
     const clientAddressInput = document.getElementById("clientAddressInput");
     const clientEmailInput = document.getElementById('clientEmailInput');
     const clientPanNoInput = document.getElementById('clientPanNoInput');
+    const toReceiveInput = document.getElementById('clientOpeningBalance');
+    const toGiveInput = document.getElementById('clientPayableOpeningBalance')
 
     const clientName = clientNameInput.value.trim();
     const clientPhone = clientPhoneInput.value.trim();
     const clientAddress = clientAddressInput.value.trim();
     const clientEmail = clientEmailInput.value.trim();
-    console.log("yo clientEmail k ho",clientEmail)
     const clientPanNo = clientPanNoInput.value.trim();
+    const clientBalance = clientOpeningBalance.value || 0;
+    const toReceiveAmount = toReceiveInput.value || 0;
+    const toGiveAmount = toGiveInput.value || 0;
+    
+
     if (!clientName || !clientPhone) {
         showAlert('Please fill in all required fields (Name, Phone)', 'error');
         return;
@@ -215,6 +284,10 @@ if (clientEmail !== '') {
             phone: clientPhone,
             address: clientAddress,
             pan_id: clientPanNo,
+            balance: clientBalance,
+            toReceiveAmount:toReceiveAmount,
+            toGiveAmount: toGiveAmount,
+            customer_type:selectedType,
         };
 
         console.log('Saving client to database:', clientData);
@@ -255,6 +328,12 @@ if (clientEmail !== '') {
             // Update UI
             loadClients(window.clients, clientsTableBody);
 
+            //to dynamically change the url uid at the top
+            history.pushState({}, '', `/dashboard/client-detail/${result.client.uid}`);
+
+            //loading the transaction table 
+            updateClientInfo(result.client.uid)
+            
             const clientList = document.querySelector('.clientList');
             if(clientList){
                 clientList.prepend(renderClient(newClient));
@@ -267,6 +346,11 @@ if (clientEmail !== '') {
             updateClientStats(window.clients);
             // Show success message
             showAlert(result.message, 'success');
+              // Reset only the fields that exist in the simplified modal
+            document.getElementById('clientNameInput').value = '';
+            document.getElementById('clientPhoneInput').value = '';
+            document.getElementById('clientOpeningBalance').value = '';
+            document.getElementById('clientPayableOpeningBalance').value = '';
             // Close modal after short delay
             setTimeout(() => {
                 closeClientModalFunc(addClientModal);

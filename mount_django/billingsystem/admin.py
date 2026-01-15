@@ -17,6 +17,7 @@ from .models import (
     User,
     PaymentIn,
     PaymentOut,
+    BalanceAdjustment,
 )
 
 
@@ -58,6 +59,7 @@ class CustomUserAdmin(UserAdmin):
         "active_company_info",
         "is_staff",
         "date_joined",
+        
     )
     list_filter = ("has_paid_for_company", "is_staff", "is_active", "date_joined")
 
@@ -138,7 +140,7 @@ class CustomUserAdmin(UserAdmin):
 @admin.register(Customer)
 class CustomerAdmin(admin.ModelAdmin):
     # Changed: removed email, added phone
-    list_display = ("uid","name", "phone", "company")
+    list_display = ("uid","name", "phone", "company","customer_type",)
     list_filter = ("company",)
     # Changed: removed email
     search_fields = ("name", "phone", "company__name")
@@ -282,5 +284,14 @@ class PaymentOutAdmin(admin.ModelAdmin):
         "date",
         "payment_out",
         "remarks",
+    )
+    search_fields = ("customer_id",)
+
+@admin.register(BalanceAdjustment)
+class BalanceAdjustmentAdmin(admin.ModelAdmin):
+    list_display = (
+        "customer",
+        "amount",
+        "date",
     )
     search_fields = ("customer_id",)

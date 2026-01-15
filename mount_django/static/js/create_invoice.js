@@ -951,7 +951,6 @@ export function updateTotals(invoiceItems, globalDiscount, globalTax) {
     const balanceDue = document.getElementById('balanceDue');
 
     window.receivableAmount.addEventListener('input', () => {
-        console.log("yo receivable amount ho ", window.receivableAmount.value)
         if (window.receivableAmount.value == "" || window.receivableAmount.value >= total) {
             balanceDueAmount.style.display = "none";
         }
@@ -959,7 +958,7 @@ export function updateTotals(invoiceItems, globalDiscount, globalTax) {
             balanceDueAmount.style.display = "flex";
         }
         balanceDue.value = total - Number(window.receivableAmount.value);
-        console.log("yo hoo aba chai", balanceDue.value)
+       
     });
 }
 

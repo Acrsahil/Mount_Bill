@@ -26,6 +26,7 @@ from .models import (
     RemainingAmount,
     PaymentIn,
     PaymentOut,
+    BalanceAdjustment,
 )
 
 
@@ -154,14 +155,20 @@ def client_info_payment_id(request,id: UUID):
         return JsonResponse({"client": [],"payment_id": 0})
     # for client name 
     client = Customer.objects.get(uid = id)
+    remaining = RemainingAmount.objects.filter(customer__uid = id).order_by('-id').first()
     client_name = client.name
+    client_address = client.address
+    client_phone = client.phone
     # latest payment id
     latest_payment_id = PaymentIn.objects.aggregate(latest_id=Max('id'))['latest_id'] or 0
 
     # latest payment out id
     latest_paymentout_id = PaymentOut.objects.aggregate(latest_id=Max('id'))['latest_id'] or 0
 
-    return JsonResponse({"client_name":client_name,"latest_payment_id":latest_payment_id,"latest_paymentout_id":latest_paymentout_id})
+    return JsonResponse({"client_name":client_name,"latest_payment_id":latest_payment_id,"latest_paymentout_id":latest_paymentout_id,"remaining":remaining.remaining_amount,
+                         "client_address":client_address,
+                         "client_phone":client_phone
+                         })
     
 
 def get_serialized_data(user, active_tab="dashboard"):
@@ -834,20 +841,48 @@ def save_client(request):
         email = data.get("email", "").strip()
         pan_id = data.get("pan_id", "").strip()
         address = data.get("address", "").strip()
+        toReceive = float(data.get("toReceiveAmount"))
+        print(toReceive)
+        toGive = float(data.get("toGiveAmount"))
+        customer_type = data.get("customer_type")
         user = request.user
 
         company = None
         company = user.owned_company or user.active_company
 
         if company:
-            client = Customer.objects.create(
-                company=company,
-                name=name,
-                phone=phone,
-                email=email,
-                pan_id=pan_id,
-                address=address,
-            )
+            with transaction.atomic():
+                client = Customer.objects.create(
+                    company=company,
+                    name=name,
+                    phone=phone,
+                    email=email,
+                    pan_id=pan_id,
+                    address=address,
+                    customer_type = customer_type,
+                )
+                if toReceive > 0 and toGive == 0:
+                    remaining = RemainingAmount.objects.create(
+                        customer = client,
+                        orders = None,
+                        remaining_amount = toReceive,
+                    )
+                elif toGive > 0 and toReceive == 0:
+                    remaining = RemainingAmount.objects.create(
+                        customer = client,
+                        orders = None,
+                        remaining_amount = float(0.0),
+                    )
+                    remaining.remaining_amount -= toGive
+                    remaining.save()
+                else:
+                    remaining_amount = 0  # both are 0
+
+                    remaining = RemainingAmount.objects.create(
+                        customer=client,
+                        orders=None,
+                        remaining_amount=remaining_amount,
+                    )
             return JsonResponse(
                 {
                     "success": True,
@@ -861,11 +896,26 @@ def save_client(request):
                         "pan_id": client.pan_id,
                         "address": client.address,
                     },
+                    "remaining":remaining.remaining_amount
+
                 }
             )
 
     except Exception as e:
         return JsonResponse({"success": False, "error": f"Server error: {str(e)}"})
+    
+   
+@require_http_methods(["DELETE"])
+def delete_client(request,id: UUID = None):
+    try:
+        client = get_object_or_404(Customer,id = id)
+        print(client)
+        client.delete()
+        print(client)
+        return JsonResponse({"success": True,"message":"Client deleted Successfully!!"})
+    except Exception as e:
+        print("Delete Client Error:", e)
+        return JsonResponse({"success":False, "error":f"Server error: {str(e)}"})
 
 @require_POST
 @csrf_exempt
@@ -904,7 +954,6 @@ def delete_invoice(request, id):
 
 @require_http_methods(["DELETE"])
 def delete_product(request, id):
-    print("this is id-> ", id)
     product = get_object_or_404(Product, id=id)
     product.delete()
     return JsonResponse({"success": True})
@@ -1167,7 +1216,9 @@ def client_detail(request,id: UUID):
     context = get_serialized_data(request.user, "dashboard")
     if id:
         customer = get_object_or_404(Customer,uid=id)
+        remaining = RemainingAmount.objects.filter(customer__uid = id).order_by('-id').first()
         context["customer_info"] = customer
+        context["customer_balance"] = remaining
     return render(request, "website/client_detail.html", context)
 
 def fetch_transactions(request,id:UUID):
@@ -1180,6 +1231,7 @@ def fetch_transactions(request,id:UUID):
     transactions = OrderList.objects.filter(customer__uid = id).order_by('-id')
     payment_in_transactions = PaymentIn.objects.filter(customer__uid =id)
     payment_out_transactions = PaymentOut.objects.filter(customer__uid = id)
+    client = Customer.objects.get(uid = id)
     invoiceData = []
     for transaction in transactions:
         summary = getattr(transaction,"summary",None)
@@ -1216,7 +1268,27 @@ def fetch_transactions(request,id:UUID):
             "type": "paymentOut"
 
         })
-    mergedData = invoiceData + paymentInData + paymentOutData
+    
+    clientData =[]
+    remaining = RemainingAmount.objects.filter(customer__uid = id).order_by('id').first()
+    clientData.append({
+        "date":client.date,
+        "balance":remaining.remaining_amount,
+        "type": "Opening"
+    })
+
+    addAdjustmentBalance = []
+    balance_adjustments = BalanceAdjustment.objects.filter(customer__uid = id)
+    for balance_adjust in balance_adjustments:
+        addAdjustmentBalance.append({
+            "date":balance_adjust.date,
+            "amount":abs(balance_adjust.amount),
+            "balance":balance_adjust.remainings.remaining_amount,
+            "remarks":balance_adjust.remarks,
+            "type":"add" if balance_adjust.amount > 0 else "reduce" 
+        })
+
+    mergedData = invoiceData + paymentInData + paymentOutData + clientData + addAdjustmentBalance
     mergedData.sort(key=lambda x: x["date"], reverse=True)
     return JsonResponse({"success":True,
                          "transactions":mergedData})
@@ -1232,25 +1304,15 @@ def payment_in(request,id):
         remainingAmount = RemainingAmount.objects.filter(customer_id=id).order_by('-id').first()
         # to send the uid of the customer 
         customer = Customer.objects.get(id=id)
-        # if the remaining amount is not there then create one
+       
+        latest_remaining = remainingAmount.remaining_amount if remainingAmount else Decimal("0.0")
+        current_remaining = latest_remaining - payment_in
 
-        if not remainingAmount:
-            remainingAmount = RemainingAmount.objects.create(
-            customer_id=id,
+        new_remaining = RemainingAmount.objects.create(customer_id=id,
             orders=None,
-            remaining_amount=Decimal("0.00")
-            )
-        else:
-            remainingAmount = RemainingAmount.objects.create(
-            customer_id=id,
-            orders=None,
-            remaining_amount=Decimal(remainingAmount.remaining_amount)
-            )
-        remainingAmount.remaining_amount -= payment_in
-
-        remainingAmount.save()
-
-        paymentIn = PaymentIn.objects.create(customer_id=id,date=payment_in_date,remainings=remainingAmount,payment_in=payment_in,remarks=payment_in_remark)
+            remaining_amount=current_remaining)
+        
+        paymentIn = PaymentIn.objects.create(customer_id=id,date=payment_in_date,remainings=new_remaining,payment_in=payment_in,remarks=payment_in_remark)
         paymentIn.save()
 
         return JsonResponse({"success":True,"uid":customer.uid})
@@ -1271,25 +1333,17 @@ def payment_out(request,id):
         remainingAmount = RemainingAmount.objects.filter(customer_id=id).order_by('-id').first()
         # to send the uid of the customer 
         customer = Customer.objects.get(id=id)
-        # if the remaining amount is not there then create one
+       
+        last_remaining = remainingAmount.remaining_amount if remainingAmount else Decimal("0.0")
+        current_remaining = last_remaining + payment_out
 
-        if not remainingAmount:
-            remainingAmount = RemainingAmount.objects.create(
+        new_remaining = RemainingAmount.objects.create(
             customer_id=id,
             orders=None,
-            remaining_amount=Decimal("0.00")
-            )
-        else:
-            remainingAmount = RemainingAmount.objects.create(
-            customer_id=id,
-            orders=None,
-            remaining_amount=Decimal(remainingAmount.remaining_amount)
-            )
-        remainingAmount.remaining_amount += payment_out
+            remaining_amount=current_remaining
+        )
 
-        remainingAmount.save()
-
-        paymentOut = PaymentOut.objects.create(customer_id=id,date=payment_out_date,remainings=remainingAmount,payment_out=payment_out,remarks=payment_out_remark)
+        paymentOut = PaymentOut.objects.create(customer_id=id,date=payment_out_date,remainings=new_remaining,payment_out=payment_out,remarks=payment_out_remark)
         paymentOut.save()
 
         return JsonResponse({"success":True,"uid":customer.uid})
@@ -1298,6 +1352,58 @@ def payment_out(request,id):
             {"success": False, "error": f"Server error: {str(e)}"}, status=500
         )
     
+
+
+@require_POST
+@transaction.atomic
+def balance_adjustment(request, id):
+    try:
+        data = json.loads(request.body)
+        toAddAmount = Decimal(data.get("toAddAmount") or "0")
+        toReduceAmount = Decimal(data.get("toReduceAmount") or "0")
+        remarks = data.get("adjustment_remark", "")
+
+        remaining = (
+            RemainingAmount.objects
+            .filter(customer_id=id)
+            .order_by('-id')
+            .first()
+        )
+        customer = Customer.objects.get(id=id)
+        last_remaining = remaining.remaining_amount if remaining else Decimal("0.00")
+        if toAddAmount > 0 and toReduceAmount == 0:
+            amount = toAddAmount
+        elif toReduceAmount > 0 and toAddAmount == 0:
+            amount = -toReduceAmount
+        else:
+            return JsonResponse(
+                {"success": False, "error": "Invalid adjustment"},
+                status=400
+            )
+
+        new_balance = last_remaining + amount
+
+        new_remaining = RemainingAmount.objects.create(
+            customer_id=id,
+            orders=None,
+            remaining_amount=new_balance
+        )
+
+        BalanceAdjustment.objects.create(
+            customer_id=id,
+            remainings=new_remaining,
+            amount=amount,
+            remarks=remarks
+        )
+
+        return JsonResponse({"success": True,"uid":customer.uid})
+
+    except Exception as e:
+        return JsonResponse(
+            {"success": False, "error": str(e)},
+            status=500
+        )
+
 
 def product_detail(request, id: UUID = None):
     context = get_serialized_data(request.user, "dashboard")
