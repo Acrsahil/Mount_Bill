@@ -956,12 +956,16 @@ def update_opening_balance(request,id:UUID):
         customer_opening_type = data.get("customer_opening_type")
 
         oldest_remaining = RemainingAmount.objects.filter(customer__uid = id).order_by('id').first()
+        customer = Customer.objects.get(uid = id)
      
         if customer_opening_type == "TORECEIVE":
             oldest_remaining.remaining_amount = opening_balance
+            customer.opening_type = "TORECEIVE"
         elif customer_opening_type == "TOGIVE":
             oldest_remaining.remaining_amount = -opening_balance
+            customer.opening_type = "TOGIVE"
         oldest_remaining.save()
+        customer.save()
         
         return JsonResponse({"success":True})
     except Exception as e:
