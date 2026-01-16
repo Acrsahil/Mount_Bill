@@ -274,6 +274,7 @@ class PaymentInAdmin(admin.ModelAdmin):
         "date",
         "payment_in",
         "remarks",
+        "remainings"
     )
     search_fields = ("customer_id",)
 

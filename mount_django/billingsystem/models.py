@@ -282,7 +282,7 @@ class RemainingAmount(models.Model):
     remaining_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
 
     def __str__(self):
-        return f"remaining amount:{self.remaining_amount}"
+        return f"{self.id}"
 
 
 class ItemActivity(models.Model):

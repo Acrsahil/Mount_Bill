@@ -22,6 +22,7 @@ urlpatterns = [
     path("client-detail/<uuid:id>/", views.client_detail, name="client_detail"),
     path("client-update/<int:id>/",views.update_client,name="update_client"),
     path("update-opening/<uuid:id>/",views.update_opening_balance,name="update_opening_balance"),
+    path("update-payment_in/<int:id>/",views.update_payment_in,name="update_payment_in"),
     path("save-product/", views.save_product, name="save_product"),
     path("update-product/<int:id>/", views.update_product, name="update_product"),
     path("delete-product/<int:id>/", views.delete_product, name="delete_product"),

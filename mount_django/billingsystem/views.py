@@ -1353,6 +1353,35 @@ def payment_in(request,id):
             {"success": False, "error": f"Server error: {str(e)}"}, status=500
         )
 
+def update_payment_in(request,id):
+    try:
+        data = json.loads(request.body)
+        latest_payment_in = data.get("paymentInAmount")
+        update_remarks = data.get("updatePaymentRemarks")
+
+        previous_payment_in = PaymentIn.objects.get(id = id)
+        previous_amount = previous_payment_in.payment_in
+        previous_remaining = previous_payment_in.remainings.remaining_amount
+
+        amount_to_calculate_on = Decimal(str(previous_remaining)) + Decimal(str(previous_amount))
+       
+        # after updating the amount
+        latest_remaining  = Decimal(str(amount_to_calculate_on)) - Decimal(str(latest_payment_in)) 
+        
+        
+        # latest remaining amount now
+        previous_payment_in.remainings.remaining_amount= latest_remaining
+
+        # new incoming payment in amount and remarks
+        previous_payment_in.payment_in = latest_payment_in
+        previous_payment_in.remarks = update_remarks
+
+        previous_payment_in.remainings.save()
+        previous_payment_in.save()
+        return JsonResponse({"success":True})
+    except Exception as e:
+        return JsonResponse({"success":False,"error": f"Server error: {str(e)}"}, status=500)
+    
 
 @require_POST
 def payment_out(request,id):

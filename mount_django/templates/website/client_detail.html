@@ -308,7 +308,7 @@
 
       <button
         class="px-4 py-2 border border-gray-300 rounded-md text-sm
-               text-gray-700 hover:bg-gray-100 transition">
+               text-gray-700 hover:bg-gray-100 transition" id ="saveAndNew">
         Save & New
       </button>
 
@@ -322,6 +322,7 @@
                hover:bg-blue-700 transition" id="savePaymentOut">
         Save Payment Out
       </button>
+
 
     </div>
 
@@ -521,9 +522,131 @@
 
   </div>
 </div>
+<!-- UpdatePayment Modal -->
+<div id="updatePaymentModal"
+     class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 hidden">
 
+  <!-- Modal -->
+  <div
+  class="bg-white w-full max-w-3xl rounded-lg shadow-lg p-6"
+  onclick="event.stopPropagation()"
+>
+
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-6">
+
+      <h2 class="text-xl font-semibold text-gray-800">
+        Edit Payment In
+      </h2>
+
+      <!-- Close Button -->
+      <button
+        type="button"
+        class="w-8 h-8 flex items-center justify-center rounded-full
+               text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition"
+        aria-label="Close" id="closeUpdate"
+      >
+        ✕
+      </button>
+
+    </div>
+
+    <!-- Body -->
+    <div class="space-y-5">
+
+      <!-- First Row -->
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm text-gray-600 mb-1">Receipt Number</label>
+          <input
+            type="text"
+            placeholder="ID from DB"
+            class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" id="updateReceiptNumber">
+        </div>
+
+        <div>
+          <label class="block text-sm text-gray-600 mb-1">Date</label>
+          <input
+            type="date"
+            class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" id="updatePaymentInDate">
+        </div>
+      </div>
+
+      <!-- Second Row -->
+      <div>
+        <label class="block text-sm text-gray-600 mb-1">Party Name</label>
+        <input
+          type="text"
+          class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" id="updatePartyName">
+      </div>
+
+      <!-- Third Row -->
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm text-gray-600 mb-1" id="amountInputLabel">Received Amount</label>
+          <input
+            type="text"
+            class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" id= "updateAmountInput">
+        </div>
+
+        <div>
+          <label class="block text-sm text-gray-600 mb-1">Payment Method</label>
+          <input
+            type="text"
+            placeholder="Cash"
+            class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+        </div>
+      </div>
+
+      <!-- Fourth Row -->
+      <div>
+        <label class="block text-sm text-gray-600 mb-1">Remarks</label>
+        <input
+          type="text"
+          class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" id="updatePaymentRemarks">
+      </div>
+
+    </div>
+
+    <!-- Footer -->
+    <div class="flex justify-end gap-3 mt-8 pt-4 border-t">
+      <button
+        class="px-4 py-2 border border-gray-300 rounded-md text-sm
+               text-gray-700 hover:bg-gray-100 transition" id = "deletePaymentIn">
+        Delete
+      </button>
+      <button
+        class="px-4 py-2 border border-gray-300 rounded-md text-sm
+               text-gray-700 hover:bg-gray-100 transition" id= "printPaymentIn">
+        Print
+      </button>
+      <button
+        class="px-4 py-2 bg-blue-600 text-white rounded-md text-sm
+               hover:bg-blue-700 transition" id="editPaymentIn">
+        Edit Details
+      </button>
+      <button
+        class="px-4 py-2 border border-gray-300 rounded-md text-sm
+               text-gray-700 hover:bg-gray-100 transition hidden" id = "cancelEditPaymentIn">
+        Cancel
+      </button>
+      <button
+        class="px-4 py-2 bg-blue-600 text-white rounded-md text-sm
+               hover:bg-blue-700 transition hidden" id="updatePaymentIn">
+        Update Payment In
+      </button>
+
+
+    </div>
+
+  </div>
+</div>
+
+
+  </div>
 
 {% include "website/modal/client_add_modal.html" %}
+{% include "website/invoice_modal.html" %}
 {% comment %} {% include "website/create_invoice.html" %} {% endcomment %}
 {% endblock %}
 {% block extra_js %}

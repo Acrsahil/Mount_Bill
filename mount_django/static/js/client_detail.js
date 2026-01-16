@@ -2,6 +2,8 @@ import { loadClients } from "./dom.js";
 import { selectClientFromHint,saveClient,selectType,selectedType,selectedOpeningType,selectOpeningType } from "./events.js";
 import{ activateTabAll } from "./client.js";
 import { showAlert } from "./utils.js";
+import { openModal } from './bill_layout.js';
+import { invoice_uid } from './product.js';
 document.addEventListener('DOMContentLoaded', () => {
 
     const toReceiveBtn = document.getElementById("toReceive");
@@ -519,6 +521,11 @@ function loadTransactions(transaction, tableBody) {
 
     const row = document.createElement('tr');
     
+    row.classList.add(
+    "cursor-pointer",
+    "hover:bg-gray-100",
+    "transition"
+);
     row.dataset.type = transaction.type;
     row.dataset.id = transaction.id || "";
     if (transaction.type === 'sale') {
@@ -574,11 +581,20 @@ function loadTransactions(transaction, tableBody) {
 
     tableBody.appendChild(row);
     row.addEventListener('click',()=>{
-        if(row.dataset.type === "Opening"){
-            
+        if(row.dataset.type === "Opening"){  
             openUpdateOpeningFunc()
-            
-            
+        }
+        else if(row.dataset.type === "sale"){
+            invoice_uid(row.dataset.id).then(data => {
+                
+                openModal(data)
+            });
+        }
+        else if(row.dataset.type === "payment"){
+            const updatePaymentIn = document.getElementById('updatePaymentIn');
+            updatePaymentIn.dataset.id = row.dataset.id;
+            const updatePaymentModal = document.getElementById('updatePaymentModal')
+            updatePaymentModal.style.display = 'flex';
         }
     })
 }
@@ -832,9 +848,16 @@ document.addEventListener('DOMContentLoaded', () => {
 //for adjust balance 
 const adjustBalance = document.getElementById('adjustBalance');
 
-adjustBalance.addEventListener('click',()=>{
+adjustBalance.addEventListener('click',async()=>{
     document.getElementById('adjustBalanceModal').classList.remove('hidden');
-     const adjustmentDate = document.getElementById('adjustmentDate');
+    const adjustmentDate = document.getElementById('adjustmentDate');
+
+    const clientId = getUidFromUrl();
+    if(!clientId) return;
+    const data = await clientLatestRemaining(clientId)
+    document.getElementById('currentBalance').value = Number(data.remaining)
+    document.getElementById('adjustedBalance').value = Number(data.remaining) 
+    //populating the form 
     if (adjustmentDate) {
         const today = new Date().toISOString().split('T')[0];
         adjustmentDate.value = today;
@@ -848,10 +871,30 @@ const closeAdjustBalance = document.getElementById('closeAdjustBalance');
 const cancelAdjustBalance = document.getElementById('cancelAdjustBalance');
 closeAdjustBalance.addEventListener('click',()=>{
     activateButton(addBtn, reduceBtn);
+    document.getElementById('currentBalance').value = '';
+    document.getElementById('adjustedBalance').value = '';
+    const addAmount = document.getElementById('addAmount');
+    const reduceAmount = document.getElementById('reduceAmount');
+    if(addAmount){
+        addAmount.value ='';
+    }
+    else if(reduceAmount){
+        reduceAmount.value ='';
+    }
     document.getElementById('adjustBalanceModal').classList.add('hidden');
 })
 cancelAdjustBalance.addEventListener('click',()=>{
     activateButton(addBtn, reduceBtn);
+    document.getElementById('currentBalance').value = '';
+    document.getElementById('adjustedBalance').value = '';
+    const addAmount = document.getElementById('addAmount');
+    const reduceAmount = document.getElementById('reduceAmount');
+    if(addAmount){
+        addAmount.value ='';
+    }
+    else if(reduceAmount){
+        reduceAmount.value ='';
+    }
     document.getElementById('adjustBalanceModal').classList.add('hidden');
 })
 
@@ -934,6 +977,16 @@ async function balanceAdjustmentFunc(clientId){
                 document.getElementById('reduceAmount').value = '';
                 document.getElementById('adjustmentRemarks').value = '';
                 document.getElementById('adjustBalanceModal').classList.add('hidden');
+                document.getElementById('currentBalance').value = '';
+                document.getElementById('adjustedBalance').value = '';
+                const addAmount = document.getElementById('addAmount');
+                const reduceAmount = document.getElementById('reduceAmount');
+                if(addAmount){
+                    addAmount.value ='';
+                }
+                else if(reduceAmount){
+                    reduceAmount.value ='';
+                }
                 activateButton(addBtn, reduceBtn);
             }else {
             showAlert(result.message || "Adjustment failed");
@@ -963,13 +1016,13 @@ adjustedBalance.value = Number(data.remaining)
 //dynamic change at the footer
 if(addAmount){
     addAmount.addEventListener('input',async()=>{
-        adjustedBalance.value = Number(data.remaining) + Number(addAmount.value)
+        adjustedBalance.value = Number(currentBalance.value)  + Number(addAmount.value)
 
     })
 }
 if(reduceAmount){
     reduceAmount.addEventListener('input',async()=>{
-        adjustedBalance.value  = Number(data.remaining) - Number(reduceAmount.value)
+        adjustedBalance.value  = Number(currentBalance.value)  - Number(reduceAmount.value)
 
     })
 }
@@ -1050,6 +1103,85 @@ async function savePaymentInFunc(clientId){
             savePaymentIn.disabled = false;
         }
 
+}
+
+// edit and update PaymentIn Funcion 
+
+//after clicking the edit buttons
+document.addEventListener('DOMContentLoaded',()=>{
+    const updatePaymentIn = document.getElementById('updatePaymentIn');
+    const editBtn = document.getElementById('editPaymentIn');
+    
+    editBtn.addEventListener('click',()=>{
+        console.log("clicking???")
+        document.getElementById('cancelEditPaymentIn').classList.remove('hidden');
+        updatePaymentIn .classList.remove('hidden');
+        document.getElementById('deletePaymentIn').classList.add('hidden');
+        document.getElementById('printPaymentIn').classList.add('hidden');
+        editBtn.classList.add('hidden');
+        
+    })
+//now updating the paymentIn
+    updatePaymentIn.addEventListener('click',async()=>{
+        await updatePaymentInFunc(updatePaymentIn.dataset.id)
+    })
+
+    //close the update modal
+    const closeUpdate = document.getElementById('closeUpdate');
+    closeUpdate.addEventListener('click',()=>{
+        const updatePaymentModal = document.getElementById('updatePaymentModal')
+        updatePaymentModal.style.display = 'none';
+
+    })
+})
+
+async function updatePaymentInFunc(paymentInId){
+    const amountInputValue = document.getElementById('updateAmountInput')?.value;
+    const updatePaymentRemarks = document.getElementById('updatePaymentRemarks')?.value || "";
+    const updatePaymentIn = document.getElementById('updatePaymentIn');
+    const originalText = updatePaymentIn.innerHTML;
+        
+    updatePaymentIn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
+    updatePaymentIn.disabled = true;
+    //prepare for sending data
+    try{
+        const updatePaymentIn = {
+            paymentInAmount:amountInputValue,
+            updatePaymentRemarks:updatePaymentRemarks,
+        }
+    // Send AJAX request to Django
+        const response = await fetch(`/dashboard/update-payment_in/${paymentInId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': window.djangoData.csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify(updatePaymentIn)
+        });
+
+        const result = await response.json();
+
+        //immediately load the transactions
+        if(result.success === true){
+            const uid = getUidFromUrl()
+            fetchTransactions(uid)
+            updateClientInfo(uid)
+            await new Promise(resolve => setTimeout(resolve,1500))
+            //emptying the modal form
+            const updatePaymentModal = document.getElementById('updatePaymentModal')
+            updatePaymentModal.style.display = 'none';
+        }else {
+            showAlert(result.message || "Update failed");
+        }
+
+}catch (error) {
+        console.error('Error updating amount:', error);
+}finally {
+            // Restore button state
+            updatePaymentIn.innerHTML = originalText;
+            updatePaymentIn.disabled = false;
+        }
 }
 
 //savePaymentOut funcion 
