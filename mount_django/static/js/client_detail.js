@@ -685,7 +685,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 
     //closing the opening balance modal 
     closeOpeningBalanceModal.addEventListener('click',()=>{
-        
+        resetOpeningUpdateFunc()
         openingBalanceModal.classList.add('hidden')
     })
 
@@ -700,6 +700,19 @@ document.addEventListener('DOMContentLoaded',()=>{
         });
 })
 
+//reseting the opening balance form
+function resetOpeningUpdateFunc(){
+    document.getElementById('cancelOpeningEdit').classList.add('hidden');
+    document.getElementById('updateOpening').classList.add('hidden');
+    document.getElementById('deleteOpening').classList.remove('hidden');
+    document.getElementById('editBtn').classList.remove('hidden');
+
+    document.getElementById('receive').disabled = true;
+    document.getElementById('give').disabled = true;
+    document.getElementById('openingAmount').readOnly = true;
+    document.getElementById('openingDate').readOnly = true;
+
+}
 
 //updating the opening balance function 
 async function updateOpeningFunc(clientId){
@@ -727,6 +740,7 @@ async function updateOpeningFunc(clientId){
                 
                 updateClientInfo(clientId)
                 fetchTransactions(clientId)
+                resetOpeningUpdateFunc()
                 openingBalanceModal.classList.add('hidden')
             }
     }catch (error) {
