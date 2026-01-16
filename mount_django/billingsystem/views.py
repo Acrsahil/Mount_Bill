@@ -1253,6 +1253,7 @@ def client_detail(request,id: UUID):
         context["customer_balance"] = remaining
     return render(request, "website/client_detail.html", context)
 
+@login_required
 def fetch_transactions(request,id:UUID):
     user = request.user
     company = user.owned_company or user.active_company
@@ -1352,6 +1353,29 @@ def payment_in(request,id):
         return JsonResponse(
             {"success": False, "error": f"Server error: {str(e)}"}, status=500
         )
+
+# to fill the update payment in modal form
+@login_required
+def fill_update_payment_modal(request,id):
+    user = request.user
+    company = user.owned_company or user.active_company
+
+    if not company:
+        return JsonResponse({"transactions": []})
+    
+    payment_in_data = get_object_or_404(
+        PaymentIn,
+        id=id,
+    )
+    fill_up_data = {
+        "id":payment_in_data.id,
+        "name":payment_in_data.customer.name,
+        "date":payment_in_data.date,
+        "amount":payment_in_data.payment_in,
+        "remarks":payment_in_data.remarks
+    }
+    return JsonResponse({"fill_up_data":fill_up_data})
+
 
 def update_payment_in(request,id):
     try:

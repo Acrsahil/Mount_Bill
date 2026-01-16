@@ -593,8 +593,12 @@ function loadTransactions(transaction, tableBody) {
         else if(row.dataset.type === "payment"){
             const updatePaymentIn = document.getElementById('updatePaymentIn');
             updatePaymentIn.dataset.id = row.dataset.id;
+            //fil the form 
+            fillUpdatePaymentIn(row.dataset.id)
+
             const updatePaymentModal = document.getElementById('updatePaymentModal')
             updatePaymentModal.style.display = 'flex';
+
         }
     })
 }
@@ -1113,12 +1117,18 @@ document.addEventListener('DOMContentLoaded',()=>{
     const editBtn = document.getElementById('editPaymentIn');
     
     editBtn.addEventListener('click',()=>{
-        console.log("clicking???")
+    
         document.getElementById('cancelEditPaymentIn').classList.remove('hidden');
         updatePaymentIn .classList.remove('hidden');
         document.getElementById('deletePaymentIn').classList.add('hidden');
         document.getElementById('printPaymentIn').classList.add('hidden');
         editBtn.classList.add('hidden');
+
+        document.getElementById('updateReceiptNumber').readOnly = false;
+        document.getElementById('updatePaymentInDate').readOnly = false;
+        document.getElementById('updatePartyName').readOnly = false;
+        document.getElementById('updateAmountInput').readOnly = false;
+        document.getElementById('updatePaymentRemarks').readOnly = false;
         
     })
 //now updating the paymentIn
@@ -1128,13 +1138,54 @@ document.addEventListener('DOMContentLoaded',()=>{
 
     //close the update modal
     const closeUpdate = document.getElementById('closeUpdate');
+    const cancelEditPaymentIn = document.getElementById('cancelEditPaymentIn');
     closeUpdate.addEventListener('click',()=>{
-        const updatePaymentModal = document.getElementById('updatePaymentModal')
-        updatePaymentModal.style.display = 'none';
+        closeUpdatePaymentModal()
 
     })
+    cancelEditPaymentIn.addEventListener('click',()=>{
+        closeUpdatePaymentModal()
+
+    })
+
+    function closeUpdatePaymentModal(){
+        const updatePaymentModal = document.getElementById('updatePaymentModal');
+        updatePaymentModal.style.display = 'none';
+        resetButton()
+    }
 })
 
+//fill the updatePaymentIn func 
+async function fillUpdatePaymentIn(paymentInId){
+    const response = await fetch(`/dashboard/fill-payment-in-modal/${paymentInId}/`)
+    const data = await response.json(); 
+    const data_to_fill = data.fill_up_data
+
+    const dateObj = new Date(data_to_fill.date);
+    const formattedDate = dateObj.toISOString().split('T')[0];
+
+    document.getElementById('updatePartyName').value = data_to_fill.name;
+    document.getElementById('updateReceiptNumber').value = data_to_fill.id;
+    document.getElementById('updatePaymentInDate').value = formattedDate;
+    document.getElementById('updateAmountInput').value = data_to_fill.amount;
+    document.getElementById('updatePaymentRemarks').value = data_to_fill.remarks;
+}
+
+
+//resetting the button after updating or closing 
+function resetButton(){
+    document.getElementById('cancelEditPaymentIn').classList.add('hidden');
+    document.getElementById('updatePaymentIn').classList.add('hidden');
+    document.getElementById('deletePaymentIn').classList.remove('hidden');
+    document.getElementById('printPaymentIn').classList.remove('hidden');
+    document.getElementById('editPaymentIn').classList.remove('hidden');
+
+     document.getElementById('updateReceiptNumber').readOnly = true;
+    document.getElementById('updatePaymentInDate').readOnly = true;
+    document.getElementById('updatePartyName').readOnly = true;
+    document.getElementById('updateAmountInput').readOnly = true;
+    document.getElementById('updatePaymentRemarks').readOnly = true;
+}
 async function updatePaymentInFunc(paymentInId){
     const amountInputValue = document.getElementById('updateAmountInput')?.value;
     const updatePaymentRemarks = document.getElementById('updatePaymentRemarks')?.value || "";
@@ -1168,7 +1219,9 @@ async function updatePaymentInFunc(paymentInId){
             fetchTransactions(uid)
             updateClientInfo(uid)
             await new Promise(resolve => setTimeout(resolve,1500))
-            //emptying the modal form
+
+            //reset button
+            resetButton()
             const updatePaymentModal = document.getElementById('updatePaymentModal')
             updatePaymentModal.style.display = 'none';
         }else {
