@@ -1378,7 +1378,30 @@ def fill_update_payment_modal(request,id):
     }
     return JsonResponse({"fill_up_data":fill_up_data})
 
+# to fill the update payment out modal form
+@login_required
+def fill_update_payment_out_modal(request,id):
+    user = request.user
+    company = user.owned_company or user.active_company
 
+    if not company:
+        return JsonResponse({"transactions": []})
+    
+    payment_out_data = get_object_or_404(
+        PaymentOut,
+        id=id,
+    )
+    fill_up_data = {
+        "id":payment_out_data.id,
+        "name":payment_out_data.customer.name,
+        "date":payment_out_data.date,
+        "amount":payment_out_data.payment_out,
+        "remarks":payment_out_data.remarks
+    }
+    return JsonResponse({"fill_up_data":fill_up_data})
+
+
+@login_required
 def update_payment_in(request,id):
     try:
         data = json.loads(request.body)
@@ -1408,6 +1431,33 @@ def update_payment_in(request,id):
     except Exception as e:
         return JsonResponse({"success":False,"error": f"Server error: {str(e)}"}, status=500)
     
+@login_required
+def update_payment_out(request,id):
+    try:
+        data = json.loads(request.body)
+        payment_out_amount = data.get("paymentOutAmount")
+        update_remarks = data.get("updatePaymentRemarks")
+
+        paymentOut = PaymentOut.objects.get(id=id)
+
+        previous_remaining = paymentOut.remainings.remaining_amount
+        previous_payment_amount = paymentOut.payment_out
+
+        amount_to_calculate_on = Decimal(str(previous_remaining)) - Decimal(str(previous_payment_amount))
+
+        latest_remaining = Decimal(str(payment_out_amount)) + Decimal(str(amount_to_calculate_on))
+
+        paymentOut.remainings.remaining_amount = latest_remaining
+        paymentOut.payment_out = payment_out_amount
+        paymentOut.remarks = update_remarks
+
+
+        paymentOut.remainings.save()
+        paymentOut.save()
+        return JsonResponse({"success":True})
+
+    except Exception as e:
+        return JsonResponse({"success":False,"error": f"Server error: {str(e)}"}, status=500)
 
 @require_POST
 def payment_out(request,id):

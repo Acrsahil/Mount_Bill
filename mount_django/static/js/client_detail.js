@@ -580,7 +580,7 @@ function loadTransactions(transaction, tableBody) {
     }
 
     tableBody.appendChild(row);
-    row.addEventListener('click',()=>{
+    row.addEventListener('click',async()=>{
         if(row.dataset.type === "Opening"){  
             openUpdateOpeningFunc()
         }
@@ -592,12 +592,29 @@ function loadTransactions(transaction, tableBody) {
         }
         else if(row.dataset.type === "payment"){
             const updatePaymentIn = document.getElementById('updatePaymentIn');
+            const editPaymentIn = document.getElementById('editPaymentIn');
             updatePaymentIn.dataset.id = row.dataset.id;
+            editPaymentIn.dataset.type = row.dataset.type;
+            document.getElementById('editHeader').textContent = "Edit Payment In";
             //fil the form 
-            fillUpdatePaymentIn(row.dataset.id)
+            await fillUpdatePaymentIn(row.dataset.id)
 
             const updatePaymentModal = document.getElementById('updatePaymentModal')
             updatePaymentModal.style.display = 'flex';
+
+        }
+        else if(row.dataset.type === "paymentOut"){
+            const updatePaymentOut = document.getElementById('updatePaymentOut');
+            const editPaymentIn = document.getElementById('editPaymentIn');
+            updatePaymentOut.dataset.id = row.dataset.id;
+            editPaymentIn.dataset.type = row.dataset.type;
+        //reset the form
+            document.getElementById('editHeader').textContent = "Edit Payment Out";
+            const updatePaymentModal = document.getElementById('updatePaymentModal')
+            updatePaymentModal.style.display = 'flex';
+
+            //fil the form 
+            await fillUpdatePaymentOut(row.dataset.id);
 
         }
     })
@@ -1120,15 +1137,23 @@ async function savePaymentInFunc(clientId){
 //after clicking the edit buttons
 document.addEventListener('DOMContentLoaded',()=>{
     const updatePaymentIn = document.getElementById('updatePaymentIn');
+    const updatePaymentOut = document.getElementById('updatePaymentOut');
     const editBtn = document.getElementById('editPaymentIn');
     
     editBtn.addEventListener('click',()=>{
     
         document.getElementById('cancelEditPaymentIn').classList.remove('hidden');
-        updatePaymentIn .classList.remove('hidden');
         document.getElementById('deletePaymentIn').classList.add('hidden');
         document.getElementById('printPaymentIn').classList.add('hidden');
         editBtn.classList.add('hidden');
+        if(editBtn.dataset.type === "payment"){
+            updatePaymentIn.style.display = 'flex';  
+            updatePaymentOut.classList.add('hidden');
+        }
+        if(editBtn.dataset.type === "paymentOut"){
+            updatePaymentIn.style.display = 'none';  
+            updatePaymentOut.classList.remove('hidden');
+        }
 
         document.getElementById('updateReceiptNumber').readOnly = false;
         document.getElementById('updatePaymentInDate').readOnly = false;
@@ -1142,6 +1167,10 @@ document.addEventListener('DOMContentLoaded',()=>{
         await updatePaymentInFunc(updatePaymentIn.dataset.id)
     })
 
+    //now updating the paymentOut
+    updatePaymentOut.addEventListener('click',async()=>{
+        await updatePaymentOutFunc(updatePaymentOut.dataset.id)
+    })
     //close the update modal
     const closeUpdate = document.getElementById('closeUpdate');
     const cancelEditPaymentIn = document.getElementById('cancelEditPaymentIn');
@@ -1177,6 +1206,21 @@ async function fillUpdatePaymentIn(paymentInId){
     document.getElementById('updatePaymentRemarks').value = data_to_fill.remarks;
 }
 
+//fill the updatePaymentOut Funcion
+async function fillUpdatePaymentOut(paymentOutId){
+    const response = await fetch(`/dashboard/fill-payment-out-modal/${paymentOutId}/`)
+    const data = await response.json(); 
+    const data_to_fill = data.fill_up_data
+
+    const dateObj = new Date(data_to_fill.date);
+    const formattedDate = dateObj.toISOString().split('T')[0];
+
+    document.getElementById('updatePartyName').value = data_to_fill.name;
+    document.getElementById('updateReceiptNumber').value = data_to_fill.id;
+    document.getElementById('updatePaymentInDate').value = formattedDate;
+    document.getElementById('updateAmountInput').value = data_to_fill.amount;
+    document.getElementById('updatePaymentRemarks').value = data_to_fill.remarks;
+}
 
 //resetting the button after updating or closing 
 function resetButton(){
@@ -1185,6 +1229,8 @@ function resetButton(){
     document.getElementById('deletePaymentIn').classList.remove('hidden');
     document.getElementById('printPaymentIn').classList.remove('hidden');
     document.getElementById('editPaymentIn').classList.remove('hidden');
+    document.getElementById('updatePaymentIn').style.display = 'none';  
+    document.getElementById('updatePaymentOut').classList.add('hidden');
 
      document.getElementById('updateReceiptNumber').readOnly = true;
     document.getElementById('updatePaymentInDate').readOnly = true;
@@ -1243,7 +1289,62 @@ async function updatePaymentInFunc(paymentInId){
         }
 }
 
-//savePaymentOut funcion 
+
+//edit and update updatePaymentOut
+
+async function updatePaymentOutFunc(paymentOutId){
+    const amountInputValue = document.getElementById('updateAmountInput')?.value;
+    const updatePaymentRemarks = document.getElementById('updatePaymentRemarks')?.value || "";
+    const updatePaymentOut = document.getElementById('updatePaymentOut');
+    const originalText = updatePaymentOut.innerHTML;
+        
+    updatePaymentOut.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
+    updatePaymentOut.disabled = true;
+    //prepare for sending data
+    try{
+        const updatePaymentOut = {
+            paymentOutAmount:amountInputValue,
+            updatePaymentRemarks:updatePaymentRemarks,
+        }
+    // Send AJAX request to Django
+        const response = await fetch(`/dashboard/update-payment-out/${paymentOutId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': window.djangoData.csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify(updatePaymentOut)
+        });
+
+        const result = await response.json();
+
+        //immediately load the transactions
+        if(result.success === true){
+            const uid = getUidFromUrl()
+            fetchTransactions(uid)
+            updateClientInfo(uid)
+            await new Promise(resolve => setTimeout(resolve,1500))
+
+            //reset button
+            resetButton()
+            const updatePaymentModal = document.getElementById('updatePaymentModal')
+            updatePaymentModal.style.display = 'none';
+        }else {
+            showAlert(result.message || "Update failed");
+        }
+
+}catch (error) {
+        console.error('Error updating amount:', error);
+}finally {
+            // Restore button state
+            updatePaymentOut.innerHTML = originalText;
+            updatePaymentOut.disabled = false;
+        }
+}
+
+// savePaymentOut funcion 
+
 async function savePaymentOutFunc(clientId){
     
     const paidAmount = document.getElementById('amountInput')?.value;
