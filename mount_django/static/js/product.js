@@ -112,6 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
 const categoryDB = document.getElementById('categoryDB');
 const productCategories = document.getElementById('productCategory')
 document.addEventListener('DOMContentLoaded', () => {
+    if(!productCategories) return;
     productCategories.addEventListener('click', (e) => {
         e.stopPropagation();
         console.log("i am supposed to be here")
@@ -155,6 +156,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const categoryList = document.getElementById('categoryList');
     const button = document.getElementById('caterorylists');
     // Toggle popup on button click
+    if(!caterorylists) return;
     caterorylists.addEventListener('click', (e) => {
         // Prevent click from closing the popup immediately
         e.stopPropagation();
@@ -281,7 +283,7 @@ function renderCategories(categoryArray) {
 // FILTER Category
 document.addEventListener('DOMContentLoaded', () => {
     const categorySearchInput = document.getElementById('categorySearchInput');
-
+    if(!categorySearchInput) return;
     categorySearchInput.addEventListener('input', () => {
         const searchTerm = categorySearchInput.value.toLowerCase();
         const filteredCategory = categories.filter(category => category.name.toLowerCase().includes(searchTerm));
@@ -294,6 +296,7 @@ document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener('DOMContentLoaded', () => {
     const addNewProductDetailBtn = document.getElementById('addNewProductDetailBtn');
     const addProductModal = document.getElementById('addProductModal');
+    if(!addNewProductDetailBtn) return;
     addNewProductDetailBtn.addEventListener('click', () => {
         openAddProductModal(addProductModal);
     });
@@ -318,6 +321,7 @@ const productDetailSearchInput = document.getElementById('productDetailSearchInp
 
 // //when input is inside the search input
 document.addEventListener('DOMContentLoaded', () => {
+    if(!productDetailSearchInput) return;
     productDetailSearchInput.addEventListener('input', () => {
         filterProduct(products, productDetailSearchInput, productList)
     })
@@ -1107,6 +1111,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const deleteBtn = document.querySelector('.delete-product-btn');
     const editBtn = document.querySelector('.edit-product-btn');
     // const adjustBtns = document.querySelector('.adjust-stock-btn');
+    if(!deleteBtn)return;
     deleteBtn.addEventListener('click', function () {
         const id = deleteBtn.dataset.productId;
         console.log("Deleting product", id);

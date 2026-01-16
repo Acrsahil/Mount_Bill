@@ -57,6 +57,8 @@ class Customer(models.Model):  # sabina
     )
     CUSTOMER_TYPE_CHOICES = [('CUSTOMER','Customer'),
                              ('SUPPLIER','Supplier')]
+    CUSTOMER_OPENING_TYPE = [('TORECEIVE','To Receive'),
+                             ('TOGIVE','To Give')]
     uid = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=100)
     phone = models.CharField(max_length=15, blank=True)
@@ -65,7 +67,7 @@ class Customer(models.Model):  # sabina
     address = models.CharField(max_length=15, blank=True)
     date = models.DateTimeField(auto_now_add=True)
     customer_type = models.CharField(max_length=10,choices=CUSTOMER_TYPE_CHOICES,default="CUSTOMER")
-
+    opening_type = models.CharField(max_length=10,choices=CUSTOMER_OPENING_TYPE,default='TORECEIVE')
     def __str__(self):
         return f"{self.name} ({self.company})"
 
@@ -322,7 +324,7 @@ class PaymentOut(models.Model):
         return f"payment out amount: {self.payment_out}"
     
 class BalanceAdjustment(models.Model):
-    customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
+    customer = models.ForeignKey(Customer, on_delete=models.PROTECT,related_name = "customerBalanceAdjustment")
     remainings = models.OneToOneField(RemainingAmount,on_delete=models.CASCADE,related_name="balanceAdustRemaining")
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     date = models.DateTimeField(auto_now_add=True)

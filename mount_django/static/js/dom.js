@@ -233,7 +233,6 @@ export function fillProductDetails(product) {
 
 
 // Load clients
-// Load clients
 export function loadClients(clients, clientsTableBody) {
     if (!clientsTableBody) return;
     
@@ -322,7 +321,7 @@ export function loadClients(clients, clientsTableBody) {
         </td>
     `;
     row.addEventListener('click',()=>{
-        console.log("client ko uid",client.uid)
+
         window.location.href=`/dashboard/client-detail/${client.uid}/`;
     })
     clientsTableBody.appendChild(row);

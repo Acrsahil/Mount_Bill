@@ -1,45 +1,41 @@
 import { loadClients } from "./dom.js";
-import { selectClientFromHint,saveClient } from "./events.js";
+import { selectClientFromHint,saveClient,selectType,selectedType,selectedOpeningType,selectOpeningType } from "./events.js";
 import{ activateTabAll } from "./client.js";
 import { showAlert } from "./utils.js";
 document.addEventListener('DOMContentLoaded', () => {
+
+    const toReceiveBtn = document.getElementById("toReceive");
+    const toGiveBtn = document.getElementById("toGive");
+    
+    activateButton(toReceiveBtn, toGiveBtn); 
+
     addClientsToList(window.djangoData.clients)
     // updateClientInfo(window.djangoData.clients)
     renderFromUrl()
 
     //functional add new client inside the client detail page
     const addNewClientDetailBtn = document.getElementById('addNewClientDetailBtn');
+    if(!addNewClientDetailBtn) return;
     addNewClientDetailBtn.addEventListener('click',() => {
-        const addClientModal = document.getElementById('addClientModal')
+        const addClientModal = document.getElementById('addClientModal');
         resetClientModal()
         addClientModal.style.display = 'flex';
     })
-    const closeClientModal = document.getElementById('closeClientModal');
-    closeClientModal.addEventListener('click',()=>{
-        resetClientModal()
-        addClientModal.style.display = 'none';
-    })
-    const cancelClientBtn = document.getElementById('cancelClientBtn');
-    cancelClientBtn.addEventListener('click',()=>{
-        resetClientModal()
-        addClientModal.style.display = 'none';
-    })
 
-    const saveClientBtn = document.getElementById('saveClientBtn');
-    saveClientBtn.addEventListener('click',async()=>{
-        await saveClient()
-        addClientModal.style.display = 'none';
-
-    })
 });
 
+
 export function resetClientModal(){
+    const customerBtn = document.getElementById("customerBtn");
+    const supplierBtn = document.getElementById("supplierBtn");
     document.querySelector('.app-modal-header h3').textContent = "Add New Client";
     document.getElementById('saveClientBtn').style.display = 'block';
     document.getElementById('updateClientBtn').style.display = 'none';
     document.getElementById('additionalInfo').style.display = 'none';
     document.getElementById('additionInfoBtn').style.display = 'block';
     document.getElementById('openingBalance').style.display = 'block';
+    document.getElementById('toReceive').style.display = 'block';
+    document.getElementById('toGive').style.display = 'block';
 
     //resetting the form field
     document.getElementById('clientNameInput').value = '';
@@ -47,31 +43,45 @@ export function resetClientModal(){
     document.getElementById('clientAddressInput').value = '';
     document.getElementById('clientPanNoInput').value = '';
     document.getElementById('clientEmailInput').value = '';
+    selectType(customerBtn, supplierBtn);
 }
 
 //deleting the client 
 document.addEventListener('DOMContentLoaded',()=>{
     const deleteClientBtn = document.getElementById('deleteClientBtn')
+    if(!deleteClientBtn) return;
     deleteClientBtn.addEventListener('click',()=>{
-        console.log("kun delete hudae xa?",deleteClientBtn.dataset.clientId)
+        
         deleteClient(deleteClientBtn.dataset.clientId)
     })
 })
 
 function showEmptyState() {
-    document.getElementById('emptyState').classList.remove('hidden');
-    document.getElementById('clientDetailContainer').classList.add('hidden');
-    document.getElementById('notFound').classList.add('hidden');
+    const emptyState = document.getElementById('emptyState');
+    const clientDetailContainer = document.getElementById('clientDetailContainer');
+    const notFound = document.getElementById('notFound');
+
+    if (emptyState) emptyState.classList.remove('hidden');
+    if (clientDetailContainer) clientDetailContainer.classList.add('hidden');
+    if (notFound) notFound.classList.add('hidden');
 }
 function showClientState() {
-    document.getElementById('emptyState').classList.add('hidden');
-    document.getElementById('clientDetailContainer').classList.remove('hidden');
-    document.getElementById('notFound').classList.add('hidden');
+     const emptyState = document.getElementById('emptyState');
+    const clientDetailContainer = document.getElementById('clientDetailContainer');
+    const notFound = document.getElementById('notFound');
+
+    if (emptyState) emptyState.classList.add('hidden');
+    if (clientDetailContainer) clientDetailContainer.classList.remove('hidden');
+    if (notFound) notFound.classList.add('hidden');
 }
 function showNotFound() {
-    document.getElementById('emptyState').classList.add('hidden');
-    document.getElementById('clientDetailContainer').classList.add('hidden');
-    document.getElementById('notFound').classList.remove('hidden');
+    const emptyState = document.getElementById('emptyState');
+    const clientDetailContainer = document.getElementById('clientDetailContainer');
+    const notFound = document.getElementById('notFound');
+
+    if (emptyState) emptyState.classList.add('hidden');
+    if (clientDetailContainer) clientDetailContainer.classList.add('hidden');
+    if (notFound) notFound.classList.remove('hidden');
 }
 
 function renderFromUrl(){
@@ -133,6 +143,7 @@ const clientEditBtn = document.getElementById('clientEditBtn')
 
 //calling edit function after the edit button is clicked
 document.addEventListener('DOMContentLoaded',() =>{
+    if(!clientEditBtn) return;
     clientEditBtn.addEventListener('click',async() => {
         editClientFunc(clientEditBtn.dataset.clientId)
 })
@@ -146,6 +157,8 @@ document.addEventListener('DOMContentLoaded',() =>{
 })
 
 function editClientFunc(clientId){
+    const customerBtn = document.getElementById("customerBtn");
+    const supplierBtn = document.getElementById("supplierBtn");
     const client = window.djangoData.clients.find(c => String(c.id) === String(clientId))
     //populating the form 
 
@@ -164,10 +177,28 @@ function editClientFunc(clientId){
     document.getElementById('additionalInfo').style.display = 'block';
     document.getElementById('additionInfoBtn').style.display = 'none';
     document.getElementById('openingBalance').style.display = 'none';
+    document.getElementById('toReceive').style.display = 'none';
+    document.getElementById('toGive').style.display = 'none';
+
+    if(client.customer_type == "CUSTOMER"){
+        selectType(customerBtn,supplierBtn)
+    }
+    else if(client.customer_type == "SUPPLIER"){
+        selectType(supplierBtn,customerBtn)
+    }
     activateTabAll();
 }
 
 //udpate function for client
+document.addEventListener('DOMContentLoaded',()=>{
+    const customerBtn = document.getElementById("customerBtn");
+    const supplierBtn = document.getElementById("supplierBtn");
+    if(!customerBtn || !supplierBtn) return;
+    customerBtn.addEventListener('click', () => selectType(customerBtn, supplierBtn));
+    supplierBtn.addEventListener('click', () => selectType(supplierBtn, customerBtn));
+})
+
+
 async function updateClientFunc(clientId){
     
         const clientName= document.getElementById('clientNameInput').value.trim();
@@ -175,7 +206,7 @@ async function updateClientFunc(clientId){
         const clientAddress = document.getElementById('clientAddressInput')?.value;
         const clientPanNo = document.getElementById('clientPanNoInput')?.value;
         const clientEmail = document.getElementById('clientEmailInput').value.trim();
-    
+        
         // Client-side validation
         if (!clientName) {
             showAlert('Please enter client name', 'error');
@@ -199,6 +230,7 @@ async function updateClientFunc(clientId){
                 clientAddress: clientAddress,
                 clientPan: clientPanNo,
                 clientEmail: clientEmail,
+                customer_type:selectedType,
     
             };
             // Send AJAX request to Django
@@ -278,6 +310,7 @@ function getClientFromUid(uid, clients){
 
 //function to get latest client remaining amount
 async function clientLatestRemaining(clientId){
+    console.log("Fetching client info for:", clientId);
     const res = await fetch(`/dashboard/clients-info/${clientId}/`);
     if (!res.ok) {
         throw new Error("Failed to fetch client info");
@@ -294,9 +327,9 @@ export async function updateClientInfo(clientId){
     const clientDetail = document.getElementById('clientDetail');
     const clientBalance = document.getElementById('clientRemaining');
     const clientStatus = document.getElementById('clientStatus')
-
+    if(!clientName || !clientDetail || !clientBalance || !clientStatus) return;
     clientName.textContent = data.client_name;
-    clientDetail.textContent = data.client_address || data.client_phone || "---";
+    clientDetail.textContent = data.client_address || data.client_phone || "---";    
     if(data.remaining == 0){
         clientStatus.textContent = "Settled"
     }
@@ -430,6 +463,8 @@ export function addClientsToList(clients) {
     clients.forEach(client => {
         clientdetaillist.appendChild(renderClient(client));
     });
+    
+    
 }
 
 
@@ -439,12 +474,13 @@ window.addEventListener('popstate',()=>{
     //highlight the list again
     const urlUid = getUidFromUrl();
     const selectedClient = getClientFromUid(urlUid,window.djangoData.clients);
-    console.log("selected client xa ki xaina??",selectedClient)
+    
     renderFromUrl()
     if (!urlUid || !selectedClient) {
         return;
     }
     updateClientInfo(urlUid);
+    fetchTransactions(urlUid)
     document.querySelectorAll('.clientlists').forEach(li => {
     if(String(li.dataset.clientUid) === String(urlUid)){
         li.classList.add('selected',
@@ -482,7 +518,9 @@ function loadTransactions(transaction, tableBody) {
     if (!tableBody) return;
 
     const row = document.createElement('tr');
-
+    
+    row.dataset.type = transaction.type;
+    row.dataset.id = transaction.id || "";
     if (transaction.type === 'sale') {
         row.innerHTML = `
         <td>Sales Invoice #${transaction.id}>
@@ -535,14 +573,143 @@ function loadTransactions(transaction, tableBody) {
     }
 
     tableBody.appendChild(row);
+    row.addEventListener('click',()=>{
+        if(row.dataset.type === "Opening"){
+            
+            openUpdateOpeningFunc()
+            
+            
+        }
+    })
 }
 
+//opening the updateOpeningBalance
+async function openUpdateOpeningFunc(){
+    const openingBalanceModal = document.getElementById('openingBalanceModal');
+    const receiveBtn = document.getElementById("receive");
+    const giveBtn = document.getElementById("give");
+    const openingAmount = document.getElementById('openingAmount');
+    //populating the form first
+    const clientId = getUidFromUrl();
+    const data = await clientLatestRemaining(clientId);
+    openingAmount.value = data.oldest_remaining;
+    console.log("client ko opening type",data.client_opening_type)
+    if(data.client_opening_type === "TORECEIVE"){
+        selectOpeningType(receiveBtn,giveBtn);
+    }
+    else if(data.client_opening_type === "TOGIVE"){
+        selectOpeningType(giveBtn,receiveBtn);
+    }
+
+
+    openingBalanceModal.classList.remove('hidden');
+}
+//editing the opening balance row
+
+
+document.addEventListener('DOMContentLoaded',()=>{
+    const openingBalanceModal = document.getElementById('openingBalanceModal');
+    const closeOpeningBalanceModal = document.getElementById('closeOpeningBalanceModal');
+
+    const editBtn = document.getElementById('editBtn');
+    const openingAmount = document.getElementById('openingAmount');
+    const openingDate = document.getElementById('openingDate')
+    const deleteOpening = document.getElementById('deleteOpening');
+    const cancelOpeningEdit = document.getElementById('cancelOpeningEdit');
+    const updateOpening = document.getElementById('updateOpening');
+    const receiveBtn = document.getElementById("receive");
+    const giveBtn = document.getElementById("give");
+    if(!receiveBtn || !giveBtn) return ;
+
+    editBtn.addEventListener('click',()=>{
+        editBtn.classList.add('hidden');
+        deleteOpening.classList.add('hidden');
+        cancelOpeningEdit.classList.remove('hidden');
+        updateOpening.classList.remove('hidden');
+
+        //readonly to write
+        openingAmount.readOnly = false;
+        openingDate.readOnly = false;
+        receiveBtn.disabled = false;
+        giveBtn.disabled = false;
+
+    })
+    
+    updateOpening.addEventListener('click',()=>{
+        const clientId = getUidFromUrl();
+        updateOpeningFunc(clientId)
+    })
+
+    //closing the opening balance modal 
+    closeOpeningBalanceModal.addEventListener('click',()=>{
+        
+        openingBalanceModal.classList.add('hidden')
+    })
+
+    //for update
+    receiveBtn.addEventListener("click", () => {
+            selectOpeningType(receiveBtn, giveBtn)
+        });
+
+    giveBtn.addEventListener("click", () => {
+        console.log("i am trying to click")
+           selectOpeningType(giveBtn, receiveBtn)
+        });
+})
+
+
+//updating the opening balance function 
+async function updateOpeningFunc(clientId){
+    const openingAmountInput = document.getElementById('openingAmount');
+    const openingAmount = openingAmountInput.value
+
+    //preparing to send the data
+    try{
+        const updatedOpeningAmount = {
+                openingAmount:openingAmount,
+                customer_opening_type:selectedOpeningType,
+            }
+        // Send AJAX request to Django
+            const response = await fetch(`/dashboard/update-opening/${clientId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': window.djangoData.csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify(updatedOpeningAmount)
+            });
+            const data = await response.json()
+            if(data.success){
+                
+                updateClientInfo(clientId)
+                fetchTransactions(clientId)
+                openingBalanceModal.classList.add('hidden')
+            }
+    }catch (error) {
+            console.error('Error adjusting amount:', error);
+    }
+
+
+
+}
+// Function to activate button
+export function activateButton(selectedBtn, otherBtn) {
+    if(!selectedBtn || !otherBtn) return;
+    // Selected button: dark blue text & border, light blue background
+    selectedBtn.classList.add('border-blue-700', 'text-blue-700', 'bg-blue-100');
+    selectedBtn.classList.remove('bg-gray-200', 'text-black', 'border-gray-300');
+
+    // Unselected button: grey background & border, black text
+    otherBtn.classList.add('bg-gray-200', 'text-black', 'border-gray-300');
+    otherBtn.classList.remove('border-blue-700', 'text-blue-700', 'bg-blue-100');
+}
 
 // all the add transaction button functions
 document.addEventListener('DOMContentLoaded', () => {
   const addTransaction = document.getElementById('addTransaction');
   const paymentTransactions = document.getElementById('paymentTransactions');
-
+  if(!addTransaction) return;
   addTransaction.addEventListener('click', (e) => {
     e.stopPropagation()
     const rect = addTransaction.getBoundingClientRect();
@@ -695,17 +862,6 @@ const reduceAmount = document.getElementById('reduceAmount');
 const addBtn = document.getElementById('addBalance');
 const reduceBtn = document.getElementById('reduceBalance');
 
-// Function to activate button
-function activateButton(selectedBtn, otherBtn) {
-    // Selected button: dark blue text & border, light blue background
-    selectedBtn.classList.add('border-blue-700', 'text-blue-700', 'bg-blue-100');
-    selectedBtn.classList.remove('bg-gray-200', 'text-black', 'border-gray-300');
-
-    // Unselected button: grey background & border, black text
-    otherBtn.classList.add('bg-gray-200', 'text-black', 'border-gray-300');
-    otherBtn.classList.remove('border-blue-700', 'text-blue-700', 'bg-blue-100');
-}
-
 // Default: Add Balance selected
 activateButton(addBtn, reduceBtn);
 addAmount.classList.remove('hidden');
@@ -793,32 +949,33 @@ async function balanceAdjustmentFunc(clientId){
 }
 
 //footer of the adjust balance
+document.addEventListener('DOMContentLoaded',async()=>{
 const addAmount = document.getElementById('addAmount');
 const reduceAmount = document.getElementById('reduceAmount');
 const adjustedBalance = document.getElementById('adjustedBalance');
 const currentBalance = document.getElementById('currentBalance');
 
+const clientId = getUidFromUrl();
+if(!clientId) return;
+const data = await clientLatestRemaining(clientId)
+currentBalance.value = Number(data.remaining)
+adjustedBalance.value = Number(data.remaining) 
 //dynamic change at the footer
 if(addAmount){
-    const clientId = getUidFromUrl();
-    const data = await clientLatestRemaining(clientId)
-
     addAmount.addEventListener('input',async()=>{
-        adjustedBalance.value = addAmount.value
-        currentBalance.value = Number(data.remaining) + Number(adjustedBalance.value)
+        adjustedBalance.value = Number(data.remaining) + Number(addAmount.value)
 
     })
 }
 if(reduceAmount){
-    const clientId = getUidFromUrl();
-    const data = await clientLatestRemaining(clientId)
-
     reduceAmount.addEventListener('input',async()=>{
-        adjustedBalance.value = reduceAmount.value
-        currentBalance.value = Number(data.remaining) - Number(adjustedBalance.value)
+        adjustedBalance.value  = Number(data.remaining) - Number(reduceAmount.value)
 
     })
 }
+
+})
+
 
 //reset payment modal
 function resetPaymentModal(){

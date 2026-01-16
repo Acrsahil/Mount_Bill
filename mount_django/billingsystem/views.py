@@ -155,7 +155,9 @@ def client_info_payment_id(request,id: UUID):
         return JsonResponse({"client": [],"payment_id": 0})
     # for client name 
     client = Customer.objects.get(uid = id)
+    
     remaining = RemainingAmount.objects.filter(customer__uid = id).order_by('-id').first()
+    oldest_remaining = RemainingAmount.objects.filter(customer__uid = id).order_by('id').first()
     client_name = client.name
     client_address = client.address
     client_phone = client.phone
@@ -167,7 +169,9 @@ def client_info_payment_id(request,id: UUID):
 
     return JsonResponse({"client_name":client_name,"latest_payment_id":latest_payment_id,"latest_paymentout_id":latest_paymentout_id,"remaining":remaining.remaining_amount,
                          "client_address":client_address,
-                         "client_phone":client_phone
+                         "client_phone":client_phone,
+                         "oldest_remaining":oldest_remaining.remaining_amount,
+                         "client_opening_type":client.opening_type,
                          })
     
 
@@ -219,6 +223,7 @@ def get_serialized_data(user, active_tab="dashboard"):
             "phone": c.phone,
             "email": c.email,
             "address": c.address,
+            "customer_type":c.customer_type,
         }
         for c in customers
     ]
@@ -841,10 +846,9 @@ def save_client(request):
         email = data.get("email", "").strip()
         pan_id = data.get("pan_id", "").strip()
         address = data.get("address", "").strip()
-        toReceive = float(data.get("toReceiveAmount"))
-        print(toReceive)
-        toGive = float(data.get("toGiveAmount"))
+        openingAmount = float(data.get("openingAmount"))
         customer_type = data.get("customer_type")
+        customer_opening_type = data.get("customer_opening_type")
         user = request.user
 
         company = None
@@ -860,20 +864,21 @@ def save_client(request):
                     pan_id=pan_id,
                     address=address,
                     customer_type = customer_type,
+                    opening_type = customer_opening_type,
                 )
-                if toReceive > 0 and toGive == 0:
+                if customer_opening_type == "TORECEIVE":
                     remaining = RemainingAmount.objects.create(
                         customer = client,
                         orders = None,
-                        remaining_amount = toReceive,
+                        remaining_amount = openingAmount,
                     )
-                elif toGive > 0 and toReceive == 0:
+                elif customer_opening_type == "TOGIVE":
                     remaining = RemainingAmount.objects.create(
                         customer = client,
                         orders = None,
                         remaining_amount = float(0.0),
                     )
-                    remaining.remaining_amount -= toGive
+                    remaining.remaining_amount -= openingAmount
                     remaining.save()
                 else:
                     remaining_amount = 0  # both are 0
@@ -927,6 +932,8 @@ def update_client(request,id):
         address = data.get("clientAddress")
         pan_number = data.get("clientPan")
         email = data.get("clientEmail")
+        customer_type = data.get("customer_type")
+        print(customer_type)
 
         customers = Customer.objects.get(id = id)
         customers.name = name
@@ -934,10 +941,31 @@ def update_client(request,id):
         customers.phone = phone
         customers.address = address
         customers.pan_id = pan_number
+        customers.customer_type = customer_type
         customers.save()
         return JsonResponse({"success":True,"message": "Client updated successfully"})
     except Exception as e:
         return JsonResponse({"success":False, "error":f"Server error: {str(e)}"})
+    
+# update opening balance
+def update_opening_balance(request,id:UUID):
+    try:
+        print("hereere")
+        data = json.loads(request.body)
+        opening_balance = Decimal(str(data.get("openingAmount")))
+        customer_opening_type = data.get("customer_opening_type")
+
+        oldest_remaining = RemainingAmount.objects.filter(customer__uid = id).order_by('id').first()
+     
+        if customer_opening_type == "TORECEIVE":
+            oldest_remaining.remaining_amount = opening_balance
+        elif customer_opening_type == "TOGIVE":
+            oldest_remaining.remaining_amount = -opening_balance
+        oldest_remaining.save()
+        
+        return JsonResponse({"success":True})
+    except Exception as e:
+        return JsonResponse({"success":False,"error":f"Server error: {str(e)}"})
 
 @login_required
 @csrf_exempt
