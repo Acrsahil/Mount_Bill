@@ -609,11 +609,17 @@ async function openUpdateOpeningFunc(){
     const receiveBtn = document.getElementById("receive");
     const giveBtn = document.getElementById("give");
     const openingAmount = document.getElementById('openingAmount');
+    const openingDate = document.getElementById('openingDate');
     //populating the form first
     const clientId = getUidFromUrl();
     const data = await clientLatestRemaining(clientId);
+    const dateObj = new Date(data.date);
+    const formattedDate = dateObj.toISOString().split('T')[0];
+
     openingAmount.value = data.oldest_remaining;
-    console.log("client ko opening type",data.client_opening_type)
+    openingDate.value = formattedDate;
+    
+
     if(data.client_opening_type === "TORECEIVE"){
         selectOpeningType(receiveBtn,giveBtn);
     }

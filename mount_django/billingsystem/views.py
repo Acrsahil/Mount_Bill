@@ -161,6 +161,7 @@ def client_info_payment_id(request,id: UUID):
     client_name = client.name
     client_address = client.address
     client_phone = client.phone
+    client_date = client.date
     # latest payment id
     latest_payment_id = PaymentIn.objects.aggregate(latest_id=Max('id'))['latest_id'] or 0
 
@@ -172,6 +173,7 @@ def client_info_payment_id(request,id: UUID):
                          "client_phone":client_phone,
                          "oldest_remaining":oldest_remaining.remaining_amount,
                          "client_opening_type":client.opening_type,
+                         "date":client_date,
                          })
     
 
