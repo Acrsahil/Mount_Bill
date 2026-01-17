@@ -647,6 +647,7 @@ document.addEventListener('DOMContentLoaded',()=>{
         adjustAmount.readOnly = false;
         adjustDate.readOnly = false;
         document.getElementById('adjustRemarks').readOnly = false;
+        document.getElementById('adjust-current-balance').classList.remove('hidden');
 
         cancelEditAdjust.classList.remove("hidden");
         adjustAddAmount.classList.remove("hidden");
@@ -742,6 +743,7 @@ function resetAdjustButton(){
     document.getElementById('adjustAmount').readOnly = true;
     document.getElementById('adjustDate').readOnly = true;
     document.getElementById('adjustRemarks').readOnly = true;
+    document.getElementById('adjust-current-balance').classList.add('hidden');
 
     document.getElementById('deleteAdjust').classList.remove('hidden');
     document.getElementById('editAdjust').classList.remove('hidden');
