@@ -650,6 +650,97 @@
 
   </div>
 
+<!--update adjust balance modal-->
+<div id="EditAdjustModal"
+     class="fixed inset-0 bg-black/40 flex items-center justify-center hidden">
+
+  <!-- Modal Box -->
+  <div class="bg-white w-[380px] rounded-lg p-6 space-y-4">
+
+    <!-- Row 1 -->
+<div class="flex items-center justify-between">
+  <h2 class="text-lg font-semibold text-gray-800">
+    Adjust Balance
+  </h2>
+
+  <button
+    id="closeEditAdjustModal"
+    class="text-gray-400 hover:text-gray-700 text-xl leading-none">
+    &times;
+  </button>
+</div>
+
+    <!-- Row 2 -->
+    <div class="grid grid-cols-2 text-sm font-medium text-gray-600">
+      <label>Adjustment Amount</label>
+      <label>As of Date</label>
+    </div>
+
+    <!-- Row 3 -->
+    <div class="grid grid-cols-2 gap-3">
+      <input
+        type="number"
+        id="adjustAmount"
+        readonly
+        class="border rounded px-3 py-2 text-sm bg-gray-100 focus:outline-none"
+      />
+
+      <input
+        type="date"
+        id="adjustDate"
+        readonly
+        class="border rounded px-3 py-2 text-sm bg-gray-100 focus:outline-none"
+      />
+    </div>
+
+    <!-- Row 4 -->
+<div>
+        <label class="block text-sm text-gray-600 mb-1">Remarks</label>
+        <input
+          type="text"
+          class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none " id="adjustRemarks" readonly>
+      </div>
+
+
+    <div class="flex justify-between items-center mb-3">
+      <label class="text-gray-600">Current Balance</label>
+      <input type="number" class="text-right w-1/3 bg-transparent text-gray-800" placeholder="0" readonly id="currentRemaining">
+    </div>
+
+   
+    <div class="flex justify-between items-center mb-6">
+      <label class="text-gray-600">Adjusted Balance</label>
+      <input type="number" class="text-right w-1/3 bg-transparent text-gray-800" placeholder="0" readonly id="adjustedRemaining">
+    </div>
+
+<!-- Row 6 -->
+<div class="flex justify-end gap-2 pt-4">
+  <button
+    class="border border-black px-4 py-2 rounded text-sm text-black" id ="deleteAdjust">
+    Delete
+  </button>
+
+  <button
+    id="editAdjust"
+    class="border border-black px-4 py-2 rounded text-sm text-black">
+    Edit Details
+  </button>
+  <button
+    class="border border-black px-4 py-2 rounded text-sm text-black hidden" id="cancelEditAdjust">
+    Cancel
+  </button>
+
+  <button
+   
+    class="border border-black px-4 py-2 rounded text-sm text-black hidden" id = "adjustAddAmount">
+    Update Adjustment
+  </button>
+</div>
+
+
+  </div>
+</div>
+
 {% include "website/modal/client_add_modal.html" %}
 {% include "website/invoice_modal.html" %}
 {% comment %} {% include "website/create_invoice.html" %} {% endcomment %}

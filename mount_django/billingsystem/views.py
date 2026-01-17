@@ -1316,6 +1316,7 @@ def fetch_transactions(request,id:UUID):
     balance_adjustments = BalanceAdjustment.objects.filter(customer__uid = id)
     for balance_adjust in balance_adjustments:
         addAdjustmentBalance.append({
+            "id":balance_adjust.id,
             "date":balance_adjust.date,
             "amount":abs(balance_adjust.amount),
             "balance":balance_adjust.remainings.remaining_amount,
@@ -1337,8 +1338,6 @@ def payment_in(request,id):
         payment_in_remark = data.get("payment_in_remark")
 
         remainingAmount = RemainingAmount.objects.filter(customer_id=id).order_by('-id').first()
-        # to send the uid of the customer 
-        customer = Customer.objects.get(id=id)
        
         latest_remaining = remainingAmount.remaining_amount if remainingAmount else Decimal("0.0")
         current_remaining = latest_remaining - payment_in
@@ -1350,7 +1349,7 @@ def payment_in(request,id):
         paymentIn = PaymentIn.objects.create(customer_id=id,date=payment_in_date,remainings=new_remaining,payment_in=payment_in,remarks=payment_in_remark)
         paymentIn.save()
 
-        return JsonResponse({"success":True,"uid":customer.uid})
+        return JsonResponse({"success":True,"uid":paymentIn.customer.uid})
     except Exception as e:
         return JsonResponse(
             {"success": False, "error": f"Server error: {str(e)}"}, status=500
@@ -1468,8 +1467,6 @@ def payment_out(request,id):
         payment_out_remark = data.get("payment_out_remark")
 
         remainingAmount = RemainingAmount.objects.filter(customer_id=id).order_by('-id').first()
-        # to send the uid of the customer 
-        customer = Customer.objects.get(id=id)
        
         last_remaining = remainingAmount.remaining_amount if remainingAmount else Decimal("0.0")
         current_remaining = last_remaining + payment_out
@@ -1483,7 +1480,7 @@ def payment_out(request,id):
         paymentOut = PaymentOut.objects.create(customer_id=id,date=payment_out_date,remainings=new_remaining,payment_out=payment_out,remarks=payment_out_remark)
         paymentOut.save()
 
-        return JsonResponse({"success":True,"uid":customer.uid})
+        return JsonResponse({"success":True,"uid":paymentOut.customer.uid})
     except Exception as e:
         return JsonResponse(
             {"success": False, "error": f"Server error: {str(e)}"}, status=500
@@ -1540,6 +1537,52 @@ def balance_adjustment(request, id):
             {"success": False, "error": str(e)},
             status=500
         )
+
+@login_required
+def update_add_adjust(request,id):
+    try:
+        data = json.loads(request.body)
+        adjust_amount = data.get("toAdjustAmount")
+        adjustment_remark = data.get('adjustment_remark')
+
+        balance_adjust = get_object_or_404(BalanceAdjustment,id =id)
+
+        current_remaining_amount = balance_adjust.remainings.remaining_amount
+        current_adjust_amount = balance_adjust.amount
+
+        amount_to_calculate_on = Decimal(str(current_remaining_amount)) - Decimal(str(current_adjust_amount))
+        latest_remaining = Decimal(str(amount_to_calculate_on)) + Decimal(str(adjust_amount))
+
+        balance_adjust.remainings.remaining_amount = latest_remaining
+        balance_adjust.remainings.save()
+
+        balance_adjust.amount = adjust_amount
+        balance_adjust.remarks = adjustment_remark
+        balance_adjust.save()
+
+        return JsonResponse({"success":True,"message": "Product saved successfully!","uid":balance_adjust.customer.uid})
+    except Exception as e:
+        return JsonResponse({"success":False, "error": str(e)},status=500)
+    
+
+@login_required
+def fill_up_add_adjust(request,id):
+    user = request.user
+    company = user.owned_company or user.active_company
+
+    if not company:
+        return JsonResponse({"fill_up": []})
+    
+    adjust_balance = get_object_or_404(BalanceAdjustment,id=id)
+    customerId = adjust_balance.customer.id
+    latest_remaining = RemainingAmount.objects.filter(customer__id = customerId).order_by('-id').first()
+    
+    fill_up={
+            "amount":adjust_balance.amount,
+            "date":adjust_balance.date,
+            "remark":adjust_balance.remarks if adjust_balance.remarks else '',
+    }
+    return JsonResponse({"fill_up":fill_up,"remainingAmount":latest_remaining.remaining_amount,})
 
 
 def product_detail(request, id: UUID = None):

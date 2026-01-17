@@ -617,9 +617,137 @@ function loadTransactions(transaction, tableBody) {
             await fillUpdatePaymentOut(row.dataset.id);
 
         }
+        else if(row.dataset.type === "add"){  
+            const adjustAddAmount = document.getElementById('adjustAddAmount');
+            adjustAddAmount.dataset.id = row.dataset.id;
+
+            //fill the form 
+            await fillBalanceAdjustForm(row.dataset.id);
+            EditAdjustModal.style.display = 'flex';
+        }
     })
 }
 
+//for updating the balance adjustment
+document.addEventListener('DOMContentLoaded',()=>{
+    const EditAdjustModal = document.getElementById('EditAdjustModal');
+
+    //inputs
+    const adjustAmount = document.getElementById('adjustAmount');
+    const adjustDate = document.getElementById('adjustDate');
+
+    //buttons
+    const cancelEditAdjust = document.getElementById('cancelEditAdjust');
+    const adjustAddAmount = document.getElementById('adjustAddAmount');
+    const deleteAdjust = document.getElementById('deleteAdjust');
+    const editAdjust = document.getElementById('editAdjust');
+
+    //after edit button clicks
+    editAdjust.addEventListener('click',()=>{
+        adjustAmount.readOnly = false;
+        adjustDate.readOnly = false;
+        document.getElementById('adjustRemarks').readOnly = false;
+
+        cancelEditAdjust.classList.remove("hidden");
+        adjustAddAmount.classList.remove("hidden");
+        deleteAdjust.classList.add("hidden");
+        editAdjust.classList.add("hidden");
+
+
+    })
+
+    //to update the balance adjustment 
+    adjustAddAmount.addEventListener('click',async()=>{
+        await updateBalanceAdjustment(adjustAddAmount.dataset.id)
+    }) 
+    //closing the editAdjustModal
+    const closeEditAdjustModal = document.getElementById('closeEditAdjustModal');
+    closeEditAdjustModal.addEventListener('click',()=>{
+        resetAdjustButton()
+        EditAdjustModal.style.display = 'none';
+    })
+    document.getElementById('cancelEditAdjust').onclick = () =>{
+        resetAdjustButton()
+        EditAdjustModal.style.display = 'none';
+    }
+})
+
+//updating the balance adjustment function 
+async function updateBalanceAdjustment(adjustmentId){
+    const adjustAmountValue = document.getElementById('adjustAmount')?.value;
+    const adjustmentRemark = document.getElementById('adjustRemarks')?.value;
+    const adjustAddAmountBtn = document.getElementById('adjustAddAmount');
+    const originalText = adjustAddAmountBtn.innerHTML;
+        
+    adjustAddAmountBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
+    adjustAddAmountBtn.disabled = true;
+    //preparing to send the data
+    try{
+        const adjustmentAmount = {
+                toAdjustAmount:adjustAmountValue ,
+                adjustment_remark:adjustmentRemark,
+            }
+        // Send AJAX request to Django
+            const response = await fetch(`/dashboard/update-add-adjust/${adjustmentId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': window.djangoData.csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify(adjustmentAmount)
+            });
+            const data = await response.json()
+            if(data.success){
+                
+                fetchTransactions(data.uid);
+                updateClientInfo(data.uid);
+                console.log("succesfull")
+                await new Promise(resolve => setTimeout(resolve,1500));
+
+                //resetting the form
+                resetAdjustButton()
+                EditAdjustModal.style.display = 'none';
+               
+            }else {
+            showAlert(data.message || "Adjustment failed");
+        }
+
+    }catch (error) {
+            console.error('Error adjusting amount:', error);
+    }finally {
+            // Restore button state
+            adjustAddAmountBtn.innerHTML = originalText;
+            adjustAddAmountBtn.disabled = false;
+        }
+}
+
+//filling the adjust balance form
+async function fillBalanceAdjustForm(id){
+    const response = await fetch(`/dashboard/fill-up-add-adjust/${id}/`)
+    const data = await response.json()
+    const dateObj = new Date(data.fill_up.date);
+    const formattedDate = dateObj.toISOString().split('T')[0];
+    
+    document.getElementById('adjustAmount').value = data.fill_up.amount;
+    document.getElementById('adjustDate').value = formattedDate;
+    document.getElementById('adjustRemarks').value = data.fill_up.remark;
+    document.getElementById('currentRemaining').value=data.remainingAmount;
+    document.getElementById('adjustedRemaining').value=data.remainingAmount;
+    
+}
+
+//reset the button in the update adjust modal
+function resetAdjustButton(){
+    document.getElementById('adjustAmount').readOnly = true;
+    document.getElementById('adjustDate').readOnly = true;
+    document.getElementById('adjustRemarks').readOnly = true;
+
+    document.getElementById('deleteAdjust').classList.remove('hidden');
+    document.getElementById('editAdjust').classList.remove('hidden');
+    document.getElementById('cancelEditAdjust').classList.add('hidden');
+    document.getElementById('adjustAddAmount').classList.add('hidden');
+}
 //opening the updateOpeningBalance
 async function openUpdateOpeningFunc(){
     const openingBalanceModal = document.getElementById('openingBalanceModal');
