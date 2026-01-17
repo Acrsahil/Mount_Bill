@@ -54,4 +54,5 @@ urlpatterns = [
     path("save-client/", views.save_client, name="save_client"),
     path("delete-client/<int:id>/",views.delete_client,name="delete_client"),
     path("create-invoice/", views.create_invoice_page, name="create_invoice_page"),
+    path("customer-totals/",views.customer_totals,name="customer_totals"),
 ]

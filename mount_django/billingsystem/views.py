@@ -1759,3 +1759,30 @@ def create_invoice_page(request):
                 "active_tab": "invoices",
             },
         )
+    
+def customer_totals(request):
+    user = request.user 
+    company = user.owned_company or user.active_company
+    if not company:
+        return JsonResponse({"customers": []})
+    customers = company.customers.all() 
+
+    toReceive = 0
+    toGive = 0 
+    for customer in customers:
+        remainingAmount = RemainingAmount.objects.filter(customer = customer).order_by('-id').first()
+        if remainingAmount.remaining_amount > 0:
+            toReceive+=remainingAmount.remaining_amount
+        elif remainingAmount.remaining_amount < 0:
+            toGive+=abs(remainingAmount.remaining_amount)
+    print(toReceive)
+    print(toGive)
+    amount={
+        "toReceive":toReceive,
+        "toGive":toGive
+    }
+    return JsonResponse({"amount":amount})
+        
+
+
+
