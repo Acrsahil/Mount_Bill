@@ -1545,20 +1545,24 @@ def update_add_adjust(request,id):
         adjust_amount = data.get("toAdjustAmount")
         adjustment_remark = data.get('adjustment_remark')
 
-        balance_adjust = get_object_or_404(BalanceAdjustment,id =id)
+        if adjust_amount <= 0:
+            raise ValueError("Adjustment amount must be positive")
+        
+        with transaction.atomic():
+            balance_adjust = get_object_or_404(BalanceAdjustment,id =id)
 
-        current_remaining_amount = balance_adjust.remainings.remaining_amount
-        current_adjust_amount = balance_adjust.amount
+            current_remaining_amount = balance_adjust.remainings.remaining_amount
+            current_adjust_amount = balance_adjust.amount
 
-        amount_to_calculate_on = Decimal(str(current_remaining_amount)) - Decimal(str(current_adjust_amount))
-        latest_remaining = Decimal(str(amount_to_calculate_on)) + Decimal(str(adjust_amount))
+            amount_to_calculate_on = Decimal(str(current_remaining_amount)) - Decimal(str(current_adjust_amount))
+            latest_remaining = Decimal(str(amount_to_calculate_on)) + Decimal(str(adjust_amount))
 
-        balance_adjust.remainings.remaining_amount = latest_remaining
-        balance_adjust.remainings.save()
+            balance_adjust.remainings.remaining_amount = latest_remaining
+            balance_adjust.remainings.save()
 
-        balance_adjust.amount = adjust_amount
-        balance_adjust.remarks = adjustment_remark
-        balance_adjust.save()
+            balance_adjust.amount = adjust_amount
+            balance_adjust.remarks = adjustment_remark
+            balance_adjust.save()
 
         return JsonResponse({"success":True,"message": "Product saved successfully!","uid":balance_adjust.customer.uid})
     except Exception as e:
@@ -1572,20 +1576,24 @@ def update_reduce_adjust(request,id):
         adjust_amount = Decimal(data.get("toAdjustAmount"))
         adjustment_remark = data.get('adjustment_remark')
 
-        balance_adjust = get_object_or_404(BalanceAdjustment,id =id)
-        current_remaining_amount = balance_adjust.remainings.remaining_amount
+        if adjust_amount <= 0:
+            raise ValueError("Adjustment amount must be positive")
 
-        current_adjust_amount = abs(balance_adjust.amount)
+        with transaction.atomic():
+            balance_adjust = get_object_or_404(BalanceAdjustment,id =id)
+            current_remaining_amount = balance_adjust.remainings.remaining_amount
 
-        amount_to_calculate_on = Decimal(str(current_remaining_amount)) + Decimal(str(current_adjust_amount))
-        latest_remaining = Decimal(str(amount_to_calculate_on)) - Decimal(str(adjust_amount))
+            current_adjust_amount = abs(balance_adjust.amount)
 
-        balance_adjust.remainings.remaining_amount = latest_remaining
-        balance_adjust.remainings.save()
+            amount_to_calculate_on = Decimal(str(current_remaining_amount)) + Decimal(str(current_adjust_amount))
+            latest_remaining = Decimal(str(amount_to_calculate_on)) - Decimal(str(adjust_amount))
 
-        balance_adjust.amount = -adjust_amount
-        balance_adjust.remarks = adjustment_remark
-        balance_adjust.save()
+            balance_adjust.remainings.remaining_amount = latest_remaining
+            balance_adjust.remainings.save()
+
+            balance_adjust.amount = -adjust_amount
+            balance_adjust.remarks = adjustment_remark
+            balance_adjust.save()
 
         return JsonResponse({"success":True,"message": "Product saved successfully!","uid":balance_adjust.customer.uid})
     except Exception as e:
