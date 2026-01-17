@@ -28,6 +28,7 @@ urlpatterns = [
     path("fill-payment-out-modal/<int:id>/",views.fill_update_payment_out_modal,name="fill_update_payment_out_modal"),
     path("update-add-adjust/<int:id>/",views.update_add_adjust,name="update_add_adjust"),
     path("fill-up-add-adjust/<int:id>/",views.fill_up_add_adjust,name="fill_up_add_adjust"),
+    path("update-reduce-adjust/<int:id>/",views.update_reduce_adjust,name="update_reduce_adjust"),
     path("save-product/", views.save_product, name="save_product"),
     path("update-product/<int:id>/", views.update_product, name="update_product"),
     path("delete-product/<int:id>/", views.delete_product, name="delete_product"),

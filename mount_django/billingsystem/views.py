@@ -1566,6 +1566,32 @@ def update_add_adjust(request,id):
     
 
 @login_required
+def update_reduce_adjust(request,id):
+    try:
+        data = json.loads(request.body)
+        adjust_amount = Decimal(data.get("toAdjustAmount"))
+        adjustment_remark = data.get('adjustment_remark')
+
+        balance_adjust = get_object_or_404(BalanceAdjustment,id =id)
+        current_remaining_amount = balance_adjust.remainings.remaining_amount
+
+        current_adjust_amount = abs(balance_adjust.amount)
+
+        amount_to_calculate_on = Decimal(str(current_remaining_amount)) + Decimal(str(current_adjust_amount))
+        latest_remaining = Decimal(str(amount_to_calculate_on)) - Decimal(str(adjust_amount))
+
+        balance_adjust.remainings.remaining_amount = latest_remaining
+        balance_adjust.remainings.save()
+
+        balance_adjust.amount = -adjust_amount
+        balance_adjust.remarks = adjustment_remark
+        balance_adjust.save()
+
+        return JsonResponse({"success":True,"message": "Product saved successfully!","uid":balance_adjust.customer.uid})
+    except Exception as e:
+        return JsonResponse({"success":False, "error": str(e)},status=500)
+
+@login_required
 def fill_up_add_adjust(request,id):
     user = request.user
     company = user.owned_company or user.active_company
