@@ -644,7 +644,7 @@ async function fetchProductActivities(productUid, productsactivityTableBody) {
 
 
 
-async function invoice_uid(id) {
+export async function invoice_uid(id) {
     const url = `/dashboard/invoice-uid/${id}/`; 
     try {
         const response = await fetch(url);

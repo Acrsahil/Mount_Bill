@@ -55,22 +55,16 @@ color: ${type === 'success' ? '#155724' : type === 'error' ? '#721c24' : '#0c546
 
 // Update stats
 export function updateStats(invoices) {
-    const totalInvoices = invoices.length;
-    const paidInvoices = invoices.filter(i => i.status === 'paid');
+
     const pendingInvoices = invoices.filter(i => i.status === 'pending');
     const overdueInvoices = invoices.filter(i => i.status === 'overdue');
 
-    const paidAmount = paidInvoices.reduce((sum, invoice) => sum + invoice.amount, 0);
     const pendingAmount = pendingInvoices.reduce((sum, invoice) => sum + invoice.amount, 0);
     const overdueAmount = overdueInvoices.reduce((sum, invoice) => sum + invoice.amount, 0);
 
-    const totalInvoicesEl = document.getElementById('totalInvoices');
-    const paidAmountEl = document.getElementById('paidAmount');
     const pendingAmountEl = document.getElementById('pendingAmount');
     const overdueAmountEl = document.getElementById('overdueAmount');
     
-    if (totalInvoicesEl) totalInvoicesEl.textContent = totalInvoices;
-    if (paidAmountEl) paidAmountEl.textContent = `$${paidAmount.toFixed(2)}`;
     if (pendingAmountEl) pendingAmountEl.textContent = `$${pendingAmount.toFixed(2)}`;
     if (overdueAmountEl) overdueAmountEl.textContent = `$${overdueAmount.toFixed(2)}`;
 }
@@ -91,4 +85,16 @@ export function updateClientStats(clients) {
     if (activeClientsEl) activeClientsEl.textContent = activeClients;
     if (clientInvoicesEl) clientInvoicesEl.textContent = clientInvoices;
     if (clientRevenueEl) clientRevenueEl.textContent = `$${clientRevenue.toFixed(2)}`;
+}
+
+//updating the KPI 
+export async function updateKPI(){
+    const response = await fetch(`/dashboard/customer-totals/`);
+    const data = await response.json()
+
+    const totalToReceive = document.getElementById('totalToReceive');
+    const totalToGive = document.getElementById('totalToGive');
+    if (totalToReceive) totalToReceive.textContent = data.amount.toReceive;
+    if (totalToGive) totalToGive.textContent = data.amount.toGive;
+
 }

@@ -1,5 +1,5 @@
 // Main entry point - orchestrates all modules
-import {  updateStats, updateClientStats } from './utils.js';
+import {  updateStats, updateClientStats,updateKPI } from './utils.js';
 import { 
     loadInvoices, 
     loadClients, 
@@ -200,14 +200,10 @@ document.addEventListener('DOMContentLoaded', function() {
     if (document.getElementById('productCategory')) {
         setupCategorySearch();
     }
-
-    // Debug: Check if products loaded correctly
-    console.log('Database products loaded:', products);
-    console.log('Product categories loaded:', productCategories);
-    console.log('Clients loaded:', clients);
     
     // Initialize stats if needed
     try {
+        updateKPI()
         updateStats(invoices);
         updateClientStats(clients);
     } catch (error) {

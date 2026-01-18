@@ -2,6 +2,8 @@ import { loadClients } from "./dom.js";
 import { selectClientFromHint,saveClient,selectType,selectedType,selectedOpeningType,selectOpeningType } from "./events.js";
 import{ activateTabAll } from "./client.js";
 import { showAlert } from "./utils.js";
+import { openModal } from './bill_layout.js';
+import { invoice_uid } from './product.js';
 document.addEventListener('DOMContentLoaded', () => {
 
     const toReceiveBtn = document.getElementById("toReceive");
@@ -519,6 +521,11 @@ function loadTransactions(transaction, tableBody) {
 
     const row = document.createElement('tr');
     
+    row.classList.add(
+    "cursor-pointer",
+    "hover:bg-gray-100",
+    "transition"
+);
     row.dataset.type = transaction.type;
     row.dataset.id = transaction.id || "";
     if (transaction.type === 'sale') {
@@ -573,27 +580,290 @@ function loadTransactions(transaction, tableBody) {
     }
 
     tableBody.appendChild(row);
-    row.addEventListener('click',()=>{
-        if(row.dataset.type === "Opening"){
-            
+    row.addEventListener('click',async()=>{
+        if(row.dataset.type === "Opening"){  
             openUpdateOpeningFunc()
-            
-            
+        }
+        else if(row.dataset.type === "sale"){
+            invoice_uid(row.dataset.id).then(data => {
+                
+                openModal(data)
+            });
+        }
+        else if(row.dataset.type === "payment"){
+            const updatePaymentIn = document.getElementById('updatePaymentIn');
+            const editPaymentIn = document.getElementById('editPaymentIn');
+            updatePaymentIn.dataset.id = row.dataset.id;
+            editPaymentIn.dataset.type = row.dataset.type;
+            document.getElementById('editHeader').textContent = "Edit Payment In";
+            //fil the form 
+            await fillUpdatePaymentIn(row.dataset.id)
+
+            const updatePaymentModal = document.getElementById('updatePaymentModal')
+            updatePaymentModal.style.display = 'flex';
+
+        }
+        else if(row.dataset.type === "paymentOut"){
+            const updatePaymentOut = document.getElementById('updatePaymentOut');
+            const editPaymentIn = document.getElementById('editPaymentIn');
+            updatePaymentOut.dataset.id = row.dataset.id;
+            editPaymentIn.dataset.type = row.dataset.type;
+        //reset the form
+            document.getElementById('editHeader').textContent = "Edit Payment Out";
+            const updatePaymentModal = document.getElementById('updatePaymentModal')
+            updatePaymentModal.style.display = 'flex';
+
+            //fil the form 
+            await fillUpdatePaymentOut(row.dataset.id);
+
+        }
+        else if(row.dataset.type === "add"){  
+            const adjustAddAmount = document.getElementById('adjustAddAmount');
+            const editAdjust = document.getElementById('editAdjust');
+            const EditAdjustModal = document.getElementById('EditAdjustModal');
+
+            editAdjust.dataset.type = row.dataset.type;
+            adjustAddAmount.dataset.id = row.dataset.id;
+
+            //fill the form 
+            await fillBalanceAdjustForm(row.dataset.id);
+            EditAdjustModal.style.display = 'flex';
+        }
+        else if(row.dataset.type === "reduce"){
+            const editAdjust = document.getElementById('editAdjust');
+            const EditAdjustModal = document.getElementById('EditAdjustModal');
+            const adjustReduceAmount = document.getElementById('adjustReduceAmount');
+
+            editAdjust.dataset.type = row.dataset.type; 
+            adjustReduceAmount.dataset.id = row.dataset.id; 
+
+            //fill the form 
+            await fillBalanceAdjustForm(row.dataset.id);
+            EditAdjustModal.style.display = 'flex';
         }
     })
 }
 
+//for updating the balance adjustment
+document.addEventListener('DOMContentLoaded',()=>{
+    const EditAdjustModal = document.getElementById('EditAdjustModal');
+
+    //inputs
+    const adjustAmount = document.getElementById('adjustAmount');
+    const adjustDate = document.getElementById('adjustDate');
+
+    //buttons
+    const cancelEditAdjust = document.getElementById('cancelEditAdjust');
+    const adjustAddAmount = document.getElementById('adjustAddAmount');
+    const adjustReduceAmount = document.getElementById('adjustReduceAmount');
+    const deleteAdjust = document.getElementById('deleteAdjust');
+    const editAdjust = document.getElementById('editAdjust');
+
+    //after edit button clicks
+    editAdjust.addEventListener('click',()=>{
+        if(editAdjust.dataset.type === "add"){
+            adjustAmount.readOnly = false;
+            adjustDate.readOnly = false;
+            document.getElementById('adjustRemarks').readOnly = false;
+            document.getElementById('adjust-current-balance').classList.remove('hidden');
+
+            cancelEditAdjust.classList.remove("hidden");
+            adjustAddAmount.classList.remove("hidden");
+            deleteAdjust.classList.add("hidden");
+            editAdjust.classList.add("hidden");
+            adjustReduceAmount.classList.add("hidden");
+        }
+        else if(editAdjust.dataset.type === "reduce"){
+            adjustAmount.readOnly = false;
+            adjustDate.readOnly = false;
+            document.getElementById('adjustRemarks').readOnly = false;
+            document.getElementById('adjust-current-balance').classList.remove('hidden');
+
+            cancelEditAdjust.classList.remove("hidden");
+            deleteAdjust.classList.add("hidden");
+            editAdjust.classList.add("hidden");
+            adjustAddAmount.classList.add("hidden");
+            adjustReduceAmount.classList.remove("hidden");
+        }
+       
+
+
+    })
+
+    //to update the balance adjustment
+    //add balance adjustment  
+    adjustAddAmount.addEventListener('click',async()=>{
+        await updateBalanceAdjustment(adjustAddAmount.dataset.id)
+    }) 
+
+    //reduce balance adjustment
+    adjustReduceAmount.addEventListener('click',async()=>{
+        console.log("yaa k xa ??",adjustReduceAmount.dataset.id)
+        await updateReduceAdjustment(adjustReduceAmount.dataset.id)
+    }) 
+    //closing the editAdjustModal
+    const closeEditAdjustModal = document.getElementById('closeEditAdjustModal');
+    closeEditAdjustModal.addEventListener('click',()=>{
+        resetAdjustButton()
+        EditAdjustModal.style.display = 'none';
+    })
+    document.getElementById('cancelEditAdjust').onclick = () =>{
+        resetAdjustButton()
+        EditAdjustModal.style.display = 'none';
+    }
+})
+
+//updating the balance adjustment function 
+async function updateBalanceAdjustment(adjustmentId){
+    const adjustAmountValue = document.getElementById('adjustAmount')?.value;
+    const adjustmentRemark = document.getElementById('adjustRemarks')?.value;
+    const adjustAddAmountBtn = document.getElementById('adjustAddAmount');
+    const originalText = adjustAddAmountBtn.innerHTML;
+        
+    adjustAddAmountBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
+    adjustAddAmountBtn.disabled = true;
+    //preparing to send the data
+    try{
+        const adjustmentAmount = {
+                toAdjustAmount:adjustAmountValue ,
+                adjustment_remark:adjustmentRemark,
+            }
+        // Send AJAX request to Django
+            const response = await fetch(`/dashboard/update-add-adjust/${adjustmentId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': window.djangoData.csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify(adjustmentAmount)
+            });
+            const data = await response.json()
+            if(data.success){
+                
+                fetchTransactions(data.uid);
+                updateClientInfo(data.uid);
+                console.log("succesfull")
+                await new Promise(resolve => setTimeout(resolve,1500));
+
+                //resetting the form
+                resetAdjustButton()
+                EditAdjustModal.style.display = 'none';
+               
+            }else {
+            showAlert(data.message || "Adjustment failed");
+        }
+
+    }catch (error) {
+            console.error('Error adjusting amount:', error);
+    }finally {
+            // Restore button state
+            adjustAddAmountBtn.innerHTML = originalText;
+            adjustAddAmountBtn.disabled = false;
+        }
+}
+
+//filling the adjust balance form
+async function fillBalanceAdjustForm(id){
+    const response = await fetch(`/dashboard/fill-up-add-adjust/${id}/`)
+    const data = await response.json()
+    const dateObj = new Date(data.fill_up.date);
+    const formattedDate = dateObj.toISOString().split('T')[0];
+    
+    document.getElementById('adjustAmount').value = Math.abs(data.fill_up.amount);
+    document.getElementById('adjustDate').value = formattedDate;
+    document.getElementById('adjustRemarks').value = data.fill_up.remark;
+    document.getElementById('currentRemaining').value=data.remainingAmount;
+    document.getElementById('adjustedRemaining').value=data.remainingAmount;
+    
+}
+
+//updating reduce balance 
+async function updateReduceAdjustment(adjustmentId){
+    console.log("yaa aaudae xa tw???")
+    const adjustAmountValue = document.getElementById('adjustAmount')?.value;
+    const adjustmentRemark = document.getElementById('adjustRemarks')?.value;
+    const adjustReduceAmountBtn = document.getElementById('adjustReduceAmount');
+    const originalText = adjustReduceAmountBtn.innerHTML;
+        
+    adjustReduceAmountBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
+    adjustReduceAmountBtn.disabled = true;
+    //preparing to send the data
+    try{
+        const adjustmentAmount = {
+                toAdjustAmount:adjustAmountValue ,
+                adjustment_remark:adjustmentRemark,
+            }
+        // Send AJAX request to Django
+            const response = await fetch(`/dashboard/update-reduce-adjust/${adjustmentId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': window.djangoData.csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify(adjustmentAmount)
+            });
+            const data = await response.json()
+            if(data.success){
+                
+                fetchTransactions(data.uid);
+                updateClientInfo(data.uid);
+                console.log("succesfull")
+                await new Promise(resolve => setTimeout(resolve,1500));
+
+                //resetting the form
+                resetAdjustButton()
+                EditAdjustModal.style.display = 'none';
+               
+            }else {
+            showAlert(data.message || "Adjustment failed");
+        }
+
+    }catch (error) {
+            console.error('Error adjusting amount:', error);
+    }finally {
+            // Restore button state
+            adjustReduceAmountBtn.innerHTML = originalText;
+            adjustReduceAmountBtn.disabled = false;
+        }
+}
+
+//reset the button in the update adjust modal
+function resetAdjustButton(){
+    document.getElementById('adjustAmount').readOnly = true;
+    document.getElementById('adjustDate').readOnly = true;
+    document.getElementById('adjustRemarks').readOnly = true;
+    document.getElementById('adjustAmount').value = '';
+    document.getElementById('adjustDate').value = '';
+    document.getElementById('adjustRemarks').value = '';
+    document.getElementById('currentRemaining').value = '';
+    document.getElementById('adjustedRemaining').value = '';
+    document.getElementById('adjust-current-balance').classList.add('hidden');
+
+    document.getElementById('deleteAdjust').classList.remove('hidden');
+    document.getElementById('editAdjust').classList.remove('hidden');
+    document.getElementById('cancelEditAdjust').classList.add('hidden');
+    document.getElementById('adjustAddAmount').classList.add('hidden');
+    document.getElementById('adjustReduceAmount').classList.add('hidden');
+}
 //opening the updateOpeningBalance
 async function openUpdateOpeningFunc(){
     const openingBalanceModal = document.getElementById('openingBalanceModal');
     const receiveBtn = document.getElementById("receive");
     const giveBtn = document.getElementById("give");
     const openingAmount = document.getElementById('openingAmount');
+    const openingDate = document.getElementById('openingDate');
     //populating the form first
     const clientId = getUidFromUrl();
     const data = await clientLatestRemaining(clientId);
+    const dateObj = new Date(data.date);
+    const formattedDate = dateObj.toISOString().split('T')[0];
+
     openingAmount.value = data.oldest_remaining;
-    console.log("client ko opening type",data.client_opening_type)
+    openingDate.value = formattedDate;
+    
+
     if(data.client_opening_type === "TORECEIVE"){
         selectOpeningType(receiveBtn,giveBtn);
     }
@@ -642,7 +912,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 
     //closing the opening balance modal 
     closeOpeningBalanceModal.addEventListener('click',()=>{
-        
+        resetOpeningUpdateFunc()
         openingBalanceModal.classList.add('hidden')
     })
 
@@ -657,6 +927,19 @@ document.addEventListener('DOMContentLoaded',()=>{
         });
 })
 
+//reseting the opening balance form
+function resetOpeningUpdateFunc(){
+    document.getElementById('cancelOpeningEdit').classList.add('hidden');
+    document.getElementById('updateOpening').classList.add('hidden');
+    document.getElementById('deleteOpening').classList.remove('hidden');
+    document.getElementById('editBtn').classList.remove('hidden');
+
+    document.getElementById('receive').disabled = true;
+    document.getElementById('give').disabled = true;
+    document.getElementById('openingAmount').readOnly = true;
+    document.getElementById('openingDate').readOnly = true;
+
+}
 
 //updating the opening balance function 
 async function updateOpeningFunc(clientId){
@@ -684,6 +967,7 @@ async function updateOpeningFunc(clientId){
                 
                 updateClientInfo(clientId)
                 fetchTransactions(clientId)
+                resetOpeningUpdateFunc()
                 openingBalanceModal.classList.add('hidden')
             }
     }catch (error) {
@@ -832,9 +1116,16 @@ document.addEventListener('DOMContentLoaded', () => {
 //for adjust balance 
 const adjustBalance = document.getElementById('adjustBalance');
 
-adjustBalance.addEventListener('click',()=>{
+adjustBalance.addEventListener('click',async()=>{
     document.getElementById('adjustBalanceModal').classList.remove('hidden');
-     const adjustmentDate = document.getElementById('adjustmentDate');
+    const adjustmentDate = document.getElementById('adjustmentDate');
+
+    const clientId = getUidFromUrl();
+    if(!clientId) return;
+    const data = await clientLatestRemaining(clientId)
+    document.getElementById('currentBalance').value = Number(data.remaining)
+    document.getElementById('adjustedBalance').value = Number(data.remaining) 
+    //populating the form 
     if (adjustmentDate) {
         const today = new Date().toISOString().split('T')[0];
         adjustmentDate.value = today;
@@ -848,10 +1139,30 @@ const closeAdjustBalance = document.getElementById('closeAdjustBalance');
 const cancelAdjustBalance = document.getElementById('cancelAdjustBalance');
 closeAdjustBalance.addEventListener('click',()=>{
     activateButton(addBtn, reduceBtn);
+    document.getElementById('currentBalance').value = '';
+    document.getElementById('adjustedBalance').value = '';
+    const addAmount = document.getElementById('addAmount');
+    const reduceAmount = document.getElementById('reduceAmount');
+    if(addAmount){
+        addAmount.value ='';
+    }
+    else if(reduceAmount){
+        reduceAmount.value ='';
+    }
     document.getElementById('adjustBalanceModal').classList.add('hidden');
 })
 cancelAdjustBalance.addEventListener('click',()=>{
     activateButton(addBtn, reduceBtn);
+    document.getElementById('currentBalance').value = '';
+    document.getElementById('adjustedBalance').value = '';
+    const addAmount = document.getElementById('addAmount');
+    const reduceAmount = document.getElementById('reduceAmount');
+    if(addAmount){
+        addAmount.value ='';
+    }
+    else if(reduceAmount){
+        reduceAmount.value ='';
+    }
     document.getElementById('adjustBalanceModal').classList.add('hidden');
 })
 
@@ -934,6 +1245,16 @@ async function balanceAdjustmentFunc(clientId){
                 document.getElementById('reduceAmount').value = '';
                 document.getElementById('adjustmentRemarks').value = '';
                 document.getElementById('adjustBalanceModal').classList.add('hidden');
+                document.getElementById('currentBalance').value = '';
+                document.getElementById('adjustedBalance').value = '';
+                const addAmount = document.getElementById('addAmount');
+                const reduceAmount = document.getElementById('reduceAmount');
+                if(addAmount){
+                    addAmount.value ='';
+                }
+                else if(reduceAmount){
+                    reduceAmount.value ='';
+                }
                 activateButton(addBtn, reduceBtn);
             }else {
             showAlert(result.message || "Adjustment failed");
@@ -963,13 +1284,13 @@ adjustedBalance.value = Number(data.remaining)
 //dynamic change at the footer
 if(addAmount){
     addAmount.addEventListener('input',async()=>{
-        adjustedBalance.value = Number(data.remaining) + Number(addAmount.value)
+        adjustedBalance.value = Number(currentBalance.value)  + Number(addAmount.value)
 
     })
 }
 if(reduceAmount){
     reduceAmount.addEventListener('input',async()=>{
-        adjustedBalance.value  = Number(data.remaining) - Number(reduceAmount.value)
+        adjustedBalance.value  = Number(currentBalance.value)  - Number(reduceAmount.value)
 
     })
 }
@@ -1052,7 +1373,219 @@ async function savePaymentInFunc(clientId){
 
 }
 
-//savePaymentOut funcion 
+// edit and update PaymentIn Funcion 
+
+//after clicking the edit buttons
+document.addEventListener('DOMContentLoaded',()=>{
+    const updatePaymentIn = document.getElementById('updatePaymentIn');
+    const updatePaymentOut = document.getElementById('updatePaymentOut');
+    const editBtn = document.getElementById('editPaymentIn');
+    
+    editBtn.addEventListener('click',()=>{
+    
+        document.getElementById('cancelEditPaymentIn').classList.remove('hidden');
+        document.getElementById('deletePaymentIn').classList.add('hidden');
+        document.getElementById('printPaymentIn').classList.add('hidden');
+        editBtn.classList.add('hidden');
+        if(editBtn.dataset.type === "payment"){
+            updatePaymentIn.style.display = 'flex';  
+            updatePaymentOut.classList.add('hidden');
+        }
+        if(editBtn.dataset.type === "paymentOut"){
+            updatePaymentIn.style.display = 'none';  
+            updatePaymentOut.classList.remove('hidden');
+        }
+
+        document.getElementById('updateReceiptNumber').readOnly = false;
+        document.getElementById('updatePaymentInDate').readOnly = false;
+        document.getElementById('updatePartyName').readOnly = false;
+        document.getElementById('updateAmountInput').readOnly = false;
+        document.getElementById('updatePaymentRemarks').readOnly = false;
+        
+    })
+//now updating the paymentIn
+    updatePaymentIn.addEventListener('click',async()=>{
+        await updatePaymentInFunc(updatePaymentIn.dataset.id)
+    })
+
+    //now updating the paymentOut
+    updatePaymentOut.addEventListener('click',async()=>{
+        await updatePaymentOutFunc(updatePaymentOut.dataset.id)
+    })
+    //close the update modal
+    const closeUpdate = document.getElementById('closeUpdate');
+    const cancelEditPaymentIn = document.getElementById('cancelEditPaymentIn');
+    closeUpdate.addEventListener('click',()=>{
+        closeUpdatePaymentModal()
+
+    })
+    cancelEditPaymentIn.addEventListener('click',()=>{
+        closeUpdatePaymentModal()
+
+    })
+
+    function closeUpdatePaymentModal(){
+        const updatePaymentModal = document.getElementById('updatePaymentModal');
+        updatePaymentModal.style.display = 'none';
+        resetButton()
+    }
+})
+
+//fill the updatePaymentIn func 
+async function fillUpdatePaymentIn(paymentInId){
+    const response = await fetch(`/dashboard/fill-payment-in-modal/${paymentInId}/`)
+    const data = await response.json(); 
+    const data_to_fill = data.fill_up_data
+
+    const dateObj = new Date(data_to_fill.date);
+    const formattedDate = dateObj.toISOString().split('T')[0];
+
+    document.getElementById('updatePartyName').value = data_to_fill.name;
+    document.getElementById('updateReceiptNumber').value = data_to_fill.id;
+    document.getElementById('updatePaymentInDate').value = formattedDate;
+    document.getElementById('updateAmountInput').value = data_to_fill.amount;
+    document.getElementById('updatePaymentRemarks').value = data_to_fill.remarks;
+}
+
+//fill the updatePaymentOut Funcion
+async function fillUpdatePaymentOut(paymentOutId){
+    const response = await fetch(`/dashboard/fill-payment-out-modal/${paymentOutId}/`)
+    const data = await response.json(); 
+    const data_to_fill = data.fill_up_data
+
+    const dateObj = new Date(data_to_fill.date);
+    const formattedDate = dateObj.toISOString().split('T')[0];
+
+    document.getElementById('updatePartyName').value = data_to_fill.name;
+    document.getElementById('updateReceiptNumber').value = data_to_fill.id;
+    document.getElementById('updatePaymentInDate').value = formattedDate;
+    document.getElementById('updateAmountInput').value = data_to_fill.amount;
+    document.getElementById('updatePaymentRemarks').value = data_to_fill.remarks;
+}
+
+//resetting the button after updating or closing 
+function resetButton(){
+    document.getElementById('cancelEditPaymentIn').classList.add('hidden');
+    document.getElementById('updatePaymentIn').classList.add('hidden');
+    document.getElementById('deletePaymentIn').classList.remove('hidden');
+    document.getElementById('printPaymentIn').classList.remove('hidden');
+    document.getElementById('editPaymentIn').classList.remove('hidden');
+    document.getElementById('updatePaymentIn').style.display = 'none';  
+    document.getElementById('updatePaymentOut').classList.add('hidden');
+
+     document.getElementById('updateReceiptNumber').readOnly = true;
+    document.getElementById('updatePaymentInDate').readOnly = true;
+    document.getElementById('updatePartyName').readOnly = true;
+    document.getElementById('updateAmountInput').readOnly = true;
+    document.getElementById('updatePaymentRemarks').readOnly = true;
+}
+async function updatePaymentInFunc(paymentInId){
+    const amountInputValue = document.getElementById('updateAmountInput')?.value;
+    const updatePaymentRemarks = document.getElementById('updatePaymentRemarks')?.value || "";
+    const updatePaymentIn = document.getElementById('updatePaymentIn');
+    const originalText = updatePaymentIn.innerHTML;
+        
+    updatePaymentIn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
+    updatePaymentIn.disabled = true;
+    //prepare for sending data
+    try{
+        const updatePaymentIn = {
+            paymentInAmount:amountInputValue,
+            updatePaymentRemarks:updatePaymentRemarks,
+        }
+    // Send AJAX request to Django
+        const response = await fetch(`/dashboard/update-payment_in/${paymentInId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': window.djangoData.csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify(updatePaymentIn)
+        });
+
+        const result = await response.json();
+
+        //immediately load the transactions
+        if(result.success === true){
+            const uid = getUidFromUrl()
+            fetchTransactions(uid)
+            updateClientInfo(uid)
+            await new Promise(resolve => setTimeout(resolve,1500))
+
+            //reset button
+            resetButton()
+            const updatePaymentModal = document.getElementById('updatePaymentModal')
+            updatePaymentModal.style.display = 'none';
+        }else {
+            showAlert(result.message || "Update failed");
+        }
+
+}catch (error) {
+        console.error('Error updating amount:', error);
+}finally {
+            // Restore button state
+            updatePaymentIn.innerHTML = originalText;
+            updatePaymentIn.disabled = false;
+        }
+}
+
+
+//edit and update updatePaymentOut
+
+async function updatePaymentOutFunc(paymentOutId){
+    const amountInputValue = document.getElementById('updateAmountInput')?.value;
+    const updatePaymentRemarks = document.getElementById('updatePaymentRemarks')?.value || "";
+    const updatePaymentOut = document.getElementById('updatePaymentOut');
+    const originalText = updatePaymentOut.innerHTML;
+        
+    updatePaymentOut.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
+    updatePaymentOut.disabled = true;
+    //prepare for sending data
+    try{
+        const updatePaymentOut = {
+            paymentOutAmount:amountInputValue,
+            updatePaymentRemarks:updatePaymentRemarks,
+        }
+    // Send AJAX request to Django
+        const response = await fetch(`/dashboard/update-payment-out/${paymentOutId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': window.djangoData.csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify(updatePaymentOut)
+        });
+
+        const result = await response.json();
+
+        //immediately load the transactions
+        if(result.success === true){
+            const uid = getUidFromUrl()
+            fetchTransactions(uid)
+            updateClientInfo(uid)
+            await new Promise(resolve => setTimeout(resolve,1500))
+
+            //reset button
+            resetButton()
+            const updatePaymentModal = document.getElementById('updatePaymentModal')
+            updatePaymentModal.style.display = 'none';
+        }else {
+            showAlert(result.message || "Update failed");
+        }
+
+}catch (error) {
+        console.error('Error updating amount:', error);
+}finally {
+            // Restore button state
+            updatePaymentOut.innerHTML = originalText;
+            updatePaymentOut.disabled = false;
+        }
+}
+
+// savePaymentOut funcion 
+
 async function savePaymentOutFunc(clientId){
     
     const paidAmount = document.getElementById('amountInput')?.value;
