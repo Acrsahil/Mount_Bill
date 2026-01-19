@@ -423,12 +423,12 @@ def save_product(request):
 @login_required
 @csrf_exempt
 @require_POST
+@transaction.atomic
 def update_product(request, id):
     try:
         data = json.loads(request.body)
 
         product_id = data.get("id")
-        print(product_id)
         name = data.get("name", "").strip()
         category_name = data.get("category", "").strip()
         cost_price = data.get("cost_price")
@@ -448,9 +448,8 @@ def update_product(request, id):
         product.cost_price = cost_price
         product.selling_price = selling_price
         product.low_stock_bar = lowStock
-
+   
         product.save()
-
         return JsonResponse(
             {
                 "success": True,
@@ -476,6 +475,7 @@ def update_product(request, id):
 @login_required
 @csrf_exempt
 @require_POST
+@transaction.atomic
 def add_stock(request, id):
     try:
         data = json.loads(request.body)
@@ -484,7 +484,6 @@ def add_stock(request, id):
         remark = data.get("remarks")
         product = Product.objects.get(id=product_id)
         product.product_quantity += stock
-        product.save()
 
         item_activity = ItemActivity(
             product=product,
@@ -493,6 +492,7 @@ def add_stock(request, id):
             quantity=product.product_quantity,
             remarks=remark,
         )
+        product.save()
         item_activity.save()
         item_activity = [
             {
@@ -523,6 +523,7 @@ def add_stock(request, id):
 @login_required
 @csrf_exempt
 @require_POST
+@transaction.atomic
 def reduce_stock(request, id):
     try:
         data = json.loads(request.body)
@@ -531,7 +532,7 @@ def reduce_stock(request, id):
         remark = data.get("remarks")
         product = Product.objects.get(id=product_id)
         product.product_quantity -= stock
-        product.save()
+        
         item_activity = ItemActivity(
             product=product,
             type="Reduce Stock",
@@ -539,11 +540,9 @@ def reduce_stock(request, id):
             quantity=product.product_quantity,
             remarks=remark,
         )
-
-        # Product.objects.update_or_create(
-        #     id=product_id, product_quantity=product.product_quantity
-        # )
+        product.save()
         item_activity.save()
+    
         item_activity = [
             {
                 "id": item_activity.id,
@@ -581,21 +580,18 @@ def save_invoice(request):
     """Save complete invoice via AJAX - REMOVED REDUNDANT CODE"""
     try:
         data = json.loads(request.body)
-        print("data-0----------------------------", data)
+     
         client_name = data.get("clientName", "").strip()
         invoice_date_str = data.get("invoiceDate", "")
         invoice_items = data.get("items", [])
         global_discount = float(data.get("globalDiscountPercent", 0))
 
-        print("yo cheai global_discount ho hai->>>>>>>>>>>>>>>>...", global_discount)
         global_tax = float(data.get("globalTaxPercent", 0))
         additional_charges = float(data.get("additionalCharges", 0))
         charge_name_amount = data.get("additionalchargeName", [])
         notes_here = data.get("noteshere", "").strip()
         received_amount = float(data.get("receivedAmount"))
 
-        print(f"uta bata pathaune recieved amount haii tw {received_amount}")
-        print(notes_here)
         # total_amount = float(data.get("totalAmount"))
         user = request.user
 
@@ -604,7 +600,7 @@ def save_invoice(request):
         company = user.owned_company or user.active_company
 
         if not company:
-            print("hello")
+
             return JsonResponse(
                 {
                     "success": False,
@@ -659,7 +655,7 @@ def save_invoice(request):
             product_name = item.get("productName", "").strip()
             quantity = int(item.get("quantity", 1))
             discount = float(item.get("discount"))
-            print("this is discount -> value -> ", discount)
+            
             price = float(item.get("price", 0))
             discountPercent = float(item.get("discountPercent", 0))
 
@@ -696,8 +692,6 @@ def save_invoice(request):
             total_amount += (quantity * price) - (
                 (quantity * price) * (discountPercent / 100)
             )
-
-            print("this is negatiove qty->>> ", -quantity)
 
             new_qty = product.product_quantity - quantity
             ItemActivity.objects.create(
@@ -736,8 +730,7 @@ def save_invoice(request):
 
         print(total_amount)
 
-        remaining_amount = 0
-        # remaining_amount = Decimal(str(final_amount)) - Decimal(str(received_amount))
+        current_remaining = Decimal(str(final_amount)) - Decimal(str(received_amount))
         # print(remaining_amount)
 
         print("this is global_discount-> ", global_discount)
@@ -751,7 +744,7 @@ def save_invoice(request):
             discount=Decimal(str(global_discount)),
             tax=Decimal(str(global_tax)),
             received_amount=Decimal(str(received_amount)),
-            due_amount=remaining_amount,
+            due_amount=current_remaining,
         )
 
         try:
@@ -774,7 +767,7 @@ def save_invoice(request):
         # calculating remaining amount
 
         # Calculate this order's remaining amount
-        current_remaining = Decimal(str(final_amount)) - Decimal(str(received_amount))
+        
         
         latest_remaining = RemainingAmount.objects.filter(customer=customer).order_by('-id').first()
         previous_remaining = latest_remaining.remaining_amount if latest_remaining else 0
@@ -916,9 +909,7 @@ def save_client(request):
 def delete_client(request,id: UUID = None):
     try:
         client = get_object_or_404(Customer,id = id)
-        print(client)
         client.delete()
-        print(client)
         return JsonResponse({"success": True,"message":"Client deleted Successfully!!"})
     except Exception as e:
         print("Delete Client Error:", e)
@@ -935,21 +926,27 @@ def update_client(request,id):
         pan_number = data.get("clientPan")
         email = data.get("clientEmail")
         customer_type = data.get("customer_type")
-        print(customer_type)
-
-        customers = Customer.objects.get(id = id)
-        customers.name = name
-        customers.email = email
-        customers.phone = phone
-        customers.address = address
-        customers.pan_id = pan_number
-        customers.customer_type = customer_type
-        customers.save()
+    except json.JSONDecodeError:
+        return JsonResponse({"success": False, "error": "Invalid JSON"}, status=400)
+    try:
+        with transaction.atomic():
+            customers = Customer.objects.get(id = id)
+            customers.name = name
+            customers.email = email
+            customers.phone = phone
+            customers.address = address
+            customers.pan_id = pan_number
+            customers.customer_type = customer_type
+            customers.save()
         return JsonResponse({"success":True,"message": "Client updated successfully"})
+    except Customer.DoesNotExist:
+        return JsonResponse({"success": False, "error": "Client not found"}, status=404)
     except Exception as e:
         return JsonResponse({"success":False, "error":f"Server error: {str(e)}"})
     
 # update opening balance
+@login_required
+@transaction.atomic
 def update_opening_balance(request,id:UUID):
     try:
         print("hereere")
@@ -1329,7 +1326,57 @@ def fetch_transactions(request,id:UUID):
     return JsonResponse({"success":True,
                          "transactions":mergedData})
 
+
+def fetch_all_transactions(request):
+    user = request.user
+    company = user.owned_company or user.active_company
+
+    if not company:
+        return JsonResponse({"transactions": []})
+    transactions = OrderList.objects.all()
+    payment_in_transactions = PaymentIn.objects.all()
+    payment_out_transactions = PaymentOut.objects.all()
+    invoiceData = []
+    for transaction in transactions:
+        summary = getattr(transaction,"summary",None)
+        invoiceData.append({
+            "id": transaction.id,
+            "date": transaction.order_date,
+            "name":transaction.customer.name,
+            "finalAmount":summary.final_amount if summary else 0,
+            "receivedAmount":summary.received_amount if summary else 0,
+            "dueAmount": summary.due_amount,
+            "type": "sale"
+
+        })
+    paymentInData=[]
+    for paymentIn in payment_in_transactions:
+        paymentInData.append({
+            "id":paymentIn.id,
+            "date":paymentIn.date,
+            "payment_in":paymentIn.payment_in,
+            "name":paymentIn.customer.name,
+            "type": "paymentIn"
+        })
+    
+    paymentOutData = []
+    for paymentOut in payment_out_transactions:
+        paymentOutData.append({
+            "id":paymentOut.id,
+            "date":paymentOut.date,
+            "payment_out":paymentOut.payment_out,
+            "name":paymentOut.customer.name,
+            "type": "paymentOut"
+
+        })
+
+    mergedData = invoiceData + paymentInData + paymentOutData
+    mergedData.sort(key=lambda x: x["date"], reverse=True)
+    return JsonResponse({"transactions":mergedData})
+
+
 @require_POST
+@transaction.atomic
 def payment_in(request,id):
     try:
         data = json.loads(request.body)
@@ -1337,19 +1384,25 @@ def payment_in(request,id):
         payment_in_date = data.get("payment_in_date")
         payment_in_remark = data.get("payment_in_remark")
 
+      
         remainingAmount = RemainingAmount.objects.filter(customer_id=id).order_by('-id').first()
-       
+        
         latest_remaining = remainingAmount.remaining_amount if remainingAmount else Decimal("0.0")
         current_remaining = latest_remaining - payment_in
 
         new_remaining = RemainingAmount.objects.create(customer_id=id,
-            orders=None,
-            remaining_amount=current_remaining)
+                orders=None,
+                remaining_amount=current_remaining)
+            
+        paymentIn = PaymentIn.objects.create(customer_id=id,
+                                            date=payment_in_date,
+                                            remainings=new_remaining,
+                                            payment_in=payment_in,
+                                            remarks=payment_in_remark)
         
-        paymentIn = PaymentIn.objects.create(customer_id=id,date=payment_in_date,remainings=new_remaining,payment_in=payment_in,remarks=payment_in_remark)
-        paymentIn.save()
 
         return JsonResponse({"success":True,"uid":paymentIn.customer.uid})
+    
     except Exception as e:
         return JsonResponse(
             {"success": False, "error": f"Server error: {str(e)}"}, status=500
@@ -1401,6 +1454,7 @@ def fill_update_payment_out_modal(request,id):
 
 
 @login_required
+@transaction.atomic
 def update_payment_in(request,id):
     try:
         data = json.loads(request.body)
@@ -1431,6 +1485,7 @@ def update_payment_in(request,id):
         return JsonResponse({"success":False,"error": f"Server error: {str(e)}"}, status=500)
     
 @login_required
+@transaction.atomic
 def update_payment_out(request,id):
     try:
         data = json.loads(request.body)
@@ -1450,15 +1505,17 @@ def update_payment_out(request,id):
         paymentOut.payment_out = payment_out_amount
         paymentOut.remarks = update_remarks
 
-
+    
         paymentOut.remainings.save()
         paymentOut.save()
+
         return JsonResponse({"success":True})
 
     except Exception as e:
         return JsonResponse({"success":False,"error": f"Server error: {str(e)}"}, status=500)
 
 @require_POST
+@transaction.atomic
 def payment_out(request,id):
     try:
         data = json.loads(request.body)
@@ -1539,6 +1596,7 @@ def balance_adjustment(request, id):
         )
 
 @login_required
+@transaction.atomic
 def update_add_adjust(request,id):
     try:
         data = json.loads(request.body)
@@ -1548,21 +1606,21 @@ def update_add_adjust(request,id):
         if adjust_amount <= 0:
             raise ValueError("Adjustment amount must be positive")
         
-        with transaction.atomic():
-            balance_adjust = get_object_or_404(BalanceAdjustment,id =id)
+        
+        balance_adjust = get_object_or_404(BalanceAdjustment,id =id)
 
-            current_remaining_amount = balance_adjust.remainings.remaining_amount
-            current_adjust_amount = balance_adjust.amount
+        current_remaining_amount = balance_adjust.remainings.remaining_amount
+        current_adjust_amount = balance_adjust.amount
 
-            amount_to_calculate_on = Decimal(str(current_remaining_amount)) - Decimal(str(current_adjust_amount))
-            latest_remaining = Decimal(str(amount_to_calculate_on)) + Decimal(str(adjust_amount))
+        amount_to_calculate_on = Decimal(str(current_remaining_amount)) - Decimal(str(current_adjust_amount))
+        latest_remaining = Decimal(str(amount_to_calculate_on)) + Decimal(str(adjust_amount))
 
-            balance_adjust.remainings.remaining_amount = latest_remaining
-            balance_adjust.remainings.save()
+        balance_adjust.remainings.remaining_amount = latest_remaining
+        balance_adjust.remainings.save()
 
-            balance_adjust.amount = adjust_amount
-            balance_adjust.remarks = adjustment_remark
-            balance_adjust.save()
+        balance_adjust.amount = adjust_amount
+        balance_adjust.remarks = adjustment_remark
+        balance_adjust.save()
 
         return JsonResponse({"success":True,"message": "Product saved successfully!","uid":balance_adjust.customer.uid})
     except Exception as e:
@@ -1570,6 +1628,7 @@ def update_add_adjust(request,id):
     
 
 @login_required
+@transaction.atomic
 def update_reduce_adjust(request,id):
     try:
         data = json.loads(request.body)
@@ -1627,18 +1686,6 @@ def product_detail(request, id: UUID = None):
 
         context["product_detail"] = product
         context["item_activity"] = item_activity
-
-        for act in item_activity:
-            print("this is act.product_name ", act.product.name)
-            print("this is act.change ", act.change)
-            print("this is act.quantity ", act.quantity)
-            print("this is act.remarks ", act.remarks)
-
-            if not act.order:
-                print("this is act.remarks ", "Reduce Stock")
-            else:
-                print("this is act.remarks ", f"Sales Invoice #{act.order.id}")
-
     return render(request, "website/product_detail.html", context)
 
 
@@ -1670,6 +1717,7 @@ def fetch_product_activities(request, id: UUID):
 @login_required
 @csrf_exempt
 @require_POST
+@transaction.atomic
 def update_stock(request, id):
     try:
         data = json.loads(request.body)
@@ -1681,15 +1729,15 @@ def update_stock(request, id):
         stock_remarks = data.get("stockRemarks")
         type = str(data.get("type"))
         remark = str(data.get("remarks"))
-        print("yo kun type ho rw", type)
+    
         item_activity = ItemActivity.objects.get(id=activity_id)
         product = item_activity.product
 
         if type == "Reduce Stock":
             old_reduction = abs(float(item_activity.change))
-            print(f"change ma vako value paila ghataako{old_reduction}")
+           
             restored_stock = product.product_quantity + old_reduction
-            print(f"feri esbata ghatnu parne ho{restored_stock}")
+            
             new_quantity = restored_stock - stock_quantity
 
             item_activity.change = -stock_quantity
@@ -1775,8 +1823,7 @@ def customer_totals(request):
             toReceive+=remainingAmount.remaining_amount
         elif remainingAmount.remaining_amount < 0:
             toGive+=abs(remainingAmount.remaining_amount)
-    print(toReceive)
-    print(toGive)
+   
     amount={
         "toReceive":toReceive,
         "toGive":toGive

@@ -521,50 +521,15 @@
                             <table class="w-full text-xs">
                                 <thead class="bg-gray-50">
                                     <tr class="text-gray-500">
-                                        <th class="py-2 px-3 text-left font-medium">Bill #</th>
-                                        <th class="py-2 px-3 text-left font-medium">Client</th>
                                         <th class="py-2 px-3 text-left font-medium">Date</th>
-                                        <th class="py-2 px-3 text-left font-medium">Amount</th>
-                                        <th class="py-2 px-3 text-left font-medium">Status</th>
+                                        <th class="py-2 px-3 text-left font-medium">Type</th>
+                                        <th class="py-2 px-3 text-left font-medium">Name</th>
+                                        <th class="py-2 px-3 text-left font-medium">Total</th>
+                                        <th class="py-2 px-3 text-left font-medium">Rec/Paid</th>
+                                        <th class="py-2 px-3 text-left font-medium">Balance</th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    <tr class="border-t border-gray-100 hover:bg-gray-50">
-                                        <td class="py-2 px-3 font-medium">#INV-001</td>
-                                        <td class="py-2 px-3">John Doe</td>
-                                        <td class="py-2 px-3">Jan 15</td>
-                                        <td class="py-2 px-3">$1,250.00</td>
-                                        <td class="py-2 px-3">
-                                            <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">Paid</span>
-                                        </td>
-                                    </tr>
-                                    <tr class="border-t border-gray-100 hover:bg-gray-50">
-                                        <td class="py-2 px-3 font-medium">#INV-002</td>
-                                        <td class="py-2 px-3">Sarah Smith</td>
-                                        <td class="py-2 px-3">Jan 14</td>
-                                        <td class="py-2 px-3">$850.00</td>
-                                        <td class="py-2 px-3">
-                                            <span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">Pending</span>
-                                        </td>
-                                    </tr>
-                                    <tr class="border-t border-gray-100 hover:bg-gray-50">
-                                        <td class="py-2 px-3 font-medium">#INV-003</td>
-                                        <td class="py-2 px-3">Mike Johnson</td>
-                                        <td class="py-2 px-3">Jan 13</td>
-                                        <td class="py-2 px-3">$2,150.00</td>
-                                        <td class="py-2 px-3">
-                                            <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">Paid</span>
-                                        </td>
-                                    </tr>
-                                    <tr class="border-t border-gray-100 hover:bg-gray-50">
-                                        <td class="py-2 px-3 font-medium">#INV-004</td>
-                                        <td class="py-2 px-3">Emma Davis</td>
-                                        <td class="py-2 px-3">Jan 12</td>
-                                        <td class="py-2 px-3">$650.00</td>
-                                        <td class="py-2 px-3">
-                                            <span class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800">Overdue</span>
-                                        </td>
-                                    </tr>
+                                <tbody id = "dashboardTableBody">    
                                 </tbody>
                             </table>
                         </div>
@@ -1442,6 +1407,8 @@ console.log('Active tab:', window.djangoData.active_tab);
 
 <script>const csrfToken = "{{ csrf_token }}";</script>
 <script type="module" src="{%static 'js/client.js'%}"></script>
+<script type="module" src="{%static 'js/client_detail.js'%}"></script>
+<script type="module" src="{%static 'js/dashboard.js'%}"></script>
 <script type="module" src="{% static 'js/delete.js' %}"></script>
 <script type="module" src="{%static 'js/product.js'%}"></script>
 <script type="module" src="{% static 'js/main.js' %}"></script>

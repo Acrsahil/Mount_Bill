@@ -1,5 +1,6 @@
 // Main entry point - orchestrates all modules
 import {  updateStats, updateClientStats,updateKPI } from './utils.js';
+import { fetchTransactionForDashboard } from './dashboard.js';
 import { 
     loadInvoices, 
     loadClients, 
@@ -120,7 +121,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Setup tabs first
     setupTabs();
-    
     // Set today's date as default if invoiceDate exists
     if (invoiceDate) {
         const today = new Date().toISOString().split('T')[0];
@@ -145,6 +145,8 @@ document.addEventListener('DOMContentLoaded', function() {
     } else {
         console.warn('clientsTableBody not found, skipping client loading');
     }
+    fetchTransactionForDashboard()
+
 
     // Set up event listeners if all required elements exist
     setupEventListeners(
@@ -203,6 +205,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize stats if needed
     try {
+        
         updateKPI()
         updateStats(invoices);
         updateClientStats(clients);
