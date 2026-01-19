@@ -1813,7 +1813,13 @@ def customer_totals(request):
         "toReceive":toReceive,
         "toGive":toGive
     }
-    return JsonResponse({"amount":amount})
+
+    totalSales = OrderSummary.objects.all()
+    totalAmount = Decimal("0")
+    for totalSale in totalSales:
+        totalAmount += Decimal(totalSale.final_amount)
+
+    return JsonResponse({"amount":amount,"totalSale":totalAmount})
         
 
 

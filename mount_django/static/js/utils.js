@@ -59,13 +59,11 @@ export function updateStats(invoices) {
     const pendingInvoices = invoices.filter(i => i.status === 'pending');
     const overdueInvoices = invoices.filter(i => i.status === 'overdue');
 
-    const pendingAmount = pendingInvoices.reduce((sum, invoice) => sum + invoice.amount, 0);
     const overdueAmount = overdueInvoices.reduce((sum, invoice) => sum + invoice.amount, 0);
 
-    const pendingAmountEl = document.getElementById('pendingAmount');
     const overdueAmountEl = document.getElementById('overdueAmount');
     
-    if (pendingAmountEl) pendingAmountEl.textContent = `$${pendingAmount.toFixed(2)}`;
+    
     if (overdueAmountEl) overdueAmountEl.textContent = `$${overdueAmount.toFixed(2)}`;
 }
 
@@ -91,10 +89,12 @@ export function updateClientStats(clients) {
 export async function updateKPI(){
     const response = await fetch(`/dashboard/customer-totals/`);
     const data = await response.json()
-
     const totalToReceive = document.getElementById('totalToReceive');
     const totalToGive = document.getElementById('totalToGive');
+    const totalSales = document.getElementById('totalSales');
     if (totalToReceive) totalToReceive.textContent = data.amount.toReceive;
     if (totalToGive) totalToGive.textContent = data.amount.toGive;
+    
+    if (totalSales) totalSales.textContent = data.totalSale;
 
 }

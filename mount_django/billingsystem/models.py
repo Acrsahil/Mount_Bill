@@ -304,7 +304,7 @@ class PaymentIn(models.Model):
     
     date = models.DateTimeField(auto_now_add=True)
     payment_in = models.DecimalField(max_digits=10,decimal_places=2,default=0.0)
-    remarks = models.CharField(max_length=200)
+    remarks = models.CharField(max_length=200,blank=True)
     
     def __str__(self):
         return f"payment in amount: {self.payment_in}"
@@ -315,7 +315,7 @@ class PaymentOut(models.Model):
     
     date = models.DateTimeField(auto_now_add=True)
     payment_out = models.DecimalField(max_digits=10,decimal_places=2,default=0.0)
-    remarks = models.CharField(max_length=200)
+    remarks = models.CharField(max_length=200,blank=True)
     
     def __str__(self):
         return f"payment out amount: {self.payment_out}"
@@ -325,4 +325,22 @@ class BalanceAdjustment(models.Model):
     remainings = models.OneToOneField(RemainingAmount,on_delete=models.CASCADE,related_name="balanceAdustRemaining")
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     date = models.DateTimeField(auto_now_add=True)
-    remarks = models.TextField(blank=True)
+    remarks = models.TextField(max_length=255,blank=True)
+
+class ExpenseCategory(models.Model):
+    company = models.ForeignKey(Company,on_delete=models.CASCADE,related_name="expense_categories")
+
+    name= models.CharField(max_length=100)
+
+    class Meta:
+        unique_together = ["company","name"]
+    def __str__(self):
+        return f"{self.name}"
+
+class Expense(models.Model):
+    company = models.ForeignKey(Company, on_delete=models.CASCADE,related_name="expenses")
+    category = models.ForeignKey(ExpenseCategory,on_delete=models.SET_NULL,related_name="category",null = True)
+
+    date = models.DateTimeField(auto_now_add=True)
+    total_amount = models.DecimalField(max_digits=10,decimal_places=2)
+    remarks = models.CharField(max_length=255,blank=True)
