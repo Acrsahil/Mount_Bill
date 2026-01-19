@@ -18,6 +18,8 @@ from .models import (
     PaymentIn,
     PaymentOut,
     BalanceAdjustment,
+    ExpenseCategory,
+    Expense
 )
 
 
@@ -296,3 +298,14 @@ class BalanceAdjustmentAdmin(admin.ModelAdmin):
         "date",
     )
     search_fields = ("customer_id",)
+
+@admin.register(ExpenseCategory)
+class ExpenseCategoryAdmin(admin.ModelAdmin):
+    list_display=(
+        "name",
+    )
+
+@admin.register(Expense)
+class ExpenseAdmin(admin.ModelAdmin):
+    list_display=("date","total_amount","remarks",)
+    search_fields = ("date",)
