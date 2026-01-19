@@ -33,7 +33,6 @@ class User(AbstractUser):
     def __str__(self):
         return self.username
 
-
 class Company(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=100)
@@ -327,15 +326,15 @@ class BalanceAdjustment(models.Model):
     date = models.DateTimeField(auto_now_add=True)
     remarks = models.TextField(max_length=255,blank=True)
 
+
 class ExpenseCategory(models.Model):
-    company = models.ForeignKey(Company,on_delete=models.CASCADE,related_name="expense_categories")
+    name = models.CharField(max_length=100, unique=True)
+    companies = models.ManyToManyField(Company, blank=True, related_name='expense_categories'
+    )
 
-    name= models.CharField(max_length=100)
-
-    class Meta:
-        unique_together = ["company","name"]
     def __str__(self):
-        return f"{self.name}"
+        return self.name
+
 
 class Expense(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE,related_name="expenses")

@@ -1,11 +1,17 @@
-from django.dispatch import receiver
 from django.db.models.signals import post_save
+from django.dispatch import receiver
 from .models import Company,ExpenseCategory
+DEFAULT_CATEGORIES = [
+    "Delivery","Miscellaneous","Travel & Transportation","Repair & Maintenance",
+    "Utilities","Marketing","Bank Fees","Salaries","Rent"
+]
 
-DEFAULT_EXPENSE_CATEGORIES =["Delievery","Miscellaneous","Travel & Transportation","Repair & Maintenance","Utilities","Marketing","Bank Fees","Salaries","Rent"]
+for cat_name in DEFAULT_CATEGORIES:
+    ExpenseCategory.objects.get_or_create(name=cat_name)
 
-@receiver(post_save,sender=Company)
-def create_default_category(sender,instance,created,**kwargs):
+@receiver(post_save, sender=Company)
+def link_default_categories(sender, instance, created, **kwargs):
     if created:
-        for category_name in DEFAULT_EXPENSE_CATEGORIES:
-            ExpenseCategory.objects.get_or_create(company=instance,name=category_name)
+        default_cats = ExpenseCategory.objects.filter(name__in=DEFAULT_CATEGORIES)
+        for cat in default_cats:
+            cat.companies.add(instance)
