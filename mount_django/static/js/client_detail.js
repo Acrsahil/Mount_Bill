@@ -901,10 +901,10 @@ async function openUpdateOpeningFunc(){
     openingDate.value = formattedDate;
     
 
-    if(data.client_opening_type === "TORECEIVE"){
+    if(data.oldest_remaining > 0){
         selectOpeningType(receiveBtn,giveBtn);
     }
-    else if(data.client_opening_type === "TOGIVE"){
+    else if(data.oldest_remaining < 0){
         selectOpeningType(giveBtn,receiveBtn);
     }
 

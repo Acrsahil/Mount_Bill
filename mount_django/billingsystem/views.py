@@ -172,7 +172,6 @@ def client_info_payment_id(request,id: UUID):
                          "client_address":client_address,
                          "client_phone":client_phone,
                          "oldest_remaining":oldest_remaining.remaining_amount,
-                         "client_opening_type":client.opening_type,
                          "date":client_date,
                          })
     
@@ -859,7 +858,6 @@ def save_client(request):
                     pan_id=pan_id,
                     address=address,
                     customer_type = customer_type,
-                    opening_type = customer_opening_type,
                 )
                 if customer_opening_type == "TORECEIVE":
                     remaining = RemainingAmount.objects.create(
@@ -871,17 +869,7 @@ def save_client(request):
                     remaining = RemainingAmount.objects.create(
                         customer = client,
                         orders = None,
-                        remaining_amount = float(0.0),
-                    )
-                    remaining.remaining_amount -= openingAmount
-                    remaining.save()
-                else:
-                    remaining_amount = 0  # both are 0
-
-                    remaining = RemainingAmount.objects.create(
-                        customer=client,
-                        orders=None,
-                        remaining_amount=remaining_amount,
+                        remaining_amount = -openingAmount,
                     )
             return JsonResponse(
                 {
@@ -955,16 +943,12 @@ def update_opening_balance(request,id:UUID):
         customer_opening_type = data.get("customer_opening_type")
 
         oldest_remaining = RemainingAmount.objects.filter(customer__uid = id).order_by('id').first()
-        customer = Customer.objects.get(uid = id)
      
         if customer_opening_type == "TORECEIVE":
             oldest_remaining.remaining_amount = opening_balance
-            customer.opening_type = "TORECEIVE"
         elif customer_opening_type == "TOGIVE":
             oldest_remaining.remaining_amount = -opening_balance
-            customer.opening_type = "TOGIVE"
         oldest_remaining.save()
-        customer.save()
         
         return JsonResponse({"success":True})
     except Exception as e:
@@ -1807,7 +1791,8 @@ def create_invoice_page(request):
                 "active_tab": "invoices",
             },
         )
-    
+
+@login_required 
 def customer_totals(request):
     user = request.user 
     company = user.owned_company or user.active_company
