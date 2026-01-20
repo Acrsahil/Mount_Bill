@@ -120,7 +120,7 @@ async function saveExpenses(){
                 //emptying the modal form
                 // document.getElementById('receiptNumber').value ='';
                 // document.getElementById('amountInput').value = '';
-                console.log("successfull")
+                renderExpenses();
                 AddExpenseModal.classList.add('hidden');
                 
             
