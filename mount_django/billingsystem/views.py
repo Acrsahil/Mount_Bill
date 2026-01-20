@@ -1218,7 +1218,13 @@ def reports(request):
     return render(request, "website/bill.html", context)
 
 def expenses(request):
+    user = request.user
+    company = user.owned_company or user.active_company
+
     context = get_serialized_data(request.user, "expenses")
+    expense_count = Expense.objects.filter(company=company).count()
+    context["expense_count"] = expense_count
+
     return render(request,"website/bill.html",context)
 
 def products(request):
@@ -1870,3 +1876,19 @@ def save_expenses(request):
     except Exception as e:
         return JsonResponse({"success":False,"error": f"Server error: {str(e)}"}, status=500)
 
+def expense_info(request):
+    user = request.user
+    company = user.owned_company or user.active_company
+
+    expenses = Expense.objects.filter(company=company)
+
+    expense_data = []
+    for expense in expenses:
+        expense_data.append({
+            "category": expense.category.name,
+            "date": expense.date,
+            "amount": expense.total_amount,
+            "remarks": expense.remarks,
+        })
+
+    return JsonResponse({"expense_data":expense_data})

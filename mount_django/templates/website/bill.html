@@ -905,6 +905,7 @@
   class="tab-content {% if active_tab == 'expenses' %}active{% endif %}
          flex items-center justify-center h-full w-full"
 >
+{%if expense_count < 1%}
     <!-- CENTER WRAPPER -->
     <div class="flex flex-col items-center text-center">
         
@@ -943,7 +944,75 @@
 
     </div>
 </div>
+{%else%}
+<div class="p-6 space-y-4 bg-gray-50 min-h-screen">
 
+  <!-- Row 1: Header -->
+  <div class="flex items-center justify-between">
+    <h2 class="text-2xl font-semibold">Expense()</h2>
+    <button class="bg-gradient-to-r from-[#4361ee] to-[#3a0ca3] text-white px-4 py-2 rounded"id="addNewExpense">
+      + Add New Expense
+    </button>
+  </div>
+
+  <!-- Row 2: Search & Filters -->
+  <div class="flex flex-wrap items-center justify-between gap-4">
+    <!-- Left side filters -->
+    <div class="flex flex-wrap items-center gap-2">
+      <!-- Search input with icon -->
+      <div class="relative">
+        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+          🔍
+        </span>
+        <input 
+          type="text" 
+          placeholder="Search Expense" 
+          class="pl-9 pr-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+        />
+      </div>
+
+      <button class="bg-gray-200 px-3 py-2 rounded hover:bg-gray-300 transition">
+        All Category
+      </button>
+      <button class="bg-gray-200 px-3 py-2 rounded hover:bg-gray-300 transition">
+        All Payment Mode
+      </button>
+      <button class="bg-gray-200 px-3 py-2 rounded hover:bg-gray-300 transition">
+        All Dates
+      </button>
+    </div>
+
+    <!-- Right side sort -->
+    <div>
+      <button class="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300 transition">
+        Sort By
+      </button>
+    </div>
+  </div>
+
+  <!-- Row 3: Table -->
+  <div class="overflow-x-auto">
+    <table class="min-w-full border border-gray-200 bg-white rounded">
+      <thead class="bg-gray-100">
+        <tr>
+          <th class="px-4 py-2 text-left border-b">Exp No</th>
+          <th class="px-4 py-2 text-left border-b">Category</th>
+          <th class="px-4 py-2 text-left border-b">Date</th>
+          <th class="px-4 py-2 text-left border-b">Payment Mode</th>
+          <th class="px-4 py-2 text-left border-b">Total Amount</th>
+          <th class="px-4 py-2 text-left border-b">Remark</th>
+          <th class="px-4 py-2 text-left border-b">Action</th>
+        </tr>
+      </thead>
+      <tbody id ="expensesTableBody">
+        <!-- Dynamic rows go here -->
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+{%endif%}
 
 
 

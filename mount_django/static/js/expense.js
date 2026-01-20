@@ -1,8 +1,8 @@
-document.addEventListener('DOMContentLoaded',()=>{
+document.addEventListener('DOMContentLoaded',async()=>{
     const AddExpenseModal = document.getElementById('AddExpenseModal');
     const addExpensesBtn = document.getElementById('addExpenses');
     const saveExpenseBtn = document.getElementById('saveExpense');
-
+    await renderExpenses()
     //opening the modal
     addExpensesBtn.addEventListener('click',async()=>{
         fillExpenseModal();
@@ -138,4 +138,31 @@ async function saveExpenses(){
     
     
     
+}
+
+async function renderExpenses(){
+    const res = await fetch(`/dashboard/expense-info/`)
+    const data = await res.json()
+    const expense_data = data.expense_data
+
+    const expensesTableBody = document.getElementById('expensesTableBody')
+    if(!expensesTableBody) return;
+    expensesTableBody.innerHTML='';
+
+    expense_data.forEach((expense,index) => {loadExpenseDataToTable(index,expense,expensesTableBody)});
+}
+
+function loadExpenseDataToTable(index,expense,tableBody){
+    const expensesTableBody = document.getElementById('expensesTableBody')
+
+    const row = document.createElement('tr');
+    row.innerHTML=`
+    <td>${index + 1}</td>
+    <td>${expense.category}</td>
+    <td>${expense.date.split('T')[0]}</td>
+    <td>Cash</td>
+    <td>${expense.amount}</td>
+    <td>${expense.remarks}</td>
+    `
+    expensesTableBody.appendChild(row)
 }
