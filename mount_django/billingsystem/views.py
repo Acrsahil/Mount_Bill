@@ -1215,6 +1215,9 @@ def reports(request):
     context = get_serialized_data(request.user, "reports")
     return render(request, "website/bill.html", context)
 
+def expenses(request):
+    context = get_serialized_data(request.user, "expenses")
+    return render(request,"website/bill.html",context)
 
 def products(request):
     context = get_serialized_data(request.user, "products")

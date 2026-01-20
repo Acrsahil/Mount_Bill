@@ -52,6 +52,7 @@ urlpatterns = [
     path("clients/", views.clients, name="clients"),
     path("reports/", views.reports, name="reports"),
     path("settings/", views.settings, name="settings"),
+    path("expenses/",views.expenses,name="expenses"),
     path("save-client/", views.save_client, name="save_client"),
     path("delete-client/<int:id>/",views.delete_client,name="delete_client"),
     path("create-invoice/", views.create_invoice_page, name="create_invoice_page"),

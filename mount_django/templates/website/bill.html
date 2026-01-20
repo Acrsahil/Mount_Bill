@@ -295,6 +295,11 @@
                 <span class="font-medium text-sm">Sales</span>
             </li>
 
+            <li class="menu-item flex items-center p-3 rounded-lg hover:text-white hover:bg-[#4361ee] transition-all duration-200 cursor-pointer {% if active_tab == 'expenses' %}bg-[#4361ee] border-l-4 border-white text-white{% endif %}" data-tab="expenses">
+                <i class="fas fa-money-bill-wave w-5 text-center mr-3 text-balck"></i>
+                <span class="font-medium text-sm">Expenses</span>
+            </li>
+
             <!-- Other menu items remain the same -->
             <li class="menu-item flex items-center p-3 rounded-lg hover:text-white hover:bg-[#4361ee] transition-all duration-200 cursor-pointer {% if active_tab == 'categories' %}bg-[#4361ee] border-l-4 border-white  text-gray-100{% endif %}" data-tab="categories">
                 <i class="fas fa-tags w-5 text-center mr-3 text-balck"></i>
@@ -309,11 +314,6 @@
             <li class="menu-item flex items-center p-3 rounded-lg hover:text-white hover:bg-[#4361ee] transition-all duration-200 cursor-pointer {% if active_tab == 'suppliers' %}bg-[#4361ee] border-l-4 border-white text-white{% endif %}" data-tab="suppliers">
                 <i class="fas fa-truck w-5 text-center mr-3 text-balck"></i>
                                 <span class="font-medium text-sm">Suppliers</span>
-            </li>
-
-            <li class="menu-item flex items-center p-3 rounded-lg hover:text-white hover:bg-[#4361ee] transition-all duration-200 cursor-pointer {% if active_tab == 'expenses' %}bg-[#4361ee] border-l-4 border-white text-white{% endif %}" data-tab="expenses">
-                <i class="fas fa-money-bill-wave w-5 text-center mr-3 text-balck"></i>
-                <span class="font-medium text-sm">Expenses</span>
             </li>
 
             <li class="menu-item flex items-center p-3 rounded-lg hover:text-white hover:bg-[#4361ee] transition-all duration-200 cursor-pointer {% if active_tab == 'reports' %}bg-[#4361ee] border-l-4 border-white text-white{% endif %}" data-tab="reports">
@@ -349,11 +349,12 @@
         <div class="bg-white border-b border-gray-200 px-5 py-3 flex items-center justify-between">
             <div class="flex items-center space-x-3">
                 <h2 id="page-title" class="text-lg font-semibold text-gray-800">
-                    {% if active_tab == 'dashboard' %}Dashboard Overview
+                    <!-- {% if active_tab == 'dashboard' %}Dashboard Overview
                     {% elif active_tab == 'invoices' %}Invoices
                     {% elif active_tab == 'products' %}Products
                     {% elif active_tab == 'clients' %}Customers
-                    {% else %}{{ active_tab|title }}{% endif %}
+                    {% elif active_tab == 'expenses' %}Expenses
+                    {% else %}{{ active_tab|title }}{% endif %} -->
                 </h2>
                 <span class="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded-full">Today: {% now "F j, Y" %}</span>
             </div>
@@ -896,9 +897,54 @@
 
                 
             </div>
+
         </div>
+        <!-- Expenses Tab -->
+ <div
+  id="expenses"
+  class="tab-content {% if active_tab == 'expenses' %}active{% endif %}
+         flex items-center justify-center h-full w-full"
+>
+    <!-- CENTER WRAPPER -->
+    <div class="flex flex-col items-center text-center">
         
+        <!-- Icon -->
+        <div class="mb-6">
+            <div class="relative w-40 h-48 flex items-center justify-center">
+                <div class="absolute w-44 h-44 rounded-full bg-gray-100"></div>
+
+                <div class="relative w-32 h-40 bg-white rounded-xl shadow-sm">
+                    <div class="h-10 bg-gray-400 rounded-t-xl px-3 py-2 space-y-1">
+                        <div class="w-8 h-1.5 bg-white rounded"></div>
+                        <div class="w-12 h-1.5 bg-white rounded opacity-80"></div>
+                    </div>
+
+                    <div class="p-4 space-y-3">
+                        <div class="w-20 h-1.5 bg-gray-300 rounded"></div>
+                        <div class="w-24 h-1.5 bg-gray-300 rounded"></div>
+                        <div class="w-16 h-1.5 bg-gray-300 rounded"></div>
+                        <div class="w-22 h-1.5 bg-gray-300 rounded"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Title -->
+        <h2 class="text-2xl font-medium mb-4 text-gray-700">
+            Create Expenses
+        </h2>
+
+        <!-- Button -->
+        <button id="addExpenses"
+          class="bg-gradient-to-r from-[#4361ee] to-[#3a0ca3] text-white font-medium py-2 px-6 rounded shadow"
+        >
+            + Add New Expense
+        </button>
+
     </div>
+</div>
+
+
 
 
     
@@ -1067,6 +1113,7 @@
     </div>
 </div>  {% endcomment %}
 {% include "website/modal/client_add_modal.html" %}
+{% include "website/modal/expense_modal.html" %}
 <!-- Create Invoice Modal -->
 <div class="app-modal" id="createInvoiceModal">
     <div class="app-modal-content" style="max-width: 800px;">
@@ -1324,7 +1371,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         // Show selected tab
-        const selectedTab = document.getElementById(tabName + '-tab');
+        const selectedTab = document.getElementById(tabName);
         if (selectedTab) {
             selectedTab.classList.add('active');
             console.log('Showing tab:', selectedTab.id);
@@ -1341,13 +1388,16 @@ document.addEventListener('DOMContentLoaded', function() {
             pageTitle.textContent = 'Products';
         } else if (tabName === 'clients') {
             pageTitle.textContent = 'Customers';
-        } else {
+        } else if (tabName === 'expenses') {
+            pageTitle.textContent = 'Expenses';
+        
+        }else {
             pageTitle.textContent = tabName.charAt(0).toUpperCase() + tabName.slice(1);
         }
         
         // Update active menu item
         menuItems.forEach(item => {
-            item.classList.remove('bg-[#4361ee]', 'border-l-4', 'border-white');
+           item.classList.remove('bg-[#4361ee]', 'border-l-4', 'border-white');
             if (item.dataset.tab === tabName) {
                 item.classList.add('bg-[#4361ee]', 'border-l-4', 'border-white');
             }
@@ -1413,5 +1463,6 @@ console.log('Active tab:', window.djangoData.active_tab);
 <script type="module" src="{%static 'js/product.js'%}"></script>
 <script type="module" src="{% static 'js/main.js' %}"></script>
 <script type="module" src="{% static 'js/event.js' %}"></script>
+<script src="{% static 'js/expense.js' %}"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 {% endblock %}
