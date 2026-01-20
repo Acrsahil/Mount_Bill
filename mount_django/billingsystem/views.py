@@ -27,8 +27,10 @@ from .models import (
     PaymentIn,
     PaymentOut,
     BalanceAdjustment,
+    Expense,
+    ExpenseCategory
 )
-
+from .signals import DEFAULT_CATEGORIES
 
 def invoice_uid(request,id):
     order = OrderList.objects.get(id=id)
@@ -1823,7 +1825,48 @@ def customer_totals(request):
         totalAmount += Decimal(totalSale.final_amount)
 
     return JsonResponse({"amount":amount,"totalSale":totalAmount})
+
+@login_required       
+def expense_category(request):
+    user = request.user
+    company = user.owned_company or user.active_company
+
+    if not company:
+        # Just return default categories if no company
+        default_cats = ExpenseCategory.objects.filter(name__in=DEFAULT_CATEGORIES)
+        expense_categories = [{"name": cat.name} for cat in default_cats]
+        return JsonResponse({"expense_categories": expense_categories})
+
+    # Categories linked to the company
+    company_cats = ExpenseCategory.objects.filter(companies=company)
+    # Also default categories included
+    default_cats = ExpenseCategory.objects.filter(name__in=DEFAULT_CATEGORIES)
+
+    all_cats = (company_cats | default_cats).distinct()
+
+    expense_categories = [{"name": cat.name} for cat in all_cats]
+
+    return JsonResponse({"expense_categories": expense_categories})
+
+@login_required
+@transaction.atomic
+def save_expenses(request):
+    try:
+        data = json.loads(request.body)
+        amount = float(data.get("totalAmount"))
+        remarks = data.get("expenseRemarks")
+        category = data.get("expenseCategory")
+
+        user = request.user
+        company = user.owned_company or user.active_company
+    
+        category = ExpenseCategory.objects.filter(name=category).first()
+        if not category:
+            return JsonResponse({"success": False, "error": "Category not found"}, status=400)
         
+        Expense.objects.create(company = company,category=category,total_amount=amount,remarks=remarks)
 
-
+        return JsonResponse({"success":True})
+    except Exception as e:
+        return JsonResponse({"success":False,"error": f"Server error: {str(e)}"}, status=500)
 
