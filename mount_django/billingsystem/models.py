@@ -340,6 +340,8 @@ class Expense(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE,related_name="expenses")
     category = models.ForeignKey(ExpenseCategory,on_delete=models.SET_NULL,related_name="category",null = True)
 
+    expense_number = models.IntegerField()
     date = models.DateTimeField(auto_now_add=True)
     total_amount = models.DecimalField(max_digits=10,decimal_places=2)
     remarks = models.CharField(max_length=255,blank=True)
+

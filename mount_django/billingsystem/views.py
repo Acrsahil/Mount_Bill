@@ -1854,8 +1854,10 @@ def save_expenses(request):
     try:
         data = json.loads(request.body)
         amount = float(data.get("totalAmount"))
+        expenseNumber = float(data.get("expenseNumber"))
         remarks = data.get("expenseRemarks")
         category = data.get("expenseCategory")
+
 
         user = request.user
         company = user.owned_company or user.active_company
@@ -1864,33 +1866,74 @@ def save_expenses(request):
         if not category:
             return JsonResponse({"success": False, "error": "Category not found"}, status=400)
         
-        Expense.objects.create(company = company,category=category,total_amount=amount,remarks=remarks)
-        expense_count = Expense.objects.filter(company=company).count()
+        Expense.objects.create(company = company,expense_number = expenseNumber,category=category,total_amount=amount,remarks=remarks)
 
-
-        return JsonResponse({"success":True,"expense_count":expense_count})
+        return JsonResponse({"success":True})
     except Exception as e:
-        return JsonResponse({"success":False,"error": f"Server error: {str(e)}"}, status=500)
+        print("Save Expenses Error:", e)
+        return JsonResponse({"success": False, "error": f"Server error: {str(e)}"}, status=500)
 
+@login_required
+@transaction.atomic
+def update_expense(request,id):
+    try:
+        data = json.loads(request.body)
+        category = data.get("expenses_category")
+        amount = Decimal(str(data.get("expenses_total")))
+        remarks = data.get("expenses_remarks")
 
-def expense_info(request):
+        expense = Expense.objects.get(id = id)
+
+        expense_category_obj = ExpenseCategory.objects.get(name = category,companies=expense.company)
+        expense.category = expense_category_obj
+        expense.total_amount = amount
+        expense.remarks = remarks
+        expense.save()
+        return JsonResponse({"success":True,"message":"Expense updated successfully"})
+
+    except Exception as e:
+        return JsonResponse({"success": False, "error": f"Server error: {str(e)}"}, status=500)
+
+@require_http_methods(["DELETE"])
+def delete_expense(request,id):
+    try:
+        expense = get_object_or_404(Expense,id = id)
+        expense.delete()
+        return JsonResponse({"success": True,"message":"Expense deleted Successfully!!"})
+    except Exception as e:
+        print("Delete Expense Error:", e)
+        return JsonResponse({"success":False, "error":f"Server error: {str(e)}"})
+
+@login_required
+def expense_info(request,id = None):
     try:
         user = request.user
         company = user.owned_company or user.active_company
         if not company:
             return JsonResponse({"expense_data": [], "expense_count": 0})
+        if id is not None:
+            expenses = Expense.objects.get(id=id)
+            expense_data = {
+                    "expense_number":expenses.expense_number,
+                    "category": expenses.category.name if expenses.category else None,
+                    "date": expenses.date,
+                    "amount": expenses.total_amount,
+                    "remarks": expenses.remarks,
+                }
+            return JsonResponse({"expense_data": expense_data})
+        else:
+            expenses = Expense.objects.filter(company=company).order_by('-date')
+            expense_count = expenses.count()
 
-        expenses = Expense.objects.filter(company=company).order_by('-date')
-        expense_count = expenses.count()
-
-        expense_data = []
-        for expense in expenses:
-            expense_data.append({
-                "category": expense.category.name if expense.category else None,
-                "date": expense.date,
-                "amount": expense.total_amount,
-                "remarks": expense.remarks,
-            })
+            expense_data = []
+            for expense in expenses:
+                expense_data.append({
+                    "id":expense.id,
+                    "category": expense.category.name if expense.category else None,
+                    "date": expense.date,
+                    "amount": expense.total_amount,
+                    "remarks": expense.remarks,
+                })
 
         return JsonResponse({"expense_data": expense_data, "expense_count": expense_count})
     except Exception as e:
