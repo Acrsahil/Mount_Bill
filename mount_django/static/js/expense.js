@@ -1,14 +1,25 @@
 document.addEventListener('DOMContentLoaded',async()=>{
     const AddExpenseModal = document.getElementById('AddExpenseModal');
     const addExpensesBtn = document.getElementById('addExpenses');
+    const addNewExpenseBtn = document.getElementById('addNewExpense')
     const saveExpenseBtn = document.getElementById('saveExpense');
+    await showPage()
     await renderExpenses()
     //opening the modal
+    if(addExpensesBtn){
     addExpensesBtn.addEventListener('click',async()=>{
         fillExpenseModal();
         AddExpenseModal.classList.remove('hidden');
     })
+    }
 
+    //opening and saving expense inside the page with table
+    if(addNewExpenseBtn){
+        addNewExpenseBtn.addEventListener('click',async()=>{
+        fillExpenseModal();
+        AddExpenseModal.classList.remove('hidden');
+    })
+    }
     //closing the expense modal
     const closeExpenseModal = document.getElementById('closeExpenseModal');
     closeExpenseModal.addEventListener('click',()=>{
@@ -28,7 +39,33 @@ document.addEventListener('DOMContentLoaded',async()=>{
     })
 })
 
+//show empty expense page
+function showEmptyPage(){
+    const expensesWithTable = document.getElementById('expensesWithTable');
+    const emptyExpense = document.getElementById('emptyExpense')
+    expensesWithTable.classList.add('hidden');
+    emptyExpense.classList.remove('hidden');
+}
+function showExpenseWithTable(){
+    const expensesWithTable = document.getElementById('expensesWithTable');
+    const emptyExpense = document.getElementById('emptyExpense')
+    expensesWithTable.classList.remove('hidden');
+    emptyExpense.classList.add('hidden');
+}
 
+//choosing which page to show 
+async function showPage(){
+    const res = await fetch(`/dashboard/expense-info/`)
+    const data = await res.json()
+    if(data.expense_count >= 1){
+        showExpenseWithTable()
+    }
+    else{
+        showEmptyPage()
+    }
+}
+
+//fill the expense modal with category
 async function fillExpenseModal() {
     const response = await fetch(`/dashboard/expense-category/`);
     const data = await response.json();
@@ -74,7 +111,7 @@ async function fillExpenseModal() {
     });
 }
 
-
+//saving the expenses
 async function saveExpenses(){
         const expenseCategory = document.getElementById('expenseCategory')?.value;
         const totalAmount = document.getElementById('totalAmountInput')?.value;
@@ -110,16 +147,17 @@ async function saveExpenses(){
             });
     
             const result = await response.json();
-            console.log('Server response:', result.uid);
     
             //immediately load the transactions
             if(result.success === true){
                 // fetchTransactions(result.uid)
                 // updateClientInfo(result.uid)
                 await new Promise(resolve => {setTimeout(resolve,1500)})
+                console.log("yaa audae xa count",result.expense_count)
                 //emptying the modal form
                 // document.getElementById('receiptNumber').value ='';
                 // document.getElementById('amountInput').value = '';
+                showExpenseWithTable()
                 renderExpenses();
                 AddExpenseModal.classList.add('hidden');
                 
@@ -140,6 +178,7 @@ async function saveExpenses(){
     
 }
 
+//getting expenses data to fill the table
 async function renderExpenses(){
     const res = await fetch(`/dashboard/expense-info/`)
     const data = await res.json()
@@ -149,15 +188,17 @@ async function renderExpenses(){
     if(!expensesTableBody) return;
     expensesTableBody.innerHTML='';
 
-    expense_data.forEach((expense,index) => {loadExpenseDataToTable(index,expense,expensesTableBody)});
+    const total_length = expense_data.length
+    expense_data.forEach((expense,index) => {loadExpenseDataToTable(total_length-index,expense,expensesTableBody)});
 }
 
+//loading expense data to table
 function loadExpenseDataToTable(index,expense,tableBody){
     const expensesTableBody = document.getElementById('expensesTableBody')
 
     const row = document.createElement('tr');
     row.innerHTML=`
-    <td>${index + 1}</td>
+    <td>${index}</td>
     <td>${expense.category}</td>
     <td>${expense.date.split('T')[0]}</td>
     <td>Cash</td>
