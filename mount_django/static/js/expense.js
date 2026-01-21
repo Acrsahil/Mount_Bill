@@ -72,6 +72,7 @@ async function fillExpenseModal() {
 
     const input = document.getElementById('expenseCategory');
     const dropdown = document.getElementById('expenseCategoryDropdown');
+    const newDropdown = document.getElementById('newExpenseCategoryDropdown');
 
     dropdown.innerHTML = '';
 
@@ -94,14 +95,33 @@ async function fillExpenseModal() {
     });
 
     // filter while typing
-    input.addEventListener('input', () => {
+   input.addEventListener('input', () => {
         const value = input.value.toLowerCase();
+        let hasMatch = false;
+
         Array.from(dropdown.children).forEach(li => {
-            li.style.display = li.textContent.toLowerCase().includes(value)
-                ? 'block'
-                : 'none';
+            const match = li.textContent.toLowerCase().includes(value);
+            li.style.display = match ? 'block' : 'none';
+            if (match) hasMatch = true;
         });
+
+        if (!value) {
+            // empty input → show original dropdown
+            dropdown.classList.remove('hidden');
+            newDropdown.classList.add('hidden');
+        } 
+        else if (hasMatch) {
+            // matches exist → show filtered dropdown
+            dropdown.classList.remove('hidden');
+            newDropdown.classList.add('hidden');
+        } 
+        else {
+            // no matches → show "add new category"
+            dropdown.classList.add('hidden');
+            newDropdown.classList.remove('hidden');
+        }
     });
+
 
     // hide when clicking outside
     document.addEventListener('click', (e) => {
