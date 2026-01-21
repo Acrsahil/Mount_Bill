@@ -294,7 +294,13 @@ function loadExpenseDataToTable(index,expense,tableBody){
     const expensesTableBody = document.getElementById('expensesTableBody')
 
     const row = document.createElement('tr');
-    row.dataset.id = expense.id
+    row.dataset.id = expense.id;
+    row.classList.add(
+    "cursor-pointer",
+    "hover:bg-gray-100",
+    "transition"
+);
+
     row.innerHTML=`
     <td>${index}</td>
     <td>${expense.category}</td>
