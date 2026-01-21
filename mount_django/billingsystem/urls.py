@@ -54,6 +54,7 @@ urlpatterns = [
     path("settings/", views.settings, name="settings"),
     path("expenses/",views.expenses,name="expenses"),
     path("expense-category/",views.expense_category,name="expense_category"),
+    path("save-category/",views.save_category,name="save_category"),
     path("expense-info/",views.expense_info,name="expense_info"),
     path("save-expenses/",views.save_expenses,name="save_expenses"),
     path("save-client/", views.save_client, name="save_client"),

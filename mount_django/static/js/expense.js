@@ -3,12 +3,14 @@ document.addEventListener('DOMContentLoaded',async()=>{
     const addExpensesBtn = document.getElementById('addExpenses');
     const addNewExpenseBtn = document.getElementById('addNewExpense')
     const saveExpenseBtn = document.getElementById('saveExpense');
+    const addCategoryBtn = document.getElementById('addCategory');
+    if(!addCategoryBtn) return;
     await showPage()
     await renderExpenses()
     //opening the modal
     if(addExpensesBtn){
     addExpensesBtn.addEventListener('click',async()=>{
-        fillExpenseModal();
+        fillExpenseCategory();
         AddExpenseModal.classList.remove('hidden');
     })
     }
@@ -16,7 +18,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     //opening and saving expense inside the page with table
     if(addNewExpenseBtn){
         addNewExpenseBtn.addEventListener('click',async()=>{
-        fillExpenseModal();
+        fillExpenseCategory();
         AddExpenseModal.classList.remove('hidden');
     })
     }
@@ -34,10 +36,18 @@ document.addEventListener('DOMContentLoaded',async()=>{
         }
     });
 
+    //saving the expense
     saveExpenseBtn.addEventListener('click',()=>{
         saveExpenses()
     })
-})
+
+    //adding the category
+    addCategoryBtn.onclick = async() => {
+        await saveCategory()
+    }
+
+});
+
 
 //show empty expense page
 function showEmptyPage(){
@@ -65,8 +75,9 @@ async function showPage(){
     }
 }
 
+
 //fill the expense modal with category
-async function fillExpenseModal() {
+async function fillExpenseCategory() {
     const response = await fetch(`/dashboard/expense-category/`);
     const data = await response.json();
 
@@ -196,6 +207,37 @@ async function saveExpenses(){
     
     
     
+}
+
+//save category
+async function saveCategory(){
+    const expenseCategory = document.getElementById('expenseCategory')?.value;
+
+    try{
+            const expense_category = {
+                expenseCategory:expenseCategory,
+            }
+        // Send AJAX request to Django
+            const response = await fetch(`/dashboard/save-category/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': window.djangoData.csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify(expense_category)
+            });
+    
+            const result = await response.json();
+            if(result.success){
+                console.log("successful")
+                document.getElementById('expenseCategory').value=result.category;
+                const newDropdown = document.getElementById('newExpenseCategoryDropdown');
+                newDropdown.classList.add('hidden');
+            }
+        }catch (error) {
+            console.error('Error saving:', error);
+}
 }
 
 //getting expenses data to fill the table
