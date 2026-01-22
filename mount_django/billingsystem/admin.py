@@ -18,6 +18,8 @@ from .models import (
     PaymentIn,
     PaymentOut,
     BalanceAdjustment,
+    ExpenseCategory,
+    Expense
 )
 
 
@@ -140,7 +142,7 @@ class CustomUserAdmin(UserAdmin):
 @admin.register(Customer)
 class CustomerAdmin(admin.ModelAdmin):
     # Changed: removed email, added phone
-    list_display = ("uid","name", "phone", "company","customer_type","opening_type")
+    list_display = ("uid","name", "phone", "company","customer_type",)
     list_filter = ("company",)
     # Changed: removed email
     search_fields = ("name", "phone", "company__name")
@@ -296,3 +298,14 @@ class BalanceAdjustmentAdmin(admin.ModelAdmin):
         "date",
     )
     search_fields = ("customer_id",)
+
+@admin.register(ExpenseCategory)
+class ExpenseCategoryAdmin(admin.ModelAdmin):
+    list_display=(
+        "name",
+    )
+
+@admin.register(Expense)
+class ExpenseAdmin(admin.ModelAdmin):
+    list_display=("date","total_amount","remarks",)
+    search_fields = ("date",)
