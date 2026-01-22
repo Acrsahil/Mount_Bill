@@ -48,7 +48,7 @@ const clientSearchHint = document.getElementById('client-search-hint');
 const invoiceItemsBody = document.getElementById('invoiceItemsBody');
 const addItemBtn = document.getElementById('addItemBtn');
 const checkAmount = document.getElementById('checkAmount');
-console.log(checkAmount);
+
 const cancelInvoiceBtn = document.getElementById('cancelInvoiceBtn');
 const cancelInvoiceBtnBottom = document.getElementById('cancelInvoiceBtnBottom');
 
@@ -163,6 +163,35 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 });
+
+//function to save customer from invoice
+export async function saveCustomer(){
+    const clientName = document.getElementById('clientName')?.value;
+
+    try{
+            const customer_name = {
+                clientName:clientName,
+            }
+        // Send AJAX request to Django
+            const response = await fetch(`/dashboard/save-customer/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': window.djangoData.csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify(customer_name)
+            });
+    
+            const result = await response.json();
+            if(result.success){
+                document.getElementById('clientName').value=result.name;
+                console.log("successfull")
+            }
+        }catch (error) {
+            console.error('Error saving:', error);
+}
+}
 
 //function to show total section
 function showTotalSection() {
@@ -393,7 +422,6 @@ export function setupClientSearch() {
 
 function handleClientSearchFocus() {
     if (clientSearchHint) {
-        console.log("focus chaliraxa?")
         showClientSuggestions(window.clients, '', (hintElement) => selectClientFromHint(hintElement));
 
         // Add click event to hints
@@ -407,7 +435,6 @@ function handleClientSearchFocus() {
 }
 
 function handleClientSearch(e) {
-    console.log("input jaadaexa?")
     const searchTerm = e.target.value.toLowerCase();
     showClientSuggestions(window.clients, searchTerm, (hintElement) => selectClientFromHint(hintElement));
 }

@@ -42,6 +42,7 @@ urlpatterns = [
     ),
     path("sahilpage/", views.sahilpage, name="sahilpage"),
     path("save-invoice/", views.save_invoice, name="save_invoice"),
+    path("save-customer/",views.save_customer,name="save_customer"),
     path("delete_invoice/<int:id>/", views.delete_invoice, name="delete_invoice"),
     path("invoice-layout/<uuid:id>/", views.invoice_layout, name="invoice_layout"),
     path("invoices/", views.invoices, name="invoices"),

@@ -4,6 +4,7 @@ import { formatDate } from './utils.js';
 import { editProduct,deleteProduct } from './product.js';
 import { openModal} from './bill_layout.js';
 import { editInvoiceSection} from './edit_invoice.js';
+import { saveCustomer } from './create_invoice.js';
 // Show product suggestions
 export function showProductSuggestions(itemId, products, searchTerm = '', selectProductFromHint) {
     const hintContainer = document.getElementById(`search-hint-${itemId}`);
@@ -52,7 +53,6 @@ export function showClientSuggestions(clients, searchTerm = '', selectClientFrom
         )
         : clients;
         
-    console.log("clients: ",clients)
     if (filteredClients.length > 0) {
         hintContainer.innerHTML = filteredClients.map(client => `
  <div class="hint-item" data-client-id="${client.id}" 
@@ -72,7 +72,27 @@ ${client.name} - ${client.email || 'No email'}
             });
         });
     } else {
-        hintContainer.style.display = 'none';
+        console.log("yaa ho ni ")
+        hintContainer.innerHTML = '';
+         hintContainer.innerHTML = `
+           <div class="bg-white hint-empty">
+            <button
+                id="add-client-btn"
+                class="w-full text-left px-3 py-2 text-sm text-blue-600 
+                        bg-white border-none hover:bg-gray-100 focus:outline-none cursor-pointer">
+                + Add Client
+            </button>
+            </div>
+
+        `;
+        hintContainer.style.display = 'block';
+
+        const addBtn = document.getElementById('add-client-btn');
+        addBtn.onmousedown = async (e) => {
+            e.preventDefault();
+            await saveCustomer();
+            hintContainer.style.display = 'none';
+        };
     }
 }
 
@@ -208,9 +228,7 @@ export function hideSearchHints() {
 //removed the clientId,clientEmail,clientAddress from the UI so removed from here too and worked fine
 export function fillClientDetails(client) {
     document.getElementById('clientName').value = client.name;
-    // document.getElementById('clientId').value = `CLI-${client.id.toString().padStart(3, '0')}`;
-    // document.getElementById('clientEmail').value = client.email || '';
-    // document.getElementById('clientAddress').value = client.address || '';
+
 }
 
 // Clear client details

@@ -893,7 +893,22 @@ def save_client(request):
 
     except Exception as e:
         return JsonResponse({"success": False, "error": f"Server error: {str(e)}"})
-    
+
+@login_required
+def save_customer(request):
+    try:
+        data = json.loads(request.body)
+        name = data.get("clientName", "").strip()
+        user = request.user
+        company = user.owned_company or user.active_company
+        if not company:
+            return JsonResponse({"success": False, "error": "No active company found for user."})
+        
+        customer = Customer.objects.create(company=company,name=name)
+        return JsonResponse({"success":True,"name":customer.name})
+        
+    except Exception as e:
+        return JsonResponse({"success":False,"error":f"Server error:{str(e)}"})
    
 @require_http_methods(["DELETE"])
 def delete_client(request,id: UUID = None):
