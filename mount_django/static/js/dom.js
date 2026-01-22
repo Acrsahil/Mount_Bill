@@ -1,7 +1,7 @@
 // DOM manipulation functions
 import { formatDate } from './utils.js';
 // RENDER INVOICE ITEMS
-import { editProduct,deleteProduct } from './product.js';
+import { editProduct,deleteProduct,saveProduct } from './product.js';
 import { openModal} from './bill_layout.js';
 import { editInvoiceSection} from './edit_invoice.js';
 import { saveCustomer } from './create_invoice.js';
@@ -37,7 +37,47 @@ ${product.name} - Selling: $${product.selling_price} | Cost: $${product.cost_pri
             });
         });
     } else {
-        hintContainer.style.display = 'none';
+        hintContainer.innerHTML=''
+        hintContainer.innerHTML = `
+        <div class="bg-white hint-empty">
+            <button type="button"
+                id="add-product-btn"
+                class="w-full text-left px-3 py-2 text-sm text-blue-600 
+                       bg-white border-none hover:bg-gray-100 focus:outline-none cursor-pointer">
+                + Add Product
+            </button>
+        </div>`
+        hintContainer.style.display = 'block';
+        const addBtn = document.getElementById('add-product-btn');
+
+        addBtn.onmousedown = async(e) =>{
+            console.log('click chai hudae xa??');
+            e.preventDefault();
+
+            //  the invoice row which is active
+            window.activeInvoiceItemId = itemId;
+
+            const product_name = document.querySelector('.product-search-input');
+            document.getElementById('productName').value = product_name.value;
+            const productModal = document.getElementById('addProductModal');
+            productModal.classList.remove('hidden');
+
+            //saving the product 
+            document.getElementById('saveProductBtn').onclick = () =>{
+                saveProduct(productModal) 
+            }
+
+            //closing the add product modal
+            document.getElementById('closeProductModal').onclick = () =>{
+            productModal.classList.add('hidden');
+            product_name.value = '';
+            }
+
+            document.getElementById('cancelProductBtn').onclick = () =>{
+            productModal.classList.add('hidden');
+            product_name.value = '';
+            }
+            }
     }
 }
 

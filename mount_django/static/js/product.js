@@ -1,7 +1,8 @@
 // API calls for AJAX/fetch requests
 import { showAlert } from './utils.js';
-import { openAddProductModal, closeProductModalFunc } from './events.js';
+import { openAddProductModal, closeProductModalFunc,handleItemUpdate,handleRemoveItem } from './events.js';
 import { openModal } from './bill_layout.js';
+import { renderInvoiceItems,setupProductSearchHandlersForPage,updateTotals,updateItemTotal,showTotalSection,addInvoiceItem,selectProductFromHint } from './create_invoice.js';
 //for csrfToken for js
 function getCookie(name) {
     let cookieValue = null;
@@ -708,6 +709,40 @@ function loadProductActivity(activities, productsactivityTableBody) {
         activities.reverse().forEach((activity) => addProductActivityToTable(activity, productsactivityTableBody))
     }
 }
+
+//applying product to invoice
+export function applyProductToInvoice(itemId, product) {
+    const item = window.invoiceItems.find(i => i.id === itemId);
+    if (!item) return;
+
+    item.productId = product.id;
+    item.productName = product.name;
+    item.price = Number(product.selling_price);
+
+    const row = document
+        .querySelector(`.product-search-input[data-id="${itemId}"]`)
+        ?.closest('tr');
+
+    if (!row) return;
+
+    row.querySelector('.product-search-input').value = product.name;
+    row.querySelector('.item-price').value = product.selling_price;
+
+    updateItemTotal(itemId, window.invoiceItems);
+    updateTotals(window.invoiceItems, window.globalDiscount, window.globalTax);
+    showTotalSection();
+
+    const qty = row.querySelector('.item-quantity');
+    if (qty) {
+        setTimeout(() => {
+            qty.focus();
+            qty.select();
+        }, 50);
+    }
+    if (itemId == window.invoiceItems.length) {
+        addInvoiceItem();}
+}
+
 // Save product to database via AJAX
 export async function saveProduct(addProductModal) {
     const productsactivityTableBody = document.getElementById('productsactivityTableBody');
@@ -787,6 +822,14 @@ export async function saveProduct(addProductModal) {
                 };
                 closeProductModalFunc();
                 // window.location.reload();
+
+                const invoiceItemsBody = document.getElementById('invoiceItemsBody');
+                    if (invoiceItemsBody) {
+                    
+                        if (window.activeInvoiceItemId) {
+                        applyProductToInvoice(window.activeInvoiceItemId, result.product);
+                    }
+                    }
                 // Reset form
                 document.getElementById('productName').value = '';
                 const priceField = document.getElementById('productSellingPrice') || document.getElementById('productPrice');

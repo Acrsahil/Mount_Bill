@@ -194,7 +194,7 @@ export async function saveCustomer(){
 }
 
 //function to show total section
-function showTotalSection() {
+export function showTotalSection() {
     if (totalCharges) {
         totalCharges.style.display = 'block';
     }
@@ -663,7 +663,7 @@ function handleProductSearchBlur(e) {
     }, 200);
 }
 
-function selectProductFromHint(itemId, hintElement) {
+export function selectProductFromHint(itemId, hintElement) {
     const productId = hintElement.getAttribute('data-product-id');
     const productName = hintElement.getAttribute('data-product-name');
     const sellingPrice = hintElement.getAttribute('data-product-selling-price');
@@ -794,7 +794,7 @@ export function renderInvoiceItems(invoiceItems, invoiceItemsBody, setupProductS
 }
 
 // Add invoice item
-function addInvoiceItem() {
+export function addInvoiceItem() {
     const itemId = window.invoiceItems.length + 1;
 
     const newItem = {

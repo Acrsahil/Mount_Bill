@@ -963,7 +963,7 @@
             <input type="text" placeholder="Search..." class="pl-7 pr-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-[#4361ee] focus:border-[#4361ee] outline-none w-40">
         </div>
 
-      <button class="bg-gray-200 px-3 py-2 rounded hover:bg-gray-300 transition">
+      <button class="bg-gray-200 px-3 py-2 rounded hover:bg-gray-300 transition" id="allCategory">
         All Category
       </button>
       <button class="bg-gray-200 px-3 py-2 rounded hover:bg-gray-300 transition">
@@ -1014,7 +1014,7 @@
 <!-- INVOICE VIEW MODAL (Added this section) -->
 
 <!-- Add Product Modal - WITH SUGGESTIONS -->
-<div id="addProductModal" class="app-modal fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 hidden" id="addProductModal">
+{% comment %} <div id="addProductModal" class="app-modal fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 hidden">
     <div class="relative top-10 mx-auto p-0 w-full max-w-2xl">
         <div class="relative bg-white rounded-lg shadow-lg">
             <!-- Modal Header -->
@@ -1107,7 +1107,7 @@
             </div>
         </div>
     </div>
-</div>
+</div>  {% endcomment %}
 
 
 <!-- Add Client Modal -->
@@ -1175,6 +1175,7 @@
 </div>  {% endcomment %}
 {% include "website/modal/client_add_modal.html" %}
 {% include "website/modal/expense_modal.html" %}
+{% include "website/modal/add_product_modal.html" %}
 <!-- Create Invoice Modal -->
 <div class="app-modal" id="createInvoiceModal">
     <div class="app-modal-content" style="max-width: 800px;">

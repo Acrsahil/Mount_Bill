@@ -5,9 +5,12 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/create_invoice.css' %}">
+<script src="https://cdn.tailwindcss.com"></script>
 {% endblock %}
 
 {% block content %}
+{% include "website/modal/add_product_modal.html" %}
+
 <div class="create-invoice-page" id="createInvoicePage">
     <div class="page-header">
         <div class="header-content">
@@ -143,7 +146,6 @@
             <button class="btn btn-primary" style="display:none;"  id="updateInvoiceBtn">Update Invoice</button>
         </div>
     </div>
-
 {% endblock %}
 
 {% block extra_js %}
