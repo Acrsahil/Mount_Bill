@@ -27,8 +27,10 @@ from .models import (
     PaymentIn,
     PaymentOut,
     BalanceAdjustment,
+    Expense,
+    ExpenseCategory
 )
-
+from .signals import DEFAULT_CATEGORIES
 
 def invoice_uid(request,id):
     order = OrderList.objects.get(id=id)
@@ -1215,6 +1217,9 @@ def reports(request):
     context = get_serialized_data(request.user, "reports")
     return render(request, "website/bill.html", context)
 
+def expenses(request):
+    context = get_serialized_data(request.user, "expenses")
+    return render(request,"website/bill.html",context)
 
 def products(request):
     context = get_serialized_data(request.user, "products")
@@ -1820,7 +1825,154 @@ def customer_totals(request):
         totalAmount += Decimal(totalSale.final_amount)
 
     return JsonResponse({"amount":amount,"totalSale":totalAmount})
+
+@login_required       
+def expense_category(request):
+    user = request.user
+    company = user.owned_company or user.active_company
+
+    if not company:
+        # Just return default categories if no company
+        default_cats = ExpenseCategory.objects.filter(name__in=DEFAULT_CATEGORIES)
+        expense_categories = [{"name": cat.name} for cat in default_cats]
+        return JsonResponse({"expense_categories": expense_categories})
+
+    # Categories linked to the company
+    company_cats = ExpenseCategory.objects.filter(companies=company)
+    # Also default categories included
+    default_cats = ExpenseCategory.objects.filter(name__in=DEFAULT_CATEGORIES)
+
+    all_cats = (company_cats | default_cats).distinct()
+
+    expense_categories = [{"name": cat.name} for cat in all_cats]
+
+    return JsonResponse({"expense_categories": expense_categories})
+
+@login_required
+@transaction.atomic
+def save_expenses(request):
+    try:
+        data = json.loads(request.body)
+        amount = float(data.get("totalAmount"))
+        expenseNumber = float(data.get("expenseNumber"))
+        remarks = data.get("expenseRemarks")
+        category = data.get("expenseCategory")
+
+
+        user = request.user
+        company = user.owned_company or user.active_company
+    
+        category = ExpenseCategory.objects.filter(name=category).first()
+        if not category:
+            return JsonResponse({"success": False, "error": "Category not found"}, status=400)
         
+        Expense.objects.create(company = company,expense_number = expenseNumber,category=category,total_amount=amount,remarks=remarks)
+
+        return JsonResponse({"success":True})
+    except Exception as e:
+        print("Save Expenses Error:", e)
+        return JsonResponse({"success": False, "error": f"Server error: {str(e)}"}, status=500)
+
+@login_required
+@transaction.atomic
+def update_expense(request,id):
+    try:
+        data = json.loads(request.body)
+        category = data.get("expenses_category")
+        amount = Decimal(str(data.get("expenses_total")))
+        remarks = data.get("expenses_remarks")
+
+        expense = Expense.objects.get(id = id)
+
+        expense_category_obj = ExpenseCategory.objects.get(name = category,companies=expense.company)
+        expense.category = expense_category_obj
+        expense.total_amount = amount
+        expense.remarks = remarks
+        expense.save()
+        return JsonResponse({"success":True,"message":"Expense updated successfully"})
+
+    except Exception as e:
+        return JsonResponse({"success": False, "error": f"Server error: {str(e)}"}, status=500)
+
+@require_http_methods(["DELETE"])
+def delete_expense(request,id):
+    try:
+        expense = get_object_or_404(Expense,id = id)
+        expense.delete()
+        return JsonResponse({"success": True,"message":"Expense deleted Successfully!!"})
+    except Exception as e:
+        print("Delete Expense Error:", e)
+        return JsonResponse({"success":False, "error":f"Server error: {str(e)}"})
+
+@login_required
+def expense_info(request,id = None):
+    try:
+        user = request.user
+        company = user.owned_company or user.active_company
+        if not company:
+            return JsonResponse({"expense_data": [], "expense_count": 0})
+        if id is not None:
+            expenses = Expense.objects.get(id=id)
+            expense_data = {
+                    "expense_number":expenses.expense_number,
+                    "category": expenses.category.name if expenses.category else None,
+                    "date": expenses.date,
+                    "amount": expenses.total_amount,
+                    "remarks": expenses.remarks,
+                }
+            return JsonResponse({"expense_data": expense_data})
+        else:
+            expenses = Expense.objects.filter(company=company).order_by('-date')
+            expense_count = expenses.count()
+
+            expense_data = []
+            for expense in expenses:
+                expense_data.append({
+                    "id":expense.id,
+                    "category": expense.category.name if expense.category else None,
+                    "date": expense.date,
+                    "amount": expense.total_amount,
+                    "remarks": expense.remarks,
+                })
+
+        return JsonResponse({"expense_data": expense_data, "expense_count": expense_count})
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
 
 
+@login_required
+@transaction.atomic
+def save_category(request):
+    try:
+        data = json.loads(request.body)
+        category_name = data.get("expenseCategory", "").strip()
+
+        if not category_name:
+            return JsonResponse({"success": False, "error": "Category name required"}, status=400)
+
+        user = request.user
+        company = user.owned_company or user.active_company
+
+        if not company:
+            return JsonResponse({"success": False, "error": "No active company"}, status=400)
+
+        # Prevent duplicates + reuse existing category
+        expense_category, created = ExpenseCategory.objects.get_or_create(
+            name=category_name
+        )
+
+        # this link the company to the category
+        expense_category.companies.add(company)
+
+        return JsonResponse({
+            "success": True,
+            "category": expense_category.name,
+            "created": created
+        })
+
+    except Exception as e:
+        return JsonResponse({
+            "success": False,
+            "error": f"Server error: {str(e)}"
+        }, status=500)
 

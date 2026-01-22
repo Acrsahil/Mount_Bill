@@ -6,12 +6,14 @@ DEFAULT_CATEGORIES = [
     "Utilities","Marketing","Bank Fees","Salaries","Rent"
 ]
 
-for cat_name in DEFAULT_CATEGORIES:
-    ExpenseCategory.objects.get_or_create(name=cat_name)
+def create_default_categories():
+    for cat_name in DEFAULT_CATEGORIES:
+        ExpenseCategory.objects.get_or_create(name=cat_name)
 
 @receiver(post_save, sender=Company)
 def link_default_categories(sender, instance, created, **kwargs):
     if created:
+        create_default_categories()
         default_cats = ExpenseCategory.objects.filter(name__in=DEFAULT_CATEGORIES)
         for cat in default_cats:
             cat.companies.add(instance)
