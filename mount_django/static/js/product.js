@@ -815,32 +815,28 @@ export async function saveProduct(addProductModal) {
             showAlert(result.message, 'success');
             // Close modal after short delay
             setTimeout(() => {
-                const closeProductModalFunc = () => {
-                    if (addProductModal) {
-                        addProductModal.style.display = 'none';
-                    }
-                };
-                closeProductModalFunc();
-                // window.location.reload();
+                if (addProductModal) {
+                    addProductModal.classList.add('hidden'); // Use class instead of style
+                }
 
-                const invoiceItemsBody = document.getElementById('invoiceItemsBody');
-                    if (invoiceItemsBody) {
-                    
-                        if (window.activeInvoiceItemId) {
-                        applyProductToInvoice(window.activeInvoiceItemId, result.product);
-                    }
-                    }
                 // Reset form
                 document.getElementById('productName').value = '';
-                const priceField = document.getElementById('productSellingPrice') || document.getElementById('productPrice');
+                const priceField = document.getElementById('productSellingPrice') || document.getElementById('productCostPrice');
                 if (priceField) priceField.value = '';
                 document.getElementById('productCategory').value = '';
                 document.getElementById('lowStockQuantity').value = '';
-                const lowStockConstraint = document.getElementById('lowStockConstraint');
+
+                document.getElementById('productQuantity').value = '';
                 const slider = document.getElementById('statusToggle');
                 if (slider) {
-                    slider.checked = false
+                    slider.checked = false;
                     slider.dispatchEvent(new Event('change'));
+                }
+
+                // Apply product to invoice if needed
+                const invoiceItemsBody = document.getElementById('invoiceItemsBody');
+                if (invoiceItemsBody && window.activeInvoiceItemId) {
+                    applyProductToInvoice(window.activeInvoiceItemId, result.product);
                 }
             }, 1500);
         } else {

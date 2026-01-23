@@ -6,6 +6,10 @@ import { openModal} from './bill_layout.js';
 import { editInvoiceSection} from './edit_invoice.js';
 import { saveCustomer } from './create_invoice.js';
 // Show product suggestions
+
+// Global tracker
+window.activeInvoiceItemId = null;
+
 export function showProductSuggestions(itemId, products, searchTerm = '', selectProductFromHint) {
     const hintContainer = document.getElementById(`search-hint-${itemId}`);
     if (!hintContainer) return;
@@ -13,7 +17,7 @@ export function showProductSuggestions(itemId, products, searchTerm = '', select
     const filteredProducts = searchTerm 
         ? products.filter(product => 
             product.name.toLowerCase().includes(searchTerm) ||
-                (product.category && product.category.toLowerCase().includes(searchTerm))
+            (product.category && product.category.toLowerCase().includes(searchTerm))
         )
         : products;
 
@@ -24,12 +28,10 @@ data-product-name="${product.name}"
 data-product-selling-price="${product.selling_price}" 
 data-product-cost-price="${product.cost_price}" 
 data-product-category="${product.category || ''}">
-${product.name} - Selling: $${product.selling_price} | Cost: $${product.cost_price} ${product.category ? `(${product.category})` : ''}
-</div>
+${product.name} - Selling: $${product.selling_price} | Cost: $${product.cost_price} ${product.category ? `(${product.category})` : ''}</div>
 `).join('');
         hintContainer.style.display = 'block';
 
-        // Reattach click events
         hintContainer.querySelectorAll('.hint-item').forEach(item => {
             item.addEventListener('mousedown', function(e) {
                 e.preventDefault();
@@ -37,49 +39,49 @@ ${product.name} - Selling: $${product.selling_price} | Cost: $${product.cost_pri
             });
         });
     } else {
-        hintContainer.innerHTML=''
         hintContainer.innerHTML = `
         <div class="bg-white hint-empty">
-            <button type="button"
-                id="add-product-btn"
-                class="w-full text-left px-3 py-2 text-sm text-blue-600 
-                       bg-white border-none hover:bg-gray-100 focus:outline-none cursor-pointer">
+           <button type="button"
+                class="add-product-btn w-full text-left px-3 py-2 text-sm text-blue-600 
+                bg-white border-none hover:bg-gray-100 focus:outline-none cursor-pointer">
                 + Add Product
             </button>
-        </div>`
+        </div>`;
         hintContainer.style.display = 'block';
-        const addBtn = document.getElementById('add-product-btn');
 
-        addBtn.onmousedown = async(e) =>{
-            console.log('click chai hudae xa??');
+        const addBtn = hintContainer.querySelector('.add-product-btn');
+        addBtn.onmousedown = (e) => {
             e.preventDefault();
-
-            //  the invoice row which is active
             window.activeInvoiceItemId = itemId;
 
-            const product_name = document.querySelector('.product-search-input');
-            document.getElementById('productName').value = product_name.value;
+            const productInput = document.querySelector(`.product-search-input[data-id="${itemId}"]`);
+            document.getElementById('productName').value = productInput ? productInput.value : '';
+
             const productModal = document.getElementById('addProductModal');
             productModal.classList.remove('hidden');
-
-            //saving the product 
-            document.getElementById('saveProductBtn').onclick = () =>{
-                saveProduct(productModal) 
-            }
-
-            //closing the add product modal
-            document.getElementById('closeProductModal').onclick = () =>{
-            productModal.classList.add('hidden');
-            product_name.value = '';
-            }
-
-            document.getElementById('cancelProductBtn').onclick = () =>{
-            productModal.classList.add('hidden');
-            product_name.value = '';
-            }
-            }
+        };
     }
 }
+
+// Modal buttons setup (once)
+document.addEventListener('DOMContentLoaded', () => {
+    const productModal = document.getElementById('addProductModal');
+
+    const saveBtn = document.getElementById('saveProductBtn');
+    const closeBtn = document.getElementById('closeProductModal');
+    const cancelBtn = document.getElementById('cancelProductBtn');
+
+    saveBtn.onclick = () => saveProduct(productModal);
+
+    const closeModal = () => {
+        productModal.classList.add('hidden');
+        // Reset input of the currently active row
+        const productInput = document.querySelector(`.product-search-input[data-id="${window.activeInvoiceItemId}"]`);
+        if (productInput) productInput.value = '';
+    };
+
+    closeBtn.onclick = cancelBtn.onclick = closeModal;
+});
 
 // Show client suggestions
 export function showClientSuggestions(clients, searchTerm = '', selectClientFromHint) {

@@ -905,6 +905,9 @@ def save_customer(request):
             return JsonResponse({"success": False, "error": "No active company found for user."})
         
         customer = Customer.objects.create(company=company,name=name)
+
+        RemainingAmount.objects.create(customer=customer, remaining_amount=0)
+        
         return JsonResponse({"success":True,"name":customer.name})
         
     except Exception as e:
