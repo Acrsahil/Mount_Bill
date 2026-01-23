@@ -54,6 +54,8 @@ urlpatterns = [
     path("reports/", views.reports, name="reports"),
     path("settings/", views.settings, name="settings"),
     path("expenses/",views.expenses,name="expenses"),
+    path("purchase/",views.purchase,name="purchase"),
+    path("purchase/creates/",views.create_purchase,name="create_purchases"),
     path("expense-category/",views.expense_category,name="expense_category"),
     path("save-category/",views.save_category,name="save_category"),
     path("expense-info/",views.expense_info,name="expense_info"),
@@ -64,5 +66,6 @@ urlpatterns = [
     path("save-client/", views.save_client, name="save_client"),
     path("delete-client/<int:id>/",views.delete_client,name="delete_client"),
     path("create-invoice/", views.create_invoice_page, name="create_invoice_page"),
+    path("purchase/create/",views.create_purchases,name="create_purchase"),
     path("customer-totals/",views.customer_totals,name="customer_totals"),
 ]

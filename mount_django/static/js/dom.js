@@ -84,8 +84,8 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Show client suggestions
-export function showClientSuggestions(clients, searchTerm = '', selectClientFromHint) {
-    const hintContainer = document.getElementById('client-search-hint');
+export function showClientSuggestions(clients, searchTerm = '', selectClientFromHint,hintContainer) {
+    // const hintContainer = document.getElementById(searchHint);
     if (!hintContainer) return;
 
     console.log("show client suggestion?")

@@ -9,6 +9,7 @@ export function setupTabs() {
         'products': '/dashboard/products/',   // Actual: /dashboard/products/
         'clients': '/dashboard/clients/',     // Actual: /dashboard/clients/
         'expenses': '/dashboard/expenses/',
+        'purchase':'/dashboard/purchase/',
         'reports': '/dashboard/reports/',     // Add if you have this
         'settings': '/dashboard/settings/'    // Add if you have this
     };
@@ -89,6 +90,7 @@ function updatePageTitle(tabName) {
         'products': 'Products',
         'clients': 'Clients',
         'expenses': 'Expenses',
+        'purchase':'Purchase',
         'reports': 'Reports',
         'settings': 'Settings'
     };

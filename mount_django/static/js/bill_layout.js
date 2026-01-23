@@ -213,6 +213,7 @@ export function openModal(invoiceId) {
 
                     const temp = document.getElementById("create_new_invoice")
 
+                    sessionStorage.removeItem('purchase_mode');
                     window.location.href = `/dashboard/invoices/${data.invoice.uuid}`
 
 

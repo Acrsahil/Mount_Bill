@@ -1239,6 +1239,16 @@ def expenses(request):
     context = get_serialized_data(request.user, "expenses")
     return render(request,"website/bill.html",context)
 
+def purchase(request):
+    context = get_serialized_data(request.user, "purchase")
+    return render(request,"website/bill.html",context)
+
+
+def create_purchase(request):
+    context = get_serialized_data(request.user, "purchase")
+    return render(request,"website/modal/create_purchase_bill.html",context)
+    
+
 def products(request):
     context = get_serialized_data(request.user, "products")
     # context["product_number"] = context["product_count"]
@@ -1801,6 +1811,7 @@ def create_invoice_page(request):
     try:
         # Get serialized data for the invoice creation page
         context = get_serialized_data(request.user, "dashboard")
+        context['mode'] = 'invoice'
         return render(request, "website/create_invoice.html", context)
     except Exception:
         return render(
@@ -1814,6 +1825,11 @@ def create_invoice_page(request):
                 "active_tab": "invoices",
             },
         )
+@login_required
+def create_purchases(request):
+    context = get_serialized_data(request.user, "purchase")
+    context['mode'] = 'purchase'
+    return render(request,"website/create_invoice.html",context)
 
 @login_required 
 def customer_totals(request):

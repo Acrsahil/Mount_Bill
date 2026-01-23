@@ -185,7 +185,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Add event listener for createInvoiceBtnTab to navigate to full page
     if (createInvoiceBtnTab) {
         createInvoiceBtnTab.addEventListener('click', () => {
-            console.log("why am i not here??")
+            sessionStorage.removeItem('purchase_mode');
             window.location.href = '/dashboard/create-invoice/';
         });
     }

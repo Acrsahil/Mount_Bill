@@ -1,0 +1,140 @@
+<div id="purchaseBill">
+<div class="create-purchase-page min-h-screen bg-gray-100 flex flex-col overflow-visible">
+
+    <!-- Page Header -->
+    <div class="page-header bg-gradient-to-br from-blue-600 to-purple-900 text-white shadow-md p-5 md:px-10 flex justify-between items-center w-full">
+        <h1 id="create_new_purchase" class="flex items-center gap-3 text-lg font-semibold">
+            <i class="fas fa-file-invoice-dollar text-lg"></i> Create New Purchase
+        </h1>
+        <button class="cancel-button bg-white rounded-full w-6 h-6 flex items-center justify-center text-gray-600 hover:text-gray-800 hover:bg-gray-200 transition" id="cancelPurchaseBtn">
+            <i class="fas fa-times text-xs"></i>
+        </button>
+    </div>
+
+    <!-- Page Content -->
+    <div class="page-content flex-1 p-6 md:p-10 max-w-[1400px] mx-auto w-full overflow-x-hidden">
+
+        <!-- Invoice Details Row -->
+        <div class="form-row-3 flex flex-col md:flex-row md:items-start w-full gap-6">
+            <!-- Left Column -->
+            <div class="left-group">
+                <div class="form-group relative mb-3">
+                    <label for="sellerName" class="block font-bold text-sm mb-2">Select Client</label>
+                    <input type="text" id="sellerName" class="form-control client-search-input w-[300px] h-10 px-3 border border-gray-300 rounded-md focus:border-blue-600 focus:ring focus:ring-blue-200" placeholder="Type client name (Tab to complete)...">
+                    <div class="search-hint absolute hidden bg-white border border-gray-300 max-h-40 overflow-y-auto z-50 w-full mt-1 rounded-md shadow-md" id="seller-search-hint">
+                        <!-- Client suggestions will appear here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="right-column flex gap-3 ml-auto">
+                <div class="form-group mb-3">
+                    <label for="purchaseBillNo" class="block font-bold text-sm mb-2">Bill No.</label>
+                    <input type="text" id="purchaseBillNo" class="form-control w-[300px] h-10 px-3 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed" value="BILL-001" readonly>
+                </div>
+                <div class="form-group mb-3">
+                    <label for="billDate" class="block font-bold text-sm mb-2">Invoice Date</label>
+                    <input type="date" id="billDate" class="form-control w-[300px] h-10 px-3 border border-gray-300 rounded-md">
+                </div>
+            </div>
+        </div>
+
+        <!-- Invoice Items Table -->
+        <div class="bill-items bg-white p-6 rounded-lg border border-gray-200 shadow-sm mt-4">
+            <div class="bill-items-header flex justify-between items-center border-b-2 border-gray-200 pb-3 mb-4">
+                <h4 class="text-sm font-semibold text-gray-800 m-0">Bill Items</h4>
+            </div>
+
+            <table class="bill-items-table w-full text-sm border-collapse">
+                <thead>
+                    <tr class="bg-gray-100 text-left">
+                        <th class="border border-gray-200 p-2">S.N</th>
+                        <th class="border border-gray-200 p-2">Product</th>
+                        <th class="border border-gray-200 p-2">Quantity</th>
+                        <th class="border border-gray-200 p-2">Price</th>
+                        <th class="border border-gray-200 p-2">Discount</th>
+                        <th class="border border-gray-200 p-2">Total</th>
+                        <th class="border border-gray-200 p-2">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="billItemsBody" class="bg-white">
+                    <!-- Invoice items will be added here -->
+                </tbody>
+                <tfoot>
+                    <tr id="subtotal" class="bg-gray-50 border-t-2 border-gray-300 font-bold">
+                        <td colspan="3" class="p-2">
+                            <button class="add-item-btn flex items-center gap-2 px-3 py-2 rounded-md text-sm font-semibold bg-blue-600 text-white hover:bg-blue-700 hover:shadow-md transition" id="addProductBtn">
+                                <i class="fas fa-plus"></i> Add Item
+                            </button>
+                        </td>
+                        <td class="subtotal-label text-left p-2">Subtotal:</td>
+                        <td id="discoutSubtotal" class="subtotal-value text-right p-2">Rs.0.00</td>
+                        <td id="subtotalAmount" class="subtotal-value text-right p-2">Rs.0.00</td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <!-- Charges Section -->
+        <div class="charges hidden mt-6" id="totalCharge">
+            <div class="bill-items bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+                <div class="remark-charges-wrapper flex flex-col md:flex-row gap-5">
+                    <!-- LEFT -->
+                    <div id="additionalRemarks" class="flex-1">
+                        <textarea class="w-full h-32 p-3 text-gray-600 text-lg border-2 border-gray-300 rounded-md outline-none caret-black" placeholder="Notes..."></textarea>
+                    </div>
+                    <!-- RIGHT -->
+                    <div id="additionalCharges" class="flex flex-col items-end gap-3 ml-auto">
+                        <div id="discountAmount" class="flex justify-end gap-2"></div>
+                        <div id="taxAmount" class="flex justify-end gap-2"></div>
+                        <div id="additionalInput" class="flex justify-end gap-2"></div>
+
+                        <div class="button-row flex gap-3">
+                            <button id="addRemarkBtn" class="text-blue-600 text-sm font-semibold">+Add notes</button>
+                            <button id="addDiscount" class="text-blue-600 text-sm font-semibold">+Add discount</button>
+                            <button id="addTax" class="text-blue-600 text-sm font-semibold">+Add Tax</button>
+                            <button id="addCharge" class="text-blue-600 text-sm font-semibold">+Add Additional Charge</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Totals Section -->
+        <div id="totalContainer" class="totals-section mt-5">
+            <div class="bill-totals-compact bg-gray-100 p-5 rounded-lg flex justify-end">
+                <div class="total-column flex flex-col gap-3 mt-3 text-sm">
+                    <div class="field-row flex items-center gap-3">
+                        <label for="totalAmounts" class="w-48 text-right">Total:</label>
+                        <input type="text" id="totalAmounts" placeholder="Rs.0.00" class="flex-1 px-2 py-1 rounded-md border border-gray-300">
+                    </div>
+                    <div class="field-row flex items-center gap-3">
+                        <label class="checkbox-label flex items-center gap-2 w-48 text-right"><input type="checkbox" id="receiveAmount" class="w-5 h-5"> Received Amount:</label>
+                        <input type="number" id="amountReceived" placeholder="Rs." class="flex-1 px-2 py-1 rounded-md border border-gray-300">
+                    </div>
+                    <div class="field-row balance-due hidden flex items-center gap-3" id="balanceDue">
+                        <label for="balance-due" class="w-48 text-right">Balance Due:</label>
+                        <input type="text" id="amountBalanceDue" placeholder="Rs." class="flex-1 px-2 py-1 rounded-md border border-gray-300">
+                    </div>
+                    <div class="field-row flex items-center gap-3">
+                        <label for="payment" class="w-48 text-right">Payment Mode:</label>
+                        <select name="payment" id="paymentMode" class="flex-1 px-2 py-1 rounded-md border border-gray-300">
+                            <option value="Cash">Cash</option>
+                            <option value="Cheque">Cheque</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page Footer -->
+        <div class="page-footer flex justify-end gap-3 mt-6">
+            <button class="btn btn-light px-4 py-2 rounded-md border border-gray-300 text-sm font-semibold" id="cancelBillBtnBottom">Cancel</button>
+            <button class="btn btn-primary px-4 py-2 rounded-md bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700">Save Purchase Bill</button>
+        </div>
+
+    </div>
+</div>
+</div>

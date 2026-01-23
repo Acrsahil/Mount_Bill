@@ -43,6 +43,7 @@ window.productCategories = productCategories;
 // DOM Elements
 const invoiceNumber = document.getElementById('invoiceNumber');
 const invoiceDate = document.getElementById('invoiceDate');
+const purchaseDate = document.getElementById('purchaseDate');
 const clientNameInput = document.getElementById('clientName');
 const clientSearchHint = document.getElementById('client-search-hint');
 const invoiceItemsBody = document.getElementById('invoiceItemsBody');
@@ -57,17 +58,27 @@ const totalCharges = document.getElementById('totalCharges');
 
 // Initialize the page
 document.addEventListener('DOMContentLoaded', function () {
-    const saveInvoiceBtn = document.getElementById('saveInvoiceBtn');
-    // Save invoice button
-    if (saveInvoiceBtn) {
-        saveInvoiceBtn.addEventListener('click', () => saveInvoice());
+
+    if(pageMode === 'invoice'){
+        const saveInvoiceBtn = document.getElementById('saveInvoiceBtn');
+        // Save invoice button
+        if (saveInvoiceBtn) {
+            saveInvoiceBtn.addEventListener('click', () => saveInvoice());
+        }
+
     }
-    console.log('Create Invoice Page loaded');
+    
+    
 
     // Set today's date as default
     if (invoiceDate) {
         const today = new Date().toISOString().split('T')[0];
         invoiceDate.value = today;
+    }
+
+    if (purchaseDate) {
+        const today = new Date().toISOString().split('T')[0];
+        purchaseDate.value = today;
     }
 
     // Generate next invoice number
@@ -422,7 +433,8 @@ export function setupClientSearch() {
 
 function handleClientSearchFocus() {
     if (clientSearchHint) {
-        showClientSuggestions(window.clients, '', (hintElement) => selectClientFromHint(hintElement));
+        const searchHint = document.getElementById('client-search-hint');
+        showClientSuggestions(window.clients, '', (hintElement) => selectClientFromHint(hintElement),searchHint);
 
         // Add click event to hints
         clientSearchHint.querySelectorAll('.hint-item').forEach(item => {
@@ -436,7 +448,8 @@ function handleClientSearchFocus() {
 
 function handleClientSearch(e) {
     const searchTerm = e.target.value.toLowerCase();
-    showClientSuggestions(window.clients, searchTerm, (hintElement) => selectClientFromHint(hintElement));
+    const searchHint = document.getElementById('client-search-hint');
+    showClientSuggestions(window.clients, searchTerm, (hintElement) => selectClientFromHint(hintElement),searchHint);
 }
 
 function handleClientSearchKeydown(e) {
