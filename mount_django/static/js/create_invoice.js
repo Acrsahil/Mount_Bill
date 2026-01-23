@@ -1011,6 +1011,7 @@ export function updateTotals(invoiceItems, globalDiscount, globalTax) {
 // Save invoice
 export async function saveInvoice() {
     const clientName = clientNameInput.value.trim();
+    console.log("yaa kina aayneadsfsdfsdf",invoiceDate.value)
     const invoiceDateValue = invoiceDate.value;
     const receivedAmount = window.receivableAmount ? parseFloat(window.receivableAmount.value) || 0 : 0;
 

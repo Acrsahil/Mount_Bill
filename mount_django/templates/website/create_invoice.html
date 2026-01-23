@@ -45,19 +45,20 @@
                 <label for="billNumber" id="billNo">Bill No</label>
                 <input type="text" id="billNumber" class="form-control" value="Bill-001" readonly>
             </div>
-            <div class="form-group" id="invoiceCreationDate">
-                <label for="invoiceDate">Invoice Date</label>
-                <input type="date" id="invoiceDate" class="form-control" value="">
+             <div class="form-group" id="purchaseBillDate">
+                <label for="purchaseDate">Invoice Date</label>
+                <input type="date" id="purchaseDate" class="form-control" value="">
             </div>
             {% else %}
             <div class="form-group"  id="invoiceNoHeader">
                 <label for="invoiceNumber">Invoice Number</label>
                 <input type="text" id="invoiceNumber" class="form-control" value="INV-001" readonly>
             </div>
-            <div class="form-group" id="purchaseBillDate">
-                <label for="purchaseDate">Invoice Date</label>
-                <input type="date" id="purchaseDate" class="form-control" value="">
+            <div class="form-group" id="invoiceCreationDate">
+                <label for="invoiceDate">Invoice Date</label>
+                <input type="date" id="invoiceDate" class="form-control" value="">
             </div>
+           
             {% endif %}
 
         </div>
