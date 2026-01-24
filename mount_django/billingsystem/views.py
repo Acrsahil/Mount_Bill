@@ -2095,12 +2095,17 @@ def customer_totals(request):
         "toGive":toGive
     }
 
-    totalSales = OrderSummary.objects.all()
+    totalSales = OrderList.objects.filter(company=company)
     totalAmount = Decimal("0")
     for totalSale in totalSales:
-        totalAmount += Decimal(totalSale.final_amount)
+        totalAmount += Decimal(totalSale.summary.final_amount)
 
-    return JsonResponse({"amount":amount,"totalSale":totalAmount})
+    expenses = Expense.objects.filter(company=company)
+    expenses_total = Decimal("0")
+    for expense in expenses:
+        expenses_total +=Decimal(expense.total_amount)
+
+    return JsonResponse({"amount":amount,"totalSale":totalAmount,"expense_total":expenses_total})
 
 @login_required       
 def expense_category(request):

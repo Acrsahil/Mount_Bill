@@ -92,9 +92,12 @@ export async function updateKPI(){
     const totalToReceive = document.getElementById('totalToReceive');
     const totalToGive = document.getElementById('totalToGive');
     const totalSales = document.getElementById('totalSales');
+    const expenseTotalAmount = document.getElementById('expenseTotalAmount');
+
     if (totalToReceive) totalToReceive.textContent = data.amount.toReceive;
     if (totalToGive) totalToGive.textContent = data.amount.toGive;
     
     if (totalSales) totalSales.textContent = data.totalSale;
+    if(expenseTotalAmount) expenseTotalAmount.textContent = data.expense_total;
 
 }
