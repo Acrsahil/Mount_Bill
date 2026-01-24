@@ -37,7 +37,7 @@ def invoice_uid(request,id):
     return JsonResponse({"uid": str(order.uid)})
 
 
-
+@login_required
 def filtered_products(request):
     user = request.user
     company = user.owned_company or user.active_company
@@ -74,7 +74,7 @@ def filtered_products(request):
     ]
     return JsonResponse({"products": products_data})
 
-
+@login_required
 def category_json(request):
     user = request.user
     company = user.owned_company or user.active_company
@@ -123,6 +123,7 @@ def products_json(request):
 
     return JsonResponse({"products": products_data, "count": products.count()})
 
+@login_required
 @never_cache
 def clients_json(request):
     user = request.user
@@ -150,6 +151,7 @@ def clients_json(request):
 
     return JsonResponse({"clients": clients_data, "client_count": clients.count()})
 
+@login_required
 def client_info_payment_id(request,id: UUID):
     user = request.user
     company = user.owned_company or user.active_company
@@ -422,7 +424,6 @@ def save_product(request):
 
 
 @login_required
-@csrf_exempt
 @require_POST
 @transaction.atomic
 def update_product(request, id):
@@ -474,7 +475,6 @@ def update_product(request, id):
 
 
 @login_required
-@csrf_exempt
 @require_POST
 @transaction.atomic
 def add_stock(request, id):
@@ -522,7 +522,6 @@ def add_stock(request, id):
 
 
 @login_required
-@csrf_exempt
 @require_POST
 @transaction.atomic
 def reduce_stock(request, id):
@@ -574,7 +573,6 @@ def reduce_stock(request, id):
 
 
 @login_required
-@csrf_exempt
 @require_POST
 @transaction.atomic
 def save_invoice(request):
@@ -813,24 +811,8 @@ def save_invoice(request):
             {"success": False, "error": f"Server error: {str(e)}"}, status=500
         )
 
-
-def sahilpage(request):
-    products = Product.objects.select_related("category").all()
-    return render(request, "billingsystem/index.html", {"products": products})
-
-
-def product_details(request, pro_id, second_id):
-    pro = get_object_or_404(Product, pk=pro_id)
-    ans = pro_id + second_id
-    return render(
-        request,
-        "billingsystem/productprice.html",
-        {"pro": pro, "ans": ans},
-    )
-
-
+@login_required
 @require_POST
-@csrf_exempt
 def save_client(request):
     try:
         # Parse JSON data from request
@@ -895,6 +877,7 @@ def save_client(request):
         return JsonResponse({"success": False, "error": f"Server error: {str(e)}"})
 
 @login_required
+@require_POST
 def save_customer(request):
     try:
         data = json.loads(request.body)
@@ -923,8 +906,8 @@ def delete_client(request,id: UUID = None):
         print("Delete Client Error:", e)
         return JsonResponse({"success":False, "error":f"Server error: {str(e)}"})
 
+@login_required
 @require_POST
-@csrf_exempt
 def update_client(request,id):
     try:
         data = json.loads(request.body)
@@ -954,6 +937,7 @@ def update_client(request,id):
     
 # update opening balance
 @login_required
+@require_POST
 @transaction.atomic
 def update_opening_balance(request,id:UUID):
     try:
@@ -975,7 +959,6 @@ def update_opening_balance(request,id:UUID):
         return JsonResponse({"success":False,"error":f"Server error: {str(e)}"})
 
 @login_required
-@csrf_exempt
 @require_POST
 def delete_invoice(request, id):
     if request.method == "POST":
@@ -995,7 +978,6 @@ def delete_product(request, id):
 
 
 @login_required
-@csrf_exempt
 def invoice_layout(request, id):
     if request.method == "GET":
         try:
@@ -1242,13 +1224,7 @@ def expenses(request):
 def purchase(request):
     context = get_serialized_data(request.user, "purchase")
     return render(request,"website/bill.html",context)
-
-
-def create_purchase(request):
-    context = get_serialized_data(request.user, "purchase")
-    return render(request,"website/modal/create_purchase_bill.html",context)
     
-
 def products(request):
     context = get_serialized_data(request.user, "products")
     # context["product_number"] = context["product_count"]
@@ -1343,7 +1319,7 @@ def fetch_transactions(request,id:UUID):
     return JsonResponse({"success":True,
                          "transactions":mergedData})
 
-
+@login_required
 def fetch_all_transactions(request):
     user = request.user
     company = user.owned_company or user.active_company
@@ -1391,7 +1367,7 @@ def fetch_all_transactions(request):
     mergedData.sort(key=lambda x: x["date"], reverse=True)
     return JsonResponse({"transactions":mergedData})
 
-
+@login_required
 @require_POST
 @transaction.atomic
 def payment_in(request,id):
@@ -1471,6 +1447,7 @@ def fill_update_payment_out_modal(request,id):
 
 
 @login_required
+@require_POST
 @transaction.atomic
 def update_payment_in(request,id):
     try:
@@ -1502,6 +1479,7 @@ def update_payment_in(request,id):
         return JsonResponse({"success":False,"error": f"Server error: {str(e)}"}, status=500)
     
 @login_required
+@require_POST
 @transaction.atomic
 def update_payment_out(request,id):
     try:
@@ -1531,6 +1509,7 @@ def update_payment_out(request,id):
     except Exception as e:
         return JsonResponse({"success":False,"error": f"Server error: {str(e)}"}, status=500)
 
+@login_required
 @require_POST
 @transaction.atomic
 def payment_out(request,id):
@@ -1561,7 +1540,7 @@ def payment_out(request,id):
         )
     
 
-
+@login_required
 @require_POST
 @transaction.atomic
 def balance_adjustment(request, id):
@@ -1613,6 +1592,7 @@ def balance_adjustment(request, id):
         )
 
 @login_required
+@require_POST
 @transaction.atomic
 def update_add_adjust(request,id):
     try:
@@ -1645,6 +1625,7 @@ def update_add_adjust(request,id):
     
 
 @login_required
+@require_POST
 @transaction.atomic
 def update_reduce_adjust(request,id):
     try:
@@ -1705,7 +1686,7 @@ def product_detail(request, id: UUID = None):
         context["item_activity"] = item_activity
     return render(request, "website/product_detail.html", context)
 
-
+@login_required
 def fetch_product_activities(request, id: UUID):
     user = request.user
     company = user.owned_company or user.active_company
@@ -1732,7 +1713,6 @@ def fetch_product_activities(request, id: UUID):
 
 
 @login_required
-@csrf_exempt
 @require_POST
 @transaction.atomic
 def update_stock(request, id):
@@ -1883,6 +1863,7 @@ def expense_category(request):
     return JsonResponse({"expense_categories": expense_categories})
 
 @login_required
+@require_POST
 @transaction.atomic
 def save_expenses(request):
     try:
@@ -1908,6 +1889,7 @@ def save_expenses(request):
         return JsonResponse({"success": False, "error": f"Server error: {str(e)}"}, status=500)
 
 @login_required
+@require_POST
 @transaction.atomic
 def update_expense(request,id):
     try:
@@ -1975,6 +1957,7 @@ def expense_info(request,id = None):
 
 
 @login_required
+@require_POST
 @transaction.atomic
 def save_category(request):
     try:

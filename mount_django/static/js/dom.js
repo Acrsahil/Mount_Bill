@@ -5,6 +5,7 @@ import { editProduct,deleteProduct,saveProduct } from './product.js';
 import { openModal} from './bill_layout.js';
 import { editInvoiceSection} from './edit_invoice.js';
 import { saveCustomer } from './create_invoice.js';
+import { openAddProductModal } from './events.js';
 // Show product suggestions
 
 // Global tracker
@@ -53,12 +54,11 @@ ${product.name} - Selling: $${product.selling_price} | Cost: $${product.cost_pri
         addBtn.onmousedown = (e) => {
             e.preventDefault();
             window.activeInvoiceItemId = itemId;
+            const productModal = document.getElementById('addProductModal');
+            openAddProductModal(productModal)
 
             const productInput = document.querySelector(`.product-search-input[data-id="${itemId}"]`);
-            document.getElementById('productName').value = productInput ? productInput.value : '';
-
-            const productModal = document.getElementById('addProductModal');
-            productModal.classList.remove('hidden');
+            document.getElementById('productName').value = productInput ? productInput.value : '';        
         };
     }
 }

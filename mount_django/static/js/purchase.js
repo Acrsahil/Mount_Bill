@@ -10,8 +10,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // } catch (error) {
         //     console.error("Error loading purchase page:", error);
         // }
-        // document.getElementById('create_new_invoice').innerText = "Create Purchase Bill";
-
         window.location.href = '/dashboard/purchase/create/'; 
     });
 });

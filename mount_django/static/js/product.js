@@ -139,7 +139,6 @@ document.addEventListener('DOMContentLoaded', () => {
     })
     productCategories.addEventListener('input', () => {
         const searchTerm = productCategories.value.toLowerCase();
-        console.log("esko k xa tw", categories)
         const filtered = categories.filter(category => category.name.toLowerCase().includes(searchTerm))
         renderCategory(filtered)
     })
@@ -301,19 +300,6 @@ document.addEventListener('DOMContentLoaded', () => {
     addNewProductDetailBtn.addEventListener('click', () => {
         openAddProductModal(addProductModal);
     });
-
-    // const closeProductModal = document.getElementById('closeProductModal');
-    // closeProductModal.addEventListener('click', () => {
-    //     closeProductModalFunc(addProductModal)
-    // })
-    // const cancelProductBtn = document.getElementById('cancelProductBtn');
-    // cancelProductBtn.addEventListener('click', () => {
-    //     closeProductModalFunc(addProductModal)
-    // })
-    // const saveProductBtn = document.getElementById('saveProductBtn');
-    // saveProductBtn.addEventListener('click', () => {
-    //     saveProduct(addProductModal)
-    // })
 });
 
 // FILTER PRODUCTS
@@ -744,6 +730,7 @@ export function applyProductToInvoice(itemId, product) {
 }
 
 // Save product to database via AJAX
+
 export async function saveProduct(addProductModal) {
     const productsactivityTableBody = document.getElementById('productsactivityTableBody');
     const productName = document.getElementById('productName').value.trim();
@@ -795,11 +782,9 @@ export async function saveProduct(addProductModal) {
             body: JSON.stringify(productData)
         });
         const result = await response.json();
-        console.log('Server response:', result);
-        console.log("yo itemactivity ma k aayo", result.itemactivity)
+
         if (result.success) {
             if (!result.product.uid) {
-                console.error("Saved product missing UID:", result.product);
                 showAlert("Product saved but UID missing. Please refresh.", "error");
                 return;
             }
@@ -814,15 +799,16 @@ export async function saveProduct(addProductModal) {
 
             showAlert(result.message, 'success');
             // Close modal after short delay
-            setTimeout(() => {
-                if (addProductModal) {
-                    addProductModal.classList.add('hidden'); // Use class instead of style
-                }
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            addProductModal.classList.remove('active');
+            addProductModal.classList.add('hidden'); // Use class instead of style
+            
 
-                // Reset form
+            // Reset form
                 document.getElementById('productName').value = '';
                 const priceField = document.getElementById('productSellingPrice') || document.getElementById('productCostPrice');
                 if (priceField) priceField.value = '';
+                document.getElementById('productCostPrice').value = '';
                 document.getElementById('productCategory').value = '';
                 document.getElementById('lowStockQuantity').value = '';
 
@@ -838,7 +824,7 @@ export async function saveProduct(addProductModal) {
                 if (invoiceItemsBody && window.activeInvoiceItemId) {
                     applyProductToInvoice(window.activeInvoiceItemId, result.product);
                 }
-            }, 1500);
+
         } else {
             showAlert('Error: ' + (result.error || 'Failed to save product'), 'error');
         }
@@ -1562,7 +1548,7 @@ export async function editProduct(productId) {
         // Show modal
 
         if (addProductModal) {
-            addProductModal.style.display = 'flex';
+            addProductModal.classList.remove('hidden');
         }
     }
 }
@@ -1683,7 +1669,7 @@ export async function updateProduct(addProductModal) {
             setTimeout(() => {
                 const closeProductModalFunc = () => {
                     if (addProductModal) {
-                        addProductModal.style.display = 'none';
+                        addProductModal.classList.add('hidden');
                     }
                 };
                 closeProductModalFunc();

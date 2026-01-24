@@ -28,6 +28,7 @@ let currentSelectedHintIndex = -1;
 let currentSelectedProductHintIndex = -1;
 let currentSelectedProductNameHintIndex = -1;
 let currentSelectedCategoryHintIndex = -1;
+let clickcount=0;
 
 // Export functions to be used by main.js
 export function setupEventListeners(
@@ -97,7 +98,14 @@ export function setupEventListeners(
         } );
     if (cancelClientBtn) cancelClientBtn.addEventListener('click', () => closeClientModalFunc(addClientModal));
     if (saveInvoiceBtn) saveInvoiceBtn.addEventListener('click', () => saveInvoice(createInvoiceModal, invoiceItemsBody));
-    if (saveProductBtn) saveProductBtn.addEventListener('click', () => saveProduct(addProductModal));
+//     if (saveProductBtn) {
+//         console.log('Binding save product click');
+//         saveProductBtn.addEventListener('click', () => {
+//         clickcount ++;
+//         console.log("how many time clicked",clickcount)
+//         saveProduct(addProductModal)
+//     });
+// }
     if (saveClientBtn) saveClientBtn.addEventListener('click', () => saveClient(addClientModal, clientsTableBody));
     if (addItemBtn) addItemBtn.addEventListener('click', () => addInvoiceItem(invoiceItemsBody));
     if (searchInput) searchInput.addEventListener('input', () => filterInvoices(window.invoices, searchInput, invoicesTableBody));
@@ -378,7 +386,7 @@ export function openAddProductModal(addProductModal) {
     quantity.style.display = 'flex';
 
     // Show modal
-    addProductModal.style.display = 'flex';
+    addProductModal.classList.remove('hidden');
     // Auto-focus on product name field
     setTimeout(() => {
         const productNameInput = document.getElementById('productName');
@@ -389,7 +397,7 @@ export function openAddProductModal(addProductModal) {
 }
 
 export function closeProductModalFunc(addProductModal) {
-    addProductModal.style.display = 'none';
+    addProductModal.classList.add('hidden');
     hideSearchHints();
 }
 
