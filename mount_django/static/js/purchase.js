@@ -12,4 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // }
         window.location.href = '/dashboard/purchase/create/'; 
     });
+   
 });
+
+

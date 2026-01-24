@@ -68,7 +68,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
     }
     
-    
+    if(pageMode === 'purchase'){
+         const savePurchaseBtn = document.getElementById('savePurchaseBtn');
+    savePurchaseBtn.addEventListener('click',async()=>{
+        
+        await savePurchase()
+    })
+    }
 
     // Set today's date as default
     if (invoiceDate) {
@@ -408,7 +414,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 //sending additional charges name and amount
-function additionalChargeName() {
+export function additionalChargeName() {
     const charges = [];
     const chargesDiv = window.additionalContainer.querySelectorAll('.additional-input');
     chargesDiv.forEach(div => {
@@ -416,7 +422,6 @@ function additionalChargeName() {
         const chargeAmount = parseFloat(div.querySelector('input[type="number"]').value) || 0;
         charges.push({ chargeName, chargeAmount });
     });
-    console.log(charges);
     return charges;
 }
 
@@ -1011,7 +1016,6 @@ export function updateTotals(invoiceItems, globalDiscount, globalTax) {
 // Save invoice
 export async function saveInvoice() {
     const clientName = clientNameInput.value.trim();
-    console.log("yaa kina aayneadsfsdfsdf",invoiceDate.value)
     const invoiceDateValue = invoiceDate.value;
     const receivedAmount = window.receivableAmount ? parseFloat(window.receivableAmount.value) || 0 : 0;
 
@@ -1146,6 +1150,124 @@ export async function saveInvoice() {
         }
     } catch (error) {
         console.error('Error saving invoice:', error);
+        showAlert('Network error. Please check your connection and try again.', 'error');
+        saveBtn.innerHTML = originalText;
+        saveBtn.disabled = false;
+    }
+}
+
+
+//saving purchase bill
+export async function savePurchase() {
+    const customerName = document.getElementById('clientName');
+    const clientName = customerName.value.trim();
+    const purchaseDateValue = purchaseDate.value;
+    const receivedAmount = window.receivableAmount ? parseFloat(window.receivableAmount.value) || 0 : 0;
+
+    // Get discount and tax values
+    const discountPercentageInput = document.getElementById('globalDiscount');
+    const taxPercentageInput = document.getElementById('globalTax');
+
+    const discountPercent = discountPercentageInput ? parseFloat(discountPercentageInput.value) || 0 : 0;
+    const taxPercent = taxPercentageInput ? parseFloat(taxPercentageInput.value) || 0 : 0;
+    
+    let noteshere = "";
+    if (is_addnotebtn) {
+        noteshere = document.getElementById('note').value;
+    }
+
+    const additionalchargeName = additionalChargeName();
+
+    // Validation
+    if (!clientName) {
+        showAlert('Please enter client name', 'error');
+        clientName.focus();
+        return;
+    }
+
+    if (window.invoiceItems.length === 0) {
+        showAlert('Please add at least one item to the purchase', 'error');
+        return;
+    }
+
+    // Show loading state
+    const saveBtn = document.getElementById('savePurchaseBtn');
+    const originalText = saveBtn.innerHTML;
+
+    saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving Invoice...';
+    saveBtn.disabled = true;
+
+    try {
+        const purchaseData = {
+            clientName: clientName,
+            purchaseDate: purchaseDateValue,
+            items: window.invoiceItems.map(item => ({
+                productName: item.productName || '',
+                description: item.description || '',
+                quantity: item.quantity || 1,
+                price: item.price || 0,
+                discount: item.discount || 0,
+                discountPercent: item.discountPercent || 0,
+            })),
+            globalDiscountPercent: Number(globalDiscount).toFixed(2),
+            globalTaxPercent: Number(globalTax).toFixed(2),
+            additionalCharges: window.additionalChargesTotal,
+            additionalchargeName: additionalchargeName,
+            noteshere: noteshere,
+            receivedAmount: receivedAmount,
+        };
+
+
+
+        console.log('Sending purchase data:->>>>>>>>>>>>>>>>>>>>>>>', purchaseData);
+
+        const response = await fetch('/dashboard/save-purchase/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify(purchaseData)
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            if (result.field_errors) {
+                const fe = result.field_errors;
+
+                // Prefer total_amount, but fall back to any field/non-field errors.
+                const candidate =
+                    fe.total_amount ??
+                    fe.__all__ ??              // model.clean() often uses __all__
+                    fe.non_field_errors ??     // sometimes this key is used
+                    Object.values(fe)[0];      // fallback: first field
+
+                const msg = Array.isArray(candidate) ? candidate[0] : candidate || result.error || 'Validation error';
+                showAlert(msg, 'error');
+            } else {
+                showAlert(result.error || 'Something went wrong', 'error');
+            }
+            return;
+        }
+
+
+
+        if (result.success) {
+            showAlert(result.message, 'success');
+
+            //Redirect to dashboard after short delay
+            setTimeout(() => {
+                window.location.href = '/dashboard/purchase/';
+            }, 1000);
+        } else {
+            showAlert('Error: ' + (result.error || 'Failed to save purchase bill'), 'error');
+            saveBtn.innerHTML = originalText;
+            saveBtn.disabled = false;
+        }
+    } catch (error) {
+        console.error('Error saving purchase bill:', error);
         showAlert('Network error. Please check your connection and try again.', 'error');
         saveBtn.innerHTML = originalText;
         saveBtn.disabled = false;

@@ -28,7 +28,8 @@ from .models import (
     PaymentOut,
     BalanceAdjustment,
     Expense,
-    ExpenseCategory
+    ExpenseCategory,
+    Purchase,
 )
 from .signals import DEFAULT_CATEGORIES
 
@@ -679,6 +680,7 @@ def save_invoice(request):
             # Create bill entry
             Bill.objects.create(
                 order=order,
+                purchase = None,
                 product=product,
                 quantity=quantity,
                 discount=discountPercent,
@@ -810,6 +812,224 @@ def save_invoice(request):
         return JsonResponse(
             {"success": False, "error": f"Server error: {str(e)}"}, status=500
         )
+
+@login_required
+@require_POST
+@transaction.atomic
+def save_purchase(request):
+    try:
+        data = json.loads(request.body)
+     
+        client_name = data.get("clientName", "").strip()
+        purchase_date_str = data.get("purchaseDate", "")
+        purchase_items = data.get("items", [])
+        global_discount = Decimal(str(data.get("globalDiscountPercent", 0)))
+
+        global_tax = Decimal(str(data.get("globalTaxPercent", 0)))
+        additional_charges = Decimal(str(data.get("additionalCharges", 0)))
+        charge_name_amount = data.get("additionalchargeName", [])
+        notes_here = data.get("noteshere", "").strip()
+        received_amount = Decimal(str(data.get("receivedAmount",0)))
+
+        user = request.user
+        company = None
+        company = user.owned_company or user.active_company
+
+        if not company:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "error": "You are not associated with any company. Please contact your administrator.",
+                },
+            )
+        if not client_name:
+            return JsonResponse(
+                {"success": False, "error": "Client name is required"}, status=400
+            )
+
+        if not purchase_items:
+            return JsonResponse(
+                {"success": False, "error": "At least one item is required"}, status=400
+            )
+        customer, created = Customer.objects.get_or_create(
+            name=client_name,
+            defaults={
+                "phone": "000-000-0000",
+            },
+        )
+
+        # Handle date conversion
+        if purchase_date_str:
+            try:
+                purchase_date = datetime.strptime(purchase_date_str, "%Y-%m-%d")
+                # Keep current time instead of 00:00:00
+                now = timezone.now()
+                purchase_date = purchase_date.replace(hour=now.hour, minute=now.minute, second=now.second, microsecond=now.microsecond)
+                purchase_date = timezone.make_aware(purchase_date)
+            except ValueError:
+                purchase_date = timezone.now()
+        else:
+            purchase_date = timezone.now()
+
+        last_bill = (Purchase.objects.select_for_update().aggregate(Max("bill_no"))["bill_no__max"] or 0)
+        bill_no = last_bill + 1
+        purchases = Purchase.objects.create(
+                    customer=customer,
+                    summary = None,
+                    remaining = None,
+                    bill_no=bill_no,
+                    amount=Decimal(str(received_amount)),
+                    date=purchase_date,
+                    notes=notes_here)
+
+        # Process invoice items
+        total_amount = 0
+        for item in purchase_items:
+            product_name = item.get("productName", "").strip()
+            quantity = int(item.get("quantity", 1))
+            
+            price = Decimal(str(item.get("price", 0)))
+            discountPercent = Decimal(str(item.get("discountPercent", 0)))
+
+            if not product_name:
+                continue
+
+            # Find or create product - use selling price as default
+            default_category = ProductCategory.objects.first()
+            if not default_category:
+                default_category = ProductCategory.objects.create(name="General")
+
+            product, _ = Product.objects.get_or_create(
+                name=product_name,
+                defaults={
+                    "selling_price": price,
+                    "category": default_category,
+                },
+            )
+
+            # Create bill entry
+            Bill.objects.create(
+                order=None,
+                purchase = purchases,
+                product=product,
+                quantity=quantity,
+                discount=discountPercent,
+                product_price=Decimal(
+                    str(price)
+                ),  # Convert to Decimal    quantity=quantity,
+                bill_date=timezone.now(),
+            )
+
+            total_amount += (quantity * price) - (
+                (quantity * price) * (discountPercent / 100)
+            )
+
+            new_qty = product.product_quantity + quantity
+            # ItemActivity.objects.create(
+            #     order=order,
+            #     type="Purchase",
+            #     product=product,
+            #     change=quantity,
+            #     quantity=product.product_quantity - quantity,
+            #     remarks=notes_here,
+            # )
+
+
+            change_product = Product.objects.get(id=product.id)
+            change_product.product_quantity = new_qty
+            change_product.save()
+
+        for charge in charge_name_amount:
+            charge_name = charge.get("chargeName")
+            charge_amount = charge.get("chargeAmount")
+            # creating additional entry
+            AdditionalCharges.objects.create(
+                additional_charges=None,
+                purchase_additional_charges =  purchases,
+                charge_name=charge_name,
+                additional_amount=charge_amount,
+            )
+        # grand total amount
+        final_amount = total_amount - (global_discount / 100) * total_amount
+        tax_amount = final_amount * (global_tax)
+        final_amount += tax_amount
+
+        final_amount += additional_charges
+        final_amount = Decimal(final_amount).quantize(
+            Decimal("0.00"), rounding=ROUND_HALF_UP
+        )
+
+        current_remaining = Decimal(str(final_amount)) - Decimal(str(received_amount))
+
+        # ---------- CHANGED PART STARTS HERE ----------
+        # Build OrderSummary (not saved yet)
+        order_summary = OrderSummary(
+            order=None,
+            total_amount=Decimal(str(total_amount)),
+            final_amount=Decimal(str(final_amount)),
+            discount=Decimal(str(global_discount)),
+            tax=Decimal(str(global_tax)),
+            received_amount=Decimal(str(received_amount)),
+            due_amount=current_remaining,
+        )
+
+
+        order_summary.full_clean()
+            # validate against max_digits, etc.
+
+        order_summary.save()
+        purchases.summary = order_summary
+        purchases.save()
+        
+        # return JsonResponse(
+        #         {
+        #             "success": False,
+        #             "error": "Validation error",
+        #             "field_errors": e.message_dict,
+        #         },
+        #         status=400,
+        #     )
+        # ---------- CHANGED PART ENDS HERE ----------
+        
+        latest_remaining = RemainingAmount.objects.filter(customer=customer).order_by('-id').first()
+        previous_remaining = latest_remaining.remaining_amount if latest_remaining else 0
+        
+
+        # subtract this order's remaining to previous remaining
+        total_remaining_after_purchase = Decimal(previous_remaining) - current_remaining
+
+        # Save remaining amount for this order
+        remaining_obj = RemainingAmount.objects.create(
+            customer=customer,
+            orders=None,
+            remaining_amount = total_remaining_after_purchase,
+        )
+        purchases.remaining = remaining_obj
+        purchases.save()
+        
+
+        return JsonResponse(
+            {
+                "success": True,
+                "message": "Purchase bill saved successfully!",
+                "purchase": {
+                    "client": customer.name,
+                    "total_amount": order_summary.total_amount,
+                    "items_count": len(purchase_items),
+                },
+            }
+        )
+
+    except json.JSONDecodeError as e:
+        return JsonResponse(
+            {"success": False, "error": f"Invalid JSON: {str(e)}"}, status=400
+        )
+    except Exception as e:
+        print(f"Error in save_invoice: {str(e)}")
+        return JsonResponse(
+            {"success": False, "error": f"Server error: {str(e)}"}, status=500
+        )
+
 
 @login_required
 @require_POST
@@ -994,7 +1214,7 @@ def invoice_layout(request, id):
                     status=404,
                 )
 
-            bill_info = Bill.objects.filter(order=order_list)
+            bill_info = Bill.objects.filter(order=order_list,purchase=None)
             ordersum_info = OrderSummary.objects.filter(order=order_list)
             additionalcharge_info = AdditionalCharges.objects.filter(
                 additional_charges=order_list

@@ -36,6 +36,7 @@ urlpatterns = [
     path("add-stock/<int:id>/", views.add_stock, name="add-stock"),
     path("reduce-stock/<int:id>/", views.reduce_stock, name="reduce-stock"),
     path("save-invoice/", views.save_invoice, name="save_invoice"),
+    path("save-purchase/",views.save_purchase,name="save_purchase"),
     path("save-customer/",views.save_customer,name="save_customer"),
     path("delete_invoice/<int:id>/", views.delete_invoice, name="delete_invoice"),
     path("invoice-layout/<uuid:id>/", views.invoice_layout, name="invoice_layout"),
