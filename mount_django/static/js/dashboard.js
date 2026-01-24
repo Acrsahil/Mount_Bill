@@ -48,6 +48,14 @@ function loadTransactionInDashboard(transaction, dashboardTableBody){
         <td>${transaction.payment_out}</td>
         <td>${transaction.payment_out}</td>
         <td>---</td>`;
+    }else if (transaction.type === 'purchase') {
+        row.innerHTML = `
+        <td>${transaction.date.split('T')[0]}</td>
+        <td>Purchase</td>
+        <td>${transaction.name}</td>
+        <td>${transaction.total_amount}</td>
+        <td>${transaction.receivedAmount}</td>
+        <td>${Number(transaction.dueAmount) === 0 ? '---' : transaction.dueAmount}</td>`;
     }
     dashboardTableBody.appendChild(row)
 }

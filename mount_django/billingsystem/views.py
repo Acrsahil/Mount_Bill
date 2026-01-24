@@ -874,6 +874,7 @@ def save_purchase(request):
         last_bill = (Purchase.objects.select_for_update().aggregate(Max("bill_no"))["bill_no__max"] or 0)
         bill_no = last_bill + 1
         purchases = Purchase.objects.create(
+                    company=company,
                     customer=customer,
                     summary = None,
                     remaining = None,
@@ -1029,6 +1030,31 @@ def save_purchase(request):
         return JsonResponse(
             {"success": False, "error": f"Server error: {str(e)}"}, status=500
         )
+
+
+@login_required
+def purchase_info(request):
+    try:
+        user = request.user
+        company = user.owned_company or user.active_company
+        if not company:
+            return JsonResponse({"expense_data": [], "expense_count": 0})
+      
+    
+        purchases = Purchase.objects.filter(company=company).order_by('-date')
+        purchase_count = purchases.count()
+        purchase_data = []
+        for purchase in purchases:
+            purchase_data.append({
+                    "name": purchase.customer.name,
+                    "date": purchase.date,
+                    "total_amount": purchase.summary.final_amount,
+                    "dueAmount": purchase.summary.due_amount,
+                })
+
+        return JsonResponse({"purchase_data": purchase_data,"purchase_count":purchase_count})
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
 
 
 @login_required
@@ -1546,9 +1572,11 @@ def fetch_all_transactions(request):
 
     if not company:
         return JsonResponse({"transactions": []})
-    transactions = OrderList.objects.all()
-    payment_in_transactions = PaymentIn.objects.all()
-    payment_out_transactions = PaymentOut.objects.all()
+    transactions = OrderList.objects.filter(company=company)
+    payment_in_transactions = PaymentIn.objects.filter(company=company)
+    payment_out_transactions = PaymentOut.objects.filter(company=company)
+    purchases = Purchase.objects.filter(company=company)
+
     invoiceData = []
     for transaction in transactions:
         summary = getattr(transaction,"summary",None)
@@ -1583,7 +1611,17 @@ def fetch_all_transactions(request):
 
         })
 
-    mergedData = invoiceData + paymentInData + paymentOutData
+    purchaseData = []
+    for purchase in purchases:
+        purchaseData.append({
+            "date":purchase.date,
+            "name":purchase.customer.name,
+            "total_amount":purchase.summary.final_amount,
+            "receivedAmount":purchase.amount,
+            "dueAmount":purchase.summary.due_amount,
+            "type":"purchase"
+        })
+    mergedData = invoiceData + paymentInData + paymentOutData+purchaseData
     mergedData.sort(key=lambda x: x["date"], reverse=True)
     return JsonResponse({"transactions":mergedData})
 
@@ -1592,6 +1630,8 @@ def fetch_all_transactions(request):
 @transaction.atomic
 def payment_in(request,id):
     try:
+        user=request.user
+        company = user.owned_company or user.active_company
         data = json.loads(request.body)
         payment_in = Decimal(str(data.get("payment_in")))
         payment_in_date = data.get("payment_in_date")
@@ -1607,7 +1647,7 @@ def payment_in(request,id):
                 orders=None,
                 remaining_amount=current_remaining)
             
-        paymentIn = PaymentIn.objects.create(customer_id=id,
+        paymentIn = PaymentIn.objects.create(company=company,customer_id=id,
                                             date=payment_in_date,
                                             remainings=new_remaining,
                                             payment_in=payment_in,
@@ -1734,6 +1774,8 @@ def update_payment_out(request,id):
 @transaction.atomic
 def payment_out(request,id):
     try:
+        user=request.user
+        company = user.owned_company or user.active_company
         data = json.loads(request.body)
         payment_out = Decimal(str(data.get("payment_out")))
         payment_out_date = data.get("payment_out_date")
@@ -1750,7 +1792,7 @@ def payment_out(request,id):
             remaining_amount=current_remaining
         )
 
-        paymentOut = PaymentOut.objects.create(customer_id=id,date=payment_out_date,remainings=new_remaining,payment_out=payment_out,remarks=payment_out_remark)
+        paymentOut = PaymentOut.objects.create(company=company,customer_id=id,date=payment_out_date,remainings=new_remaining,payment_out=payment_out,remarks=payment_out_remark)
         paymentOut.save()
 
         return JsonResponse({"success":True,"uid":paymentOut.customer.uid})

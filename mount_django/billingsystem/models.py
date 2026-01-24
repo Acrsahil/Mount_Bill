@@ -226,6 +226,7 @@ class RemainingAmount(models.Model):
         return f"{self.id}"
     
 class Purchase(models.Model):
+    company = models.ForeignKey(Company, on_delete=models.CASCADE,related_name="purchases")
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE,related_name="purchase")
 
     summary = models.OneToOneField(OrderSummary,on_delete=models.SET_NULL,null=True,related_name="purchaseordersumarry")
@@ -309,6 +310,9 @@ class ItemActivity(models.Model):
         return self.product.name
 
 class PaymentIn(models.Model):
+    company = models.ForeignKey(
+        Company, on_delete=models.CASCADE, related_name="paymentInorder"
+    )
     customer = models.ForeignKey(Customer,on_delete=models.PROTECT,related_name="paymentIn")
     remainings = models.OneToOneField(RemainingAmount,on_delete=models.CASCADE,related_name="paymentInRemaining")
     
@@ -320,6 +324,9 @@ class PaymentIn(models.Model):
         return f"payment in amount: {self.payment_in}"
     
 class PaymentOut(models.Model):
+    company = models.ForeignKey(
+        Company, on_delete=models.CASCADE, related_name="paymentOutorder"
+    )
     customer = models.ForeignKey(Customer,on_delete=models.PROTECT,related_name="paymentOut")
     remainings = models.OneToOneField(RemainingAmount,on_delete=models.CASCADE,related_name="paymentOutRemaining")
     

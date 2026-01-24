@@ -522,37 +522,6 @@ export async function fetchTransactions(clientUid){
     
 }
 
-// function loadTransactionInDashboard(transaction, dashboardTableBody){
-//     const row = document.createElement('tr');
-    
-//     row.classList.add(
-//     "cursor-pointer",
-//     "hover:bg-gray-100",
-//     "transition"
-// );
-//     row.dataset.type = transaction.type;
-//     row.dataset.id = transaction.id || "";
-//     if (transaction.type === 'sale') {
-//         row.innerHTML = `
-//         <td>Sales Invoice #${transaction.id}>
-//         <td>${transaction.date.split('T')[0]}</td>
-//         <td>${transaction.finalAmount}</td>
-//         <td>Sale</td>
-//         <td>${transaction.remainingAmount}</td>
-//         <td>${transaction.remarks || "---"}</td>`;
-
-//     }else if (transaction.type === 'payment') {
-//         row.innerHTML = `
-//         <td>Payment In#${transaction.id}</td>
-//         <td>${transaction.date.split('T')[0]}</td>
-//         <td>${transaction.payment_in}</td>
-//         <td>Payment</td>
-//         <td>${transaction.remainingAmount}</td>
-//         <td>${transaction.remarks || "---"}</td>`;
-//     }
-//     dashboardTableBody.appendChild(row)
-// }
-
 function loadTransactions(transaction, tableBody) {
 
     const row = document.createElement('tr');
