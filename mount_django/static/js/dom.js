@@ -6,6 +6,7 @@ import { openModal} from './bill_layout.js';
 import { editInvoiceSection} from './edit_invoice.js';
 import { saveCustomer } from './create_invoice.js';
 import { openAddProductModal } from './events.js';
+import { deleteInvoice } from './create_invoice.js';
 // Show product suggestions
 
 // Global tracker
@@ -457,16 +458,22 @@ export function loadInvoices(invoices, invoicesTableBody, csrfToken = '') {
 </td>
 `;
     // Add click event to view buttons using event delegation
-    row.addEventListener("click", (event) => {
-         const row = event.target.closest('tr');
-            // console.log("this is row",row.dataset)
-            if (!row) return;
-            const invoiceId = row.dataset.uid || parseInt(row.cells[0].innerText.split('-')[1]);
-            // console.log("this is invoiceId in addEventListener ",invoiceId)
-            openModal(invoice.uid);
+    row.addEventListener("click", () => {
+        openModal(invoice.uid);
+     });
+    
+    const editBtn = row.querySelector('.action-edit');
+    const deleteBtn = row.querySelector('.action-delete');
 
+    editBtn.addEventListener('click',(e)=>{
+        e.stopPropagation();
+        openModal(invoice.uid);
 
-        });
+    })
+    deleteBtn.addEventListener('click',async(e) => {
+        e.stopPropagation();
+        await deleteInvoice()
+    })
 
         invoicesTableBody.prepend(row);
     });
