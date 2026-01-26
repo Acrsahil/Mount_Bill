@@ -233,6 +233,7 @@ class Purchase(models.Model):
 
     remaining = models.OneToOneField(RemainingAmount,on_delete=models.SET_NULL,null=True,related_name="remainingafterpurchase")
 
+    uid = models.UUIDField(default=uuid.uuid4, editable=False)
     date = models.DateTimeField(auto_now_add=True)
     notes = models.TextField(blank=True, null=True)
 
@@ -275,7 +276,7 @@ class Bill(models.Model):
             raise ValidationError("Description required for simple invoice items")
 
     def __str__(self):
-        return f"Bill {self.id} - {self.product.name} "
+        return f"Bill {self.id}"
 
 class AdditionalCharges(models.Model):
     additional_charges = models.ForeignKey(

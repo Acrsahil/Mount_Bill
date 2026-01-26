@@ -188,19 +188,15 @@ ${client.name} - ${client.email || 'No email'}
 
 const mycurrentUrl = window.location.href;
 const eachpart = mycurrentUrl.split('/')
-console.log(eachpart)
-const order_id = eachpart[eachpart.length-2]
-console.log(order_id)
+const uuId = eachpart[eachpart.length-2]
 
 if(eachpart[eachpart.length-3] == 'invoices'){
-    editInvoiceSection(order_id)
+    editInvoiceSection(uuId,'invoices')
 }
-
-
-
-
-
-
+//for editing purchase
+if(eachpart[eachpart.length-3] == 'purchase'){
+    editInvoiceSection(uuId,'purchase')
+}
 
 // Show product name suggestions
 export function showProductNameSuggestions(products, searchTerm = '', fillProductDetails) {
@@ -449,12 +445,12 @@ export function loadInvoices(invoices, invoicesTableBody, csrfToken = '') {
 <td>$${parseFloat(amount).toFixed(2)}</td>
 <td><span class="status status-${invoice.status || 'pending'}">${(invoice.status || 'pending').charAt(0).toUpperCase() + (invoice.status || 'pending').slice(1)}</span></td>
 <td class="action-cell">
-    <div class="action-btn action-edit">
+    <span class="action-btn action-edit">
         <i class="fas fa-edit"></i>
-    </div>
-    <div class="action-btn action-delete" data-token="${csrfToken}" data-id="${invoice.id}">
+    </span>
+    <span class="action-btn action-delete" data-token="${csrfToken}" data-id="${invoice.id}">
         <i class="fas fa-trash"></i>
-    </div>
+    </span>
 </td>
 `;
     // Add click event to view buttons using event delegation

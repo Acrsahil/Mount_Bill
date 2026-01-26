@@ -1023,6 +1023,218 @@ def save_purchase(request):
 
 
 @login_required
+def purchase_layout(request, id):
+    if request.method == "GET":
+        try:
+            purchases = Purchase.objects.get(uid=id)
+
+            # Check if order_list exists
+            if not purchases:
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "error": "Purchase not found",
+                        "message": f"No purchase found with ID: {id}",
+                    },
+                    status=404,
+                )
+
+            bill_info = Bill.objects.filter(purchase=purchases)
+            additionalcharge_info = AdditionalCharges.objects.filter(
+                purchase_additional_charges=purchases
+            )
+            note = purchases.notes
+
+            # Get basic order information with null checks
+            customer_name = purchases.customer.name if purchases.customer else "N/A"
+            customer_address = (
+                purchases.customer.address if purchases.customer else "N/A"
+            )
+            customer_Pan_id = (
+                purchases.customer.pan_id
+                if purchases.customer and purchases.customer.pan_id
+                else "N/A"
+            )
+            purchase_date = purchases.date
+            company_phone = purchases.company.phone if purchases.company else "N/A"
+            customer_phone = purchases.customer.phone if purchases.customer else "N/A"
+            company_name = purchases.company.name if purchases.company else "N/A"
+            purchase_id = purchases.id
+            uuid = purchases.uid
+
+            # Get summary information
+            
+            total_amount = purchases.summary.total_amount if purchases.summary.total_amount else 0
+            global_tax_percent = purchases.summary.tax if purchases.summary.tax else 0
+            global_discount_percent = purchases.summary.discount if purchases.summary.discount else 0
+            received_amount = (
+                        purchases.summary.received_amount if purchases.summary.received_amount else 0
+                    )
+            amount_due = purchases.summary.due_amount if purchases.summary.due_amount else 0
+            final_amount = purchases.summary.final_amount if purchases.summary.final_amount else 0
+
+            # Calculate derived amounts
+            dis_amount = (
+                (global_discount_percent / 100) * total_amount if global_discount_percent else 0
+            )
+            tax_amount = (
+                (global_tax_percent / 100) * (total_amount - dis_amount) if global_tax_percent else 0
+            )
+
+            # Prepare items list
+            items = []
+            if bill_info.exists():
+                for bill in bill_info:
+                    # Check if product exists
+                    if bill.product:
+                        per_discount = (
+                            (
+                                Decimal((bill.quantity) * Decimal(bill.product_price))
+                                * Decimal((bill.discount) / Decimal("100"))
+                            ).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+                            if bill.discount
+                            else 0
+                        )
+                        item = {
+                            "id": bill.id,
+                            "product_id": bill.product.id,
+                            "product_name": bill.product.name
+                            if bill.product.name
+                            else "Unknown Product",
+                            "quantity": bill.quantity if bill.quantity else 0,
+                            "rate": float(bill.product_price)
+                            if bill.product_price
+                            else 0,
+                            "discount": bill.discount if bill.discount else 0,
+                            "product_price": float(bill.product_price)
+                            if bill.product_price
+                            else 0,
+                            "perDiscount": per_discount,
+                            "line_total": (
+                                Decimal(bill.product_price) * Decimal(bill.quantity)
+                            )
+                            - per_discount
+                            if bill.product_price and bill.quantity
+                            else 0,
+                            "discount_percent": 0,
+                            "discount_amount": 0,
+                        }
+                    else:
+                        item = {
+                            "id": bill.id,
+                            "product_id": None,
+                            "product_name": "Product not found",
+                            "quantity": bill.quantity if bill.quantity else 0,
+                            "rate": 0,
+                            "product_price": 0,
+                            "line_total": 0,
+                            "discount_percent": 0,
+                            "discount_amount": 0,
+                        }
+                    items.append(item)
+
+            # Prepare additional charges
+            additional_charges = []
+            if additionalcharge_info.exists():
+                for charge in additionalcharge_info:
+                    charge_data = {
+                        "charge_name": charge.charge_name
+                        if charge.charge_name
+                        else "Additional Charge",
+                        "charge_amount": float(charge.additional_amount)
+                        if charge.additional_amount
+                        else 0,
+                        "charge_type": getattr(charge, "charge_type", "additional"),
+                    }
+                    additional_charges.append(charge_data)
+
+            # Build response data
+            response_data = {
+                "success": True,
+                "invoice": {
+                    "id": purchases.id,
+                    "uuid": uuid,
+                    "invoice_number": f"BILL-{purchase_id:03d}",
+                    "company_name": company_name,
+                    "company_phone": company_phone,
+                    "company_address": "Gokarneshwor-4, Kathmandu",
+                    "customer": {
+                        "name": customer_name,
+                        "address": customer_address,
+                        "phone": customer_phone,
+                        "pan_id": customer_Pan_id,
+                    },
+                    "dates": {
+                        "invoice_date": purchase_date.strftime("%Y-%m-%d")
+                        if purchase_date
+                        else None,
+                        "invoice_date_formatted": purchase_date.strftime("%Y %b %d")
+                        if purchase_date
+                        else "N/A",
+                    },
+                    "amounts": {
+                        "subtotal": float(total_amount),
+                        "total_amount": float(total_amount),
+                        "global_tax_percent": float(global_tax_percent),
+                        "global_tax_amount": float(tax_amount),
+                        "global_discount_percent": float(global_discount_percent),
+                        "global_discount_amount": float(dis_amount),
+                        "final_amount": float(final_amount),
+                        "received_amount": float(received_amount),
+                        "amount_due": float(amount_due),
+                        "balance": float(amount_due),
+                    },
+                    "payment_info": {
+                        "payment_mode": "Cash",
+                        "status": "Paid" if amount_due == 0 else "Pending",
+                    },
+                    "items": items,
+                    "additional_charges": additional_charges,
+                    "remarks": note,
+                },
+            }
+
+            return JsonResponse(response_data, safe=False)
+
+        except Purchase.DoesNotExist:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "error": "Purchase not found",
+                    "message": f"No purchase found with ID: {id}",
+                },
+                status=404,
+            )
+
+        except Exception as e:
+            # Log the full error for debugging
+            import traceback
+
+            error_details = traceback.format_exc()
+            print(f"Error in invoice_layout: {e}")
+            print(f"Traceback: {error_details}")
+
+            return JsonResponse(
+                {
+                    "success": False,
+                    "error": "Server error",
+                    "message": str(e),
+                    "details": "Check if all related objects (customer, company, product) exist in database",
+                },
+                status=500,
+            )
+
+    return JsonResponse(
+        {
+            "success": False,
+            "error": "Method not allowed",
+            "message": "Only GET method is allowed",
+        },
+        status=405,
+    )
+
+
+@login_required
 def purchase_info(request):
     try:
         user = request.user
@@ -1036,10 +1248,12 @@ def purchase_info(request):
         purchase_data = []
         for purchase in purchases:
             purchase_data.append({
+                    "uid":purchase.uid,
                     "name": purchase.customer.name,
                     "date": purchase.date,
                     "total_amount": purchase.summary.final_amount,
                     "dueAmount": purchase.summary.due_amount,
+                    "type":"purchaseRow"
                 })
 
         return JsonResponse({"purchase_data": purchase_data,"purchase_count":purchase_count})
@@ -1354,7 +1568,7 @@ def invoice_layout(request, id):
             response_data = {
                 "success": True,
                 "invoice": {
-                    "order_id": order_id,
+                    "id": order_id,
                     "uuid": uuid,
                     "invoice_number": f"INV-{order_id:03d}",
                     "company_name": company_name,
@@ -1439,7 +1653,6 @@ def invoice_layout(request, id):
 def invoices(request, id=None):
     context = get_serialized_data(request.user, "invoices")
     if id:
-        print("hello")
         return render(request, "website/create_invoice.html", context)
     return render(request, "website/bill.html", context)
 
@@ -1457,8 +1670,10 @@ def expenses(request):
     context = get_serialized_data(request.user, "expenses")
     return render(request,"website/bill.html",context)
 
-def purchase(request):
+def purchase(request,id:UUID = None):
     context = get_serialized_data(request.user, "purchase")
+    if id:
+        return render(request, "website/create_invoice.html", context)
     return render(request,"website/bill.html",context)
     
 def products(request):

@@ -1,3 +1,4 @@
+import { openModal} from './bill_layout.js';
 document.addEventListener('DOMContentLoaded', async() => {
     const addPurchase = document.getElementById('addPurchase');
     const addNewPurchase = document.getElementById('addNewPurchase');
@@ -69,6 +70,7 @@ async function renderPurchase(){
 function loadPurchaseDataToTable(index,purchase,purchaseTableBody){
 
     const row = document.createElement('tr');
+    row.dataset.uid = purchase.uid;
     row.classList.add(
     "cursor-pointer",
     "hover:bg-gray-100",
@@ -91,5 +93,10 @@ function loadPurchaseDataToTable(index,purchase,purchaseTableBody){
     </span>
     </td>`
     purchaseTableBody.appendChild(row);
+    
+    row.onclick = () =>{
+        console.log("id xaina rw",row.dataset.uid)
+        openModal(row.dataset.uid ,"purchaseRow")
+    }
 
 }

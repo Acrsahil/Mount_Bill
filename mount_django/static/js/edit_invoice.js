@@ -9,25 +9,32 @@ function presstab(input){
 
 
 
-export function editInvoiceSection(orderId){
-    console.log("this is uid section!")
-    document.getElementById('create_new_invoice').innerText = "Edit Sales Invoice"
-    document.getElementById("saveInvoiceBtn").style.display = 'none'
-    document.getElementById("updateInvoiceBtn").style.display = 'flex'
-    document.getElementById("invoiceNumber").removeAttribute('readonly')
+export function editInvoiceSection(id,type){
+    let url;
+    if(type === 'invoices'){
+        document.getElementById('create_new_invoice').innerText = "Edit Sales Invoice"
+        document.getElementById("saveInvoiceBtn").style.display = 'none'
+        document.getElementById("updatePurchaseBtn").style.display = 'none'
+        document.getElementById("updateInvoiceBtn").style.display = 'flex'
+        document.getElementById("invoiceNumber").removeAttribute('readonly')
 
 
-    console.log("window is ready xa!?")
+        url = `/dashboard/invoice-layout/${id}/`;  // Add trailing slash
+    }
+    else{
+        document.getElementById('create_new_invoice').innerText = "Edit Purchase Invoice"
+        document.getElementById("saveInvoiceBtn").style.display = 'none'
+        document.getElementById("updatePurchaseBtn").style.display = 'flex'
+        document.getElementById("updateInvoiceBtn").style.display = 'none'
+        document.getElementById("invoiceNumber").removeAttribute('readonly')
 
 
-    const url = `/dashboard/invoice-layout/${orderId}/`;  // Add trailing slash
-
-
+        url = `/dashboard/purchase-layout/${id}/`;  // Add trailing slash
+    }
 
     getData(url).then(data => {
         if (data && data.success) {
-            console.log(data)
-            console.log("data is loaded",data.invoice.customer.name)
+
             document.getElementById("clientName").value =  data.invoice.customer.name
             document.getElementById("clientName").setAttribute("disabled","true")
 
@@ -39,12 +46,6 @@ export function editInvoiceSection(orderId){
                 document.getElementById("addItemBtn").click();
             }
 
-
-
-
-
-
-
             for(let i = 0; i<data.invoice.items.length; i++){
 
                 const input = document.getElementsByClassName("product-search-input")[i];
@@ -55,15 +56,12 @@ export function editInvoiceSection(orderId){
                 qty.value = data.invoice.items[i].quantity
                 presstab(qty)
 
-
-
                 const discount = document.getElementsByClassName("discount-percent-input")[i]
                 discount.value = data.invoice.items[i].discount
                 presstab(discount)
 
                 document.getElementsByClassName("item-price")[i].value = data.invoice.items[i].rate
                 document.getElementsByClassName("discount-percent-input")[i].value = data.invoice.items[i].discount_percent
-                console.log("item-quantity ho haii yoooo",data.invoice.items[i].quantity)
             }
             document.getElementsByClassName("remove-item-btn")[data.invoice.items.length].click()
 
@@ -85,7 +83,6 @@ export function editInvoiceSection(orderId){
             const additionalcharge = data.invoice.additional_charges
 
             if(global_discount){
-                console.log("discount xa haiiii")
                 document.getElementById("addDiscountBtn").click()
                 const input = document.getElementById("globalDiscount")
                 input.value = data.invoice.amounts.global_discount_percent
@@ -98,7 +95,6 @@ export function editInvoiceSection(orderId){
                 input.value = global_tax
                 presstab(input)
             }
-
 
             if(notes){
                 document.getElementById("addnoteBtn").click()
@@ -118,15 +114,6 @@ export function editInvoiceSection(orderId){
                     presstab(charge)
                 }
             }
-
-
-
-
-
-
-
-
-
 
         }
     }).catch(error =>{

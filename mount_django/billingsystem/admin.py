@@ -314,5 +314,5 @@ class ExpenseAdmin(admin.ModelAdmin):
 
 @admin.register(Purchase)
 class PurchaseAdmin(admin.ModelAdmin):
-    list_display=("date","customer","summary")
+    list_display=("uid","date","customer","summary")
     search_fields = ("date",)
