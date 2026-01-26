@@ -39,7 +39,6 @@ export function setupEventListeners(
     closeInvoiceModal,
     closeProductModal,
     closeClientModal,
-    cancelInvoiceBtn,
     cancelProductBtn,
     cancelClientBtn,
     saveInvoiceBtn,
@@ -86,7 +85,6 @@ export function setupEventListeners(
     if (closeClientModal) closeClientModal.addEventListener('click', () => {
         console.log("clicking or not");
         closeClientModalFunc(addClientModal)});
-    if (cancelInvoiceBtn) cancelInvoiceBtn.addEventListener('click', () => closeInvoiceModalFunc(createInvoiceModal));
     if (cancelProductBtn) cancelProductBtn.addEventListener('click', () =>
         {
             const slider = document.getElementById('statusToggle');

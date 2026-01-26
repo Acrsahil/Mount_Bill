@@ -15,53 +15,93 @@ export function showProductSuggestions(itemId, products, searchTerm = '', select
     const hintContainer = document.getElementById(`search-hint-${itemId}`);
     if (!hintContainer) return;
 
-    const filteredProducts = searchTerm 
-        ? products.filter(product => 
-            product.name.toLowerCase().includes(searchTerm) ||
-            (product.category && product.category.toLowerCase().includes(searchTerm))
+    const filteredProducts = searchTerm
+        ? products.filter(product =>
+            product.name.toLowerCase().includes(searchTerm)
         )
         : products;
 
-    if (filteredProducts.length > 0) {
-        hintContainer.innerHTML = filteredProducts.map(product => `
-<div class="hint-item" data-product-id="${product.id}" 
-data-product-name="${product.name}" 
-data-product-selling-price="${product.selling_price}" 
-data-product-cost-price="${product.cost_price}" 
-data-product-category="${product.category || ''}">
-${product.name} - Selling: $${product.selling_price} | Cost: $${product.cost_price} ${product.category ? `(${product.category})` : ''}</div>
-`).join('');
-        hintContainer.style.display = 'block';
 
-        hintContainer.querySelectorAll('.hint-item').forEach(item => {
-            item.addEventListener('mousedown', function(e) {
-                e.preventDefault();
-                selectProductFromHint(itemId, this);
-            });
-        });
-    } else {
+    if (filteredProducts.length === 0) {
         hintContainer.innerHTML = `
-        <div class="bg-white hint-empty">
-           <button type="button"
-                class="add-product-btn w-full text-left px-3 py-2 text-sm text-blue-600 
-                bg-white border-none hover:bg-gray-100 focus:outline-none cursor-pointer">
-                + Add Product
-            </button>
-        </div>`;
-        hintContainer.style.display = 'block';
+            <div class="bg-white border border-gray-200 rounded-md shadow-md">
+                <button type="button"
+                    class="w-full px-3 py-2 text-left text-blue-600 hover:bg-gray-100 focus:outline-none add-product-btn">
+                    + Add Product
+                </button>
+            </div>
+        `;
+    } else {
 
-        const addBtn = hintContainer.querySelector('.add-product-btn');
-        addBtn.onmousedown = (e) => {
+    hintContainer.innerHTML = `
+<div class="bg-white border border-gray-200 rounded-md shadow-md text-sm flex flex-col max-h-64">
+
+    <!-- Scroll container -->
+    <div class="overflow-y-auto">
+
+        <!-- Header (sticky) -->
+        <div class="grid grid-cols-4 gap-2 px-3 py-2 font-semibold bg-gray-100 border-b
+                    sticky top-0 z-10">
+            <div>Name</div>
+            <div class="text-right">Cost</div>
+            <div class="text-right">Selling</div>
+            <div class="text-right">Qty</div>
+        </div>
+
+        <!-- Product list -->
+        ${
+            filteredProducts.map(product => `
+                <div class="grid grid-cols-4 gap-2 px-4 py-2 hover:bg-blue-50
+                            cursor-pointer hint-item"
+                    data-product-id="${product.id}">
+                    <div>${product.name}</div>
+                    <div class="text-right">${product.cost_price}</div>
+                    <div class="text-right">${product.selling_price}</div>
+                    <div class="text-right">${product.quantity}</div>
+                </div>
+            `).join('')
+        }
+
+    </div>
+
+    <!-- Footer (sticky) -->
+    <div class="border-t bg-white sticky bottom-0 z-10">
+        <button type="button"
+            class="w-full px-3 py-2 text-left text-blue-600 hover:bg-gray-100
+                   focus:outline-none add-product-btn">
+            + Add Product
+        </button>
+    </div>
+
+</div>
+`;
+
+
+            }
+    hintContainer.style.display = 'block';
+
+    // Select product
+    hintContainer.querySelectorAll('.hint-item').forEach(item => {
+        item.addEventListener('mousedown', e => {
             e.preventDefault();
-            window.activeInvoiceItemId = itemId;
-            const productModal = document.getElementById('addProductModal');
-            openAddProductModal(productModal)
+            selectProductFromHint(itemId, item);
+        });
+    });
 
-            const productInput = document.querySelector(`.product-search-input[data-id="${itemId}"]`);
-            document.getElementById('productName').value = productInput ? productInput.value : '';        
-        };
-    }
+    // Add product
+    const addBtn = hintContainer.querySelector('.add-product-btn');
+    addBtn.onmousedown = e => {
+        e.preventDefault();
+        window.activeInvoiceItemId = itemId;
+
+        const productModal = document.getElementById('addProductModal');
+        openAddProductModal(productModal);
+
+        const productInput = document.querySelector(`.product-search-input[data-id="${itemId}"]`);
+        document.getElementById('productName').value = productInput ? productInput.value : '';
+    };
 }
+
 
 // Modal buttons setup (once)
 document.addEventListener('DOMContentLoaded', () => {

@@ -50,7 +50,6 @@ const invoiceItemsBody = document.getElementById('invoiceItemsBody');
 const addItemBtn = document.getElementById('addItemBtn');
 const checkAmount = document.getElementById('checkAmount');
 
-const cancelInvoiceBtn = document.getElementById('cancelInvoiceBtn');
 const cancelInvoiceBtnBottom = document.getElementById('cancelInvoiceBtnBottom');
 
 // get the charge section
@@ -273,11 +272,6 @@ function setupPageEventListeners() {
     // Add item button
     if (addItemBtn) {
         addItemBtn.addEventListener('click', () => addInvoiceItem());
-    }
-
-    // Cancel buttons
-    if (cancelInvoiceBtn) {
-        cancelInvoiceBtn.addEventListener('click', () => cancelInvoice());
     }
 
     if (cancelInvoiceBtnBottom) {
@@ -683,9 +677,6 @@ function handleProductSearchBlur(e) {
 
 export function selectProductFromHint(itemId, hintElement) {
     const productId = hintElement.getAttribute('data-product-id');
-    const productName = hintElement.getAttribute('data-product-name');
-    const sellingPrice = hintElement.getAttribute('data-product-selling-price');
-    const category = hintElement.getAttribute('data-product-category');
 
     const product = window.products.find(p => p.id === parseInt(productId));
     if (!product) return;

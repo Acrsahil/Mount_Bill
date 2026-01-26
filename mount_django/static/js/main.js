@@ -78,7 +78,6 @@ const addClientModal = document.getElementById('addClientModal');
 const closeInvoiceModal = document.getElementById('closeInvoiceModal');
 const closeProductModal = document.getElementById('closeProductModal');
 const closeClientModal = document.getElementById('closeClientModal');
-const cancelInvoiceBtn = document.getElementById('cancelInvoiceBtn');
 const cancelProductBtn = document.getElementById('cancelProductBtn');
 const cancelClientBtn = document.getElementById('cancelClientBtn');
 const saveInvoiceBtn = document.getElementById('saveInvoiceBtn');
@@ -157,7 +156,6 @@ document.addEventListener('DOMContentLoaded', function() {
         closeInvoiceModal,
         closeProductModal,
         closeClientModal,
-        cancelInvoiceBtn,
         cancelProductBtn,
         cancelClientBtn,
         saveInvoiceBtn,
