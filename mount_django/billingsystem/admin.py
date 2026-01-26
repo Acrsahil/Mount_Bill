@@ -262,6 +262,7 @@ class RemainingAmountAdmin(admin.ModelAdmin):
 class ItemActivityAdmin(admin.ModelAdmin):
     list_display = (
         "order",
+        "purchase",
         "product",
         "type",
         "date",

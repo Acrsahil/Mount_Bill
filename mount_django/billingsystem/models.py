@@ -237,7 +237,7 @@ class Purchase(models.Model):
     notes = models.TextField(blank=True, null=True)
 
     def __str__(self):
-        return str(self.amount)
+        return f"Purchase #{self.id}"
 
 class Bill(models.Model):
     order = models.ForeignKey(OrderList, on_delete=models.CASCADE,null=True, related_name="bills")
@@ -295,6 +295,7 @@ class ItemActivity(models.Model):
     order = models.ForeignKey(
         OrderList, on_delete=models.CASCADE, null=True, related_name="orderactivities"
     )
+    purchase = models.ForeignKey(Purchase,on_delete=models.CASCADE,null=True,related_name="purchaseactivities")
     product = models.ForeignKey(
         Product, on_delete=models.PROTECT, null=True, related_name="activities"
     )
@@ -302,7 +303,7 @@ class ItemActivity(models.Model):
     date = models.DateField(auto_now_add=True)
     change = models.CharField()
     quantity = models.IntegerField()
-    remarks = models.CharField(max_length=200, blank=True)
+    remarks = models.CharField(max_length=200, blank=True ,null=True)
 
     def __str__(self):
         return self.product.name

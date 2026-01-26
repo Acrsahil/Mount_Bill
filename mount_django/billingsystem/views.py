@@ -921,14 +921,13 @@ def save_purchase(request):
             )
 
             new_qty = product.product_quantity + quantity
-            # ItemActivity.objects.create(
-            #     order=order,
-            #     type="Purchase",
-            #     product=product,
-            #     change=quantity,
-            #     quantity=product.product_quantity - quantity,
-            #     remarks=notes_here,
-            # )
+            ItemActivity.objects.create(
+                purchase=purchases,
+                type=f"Purchase #{purchases.id}",
+                product=product,
+                change=f"+{quantity}",
+                quantity=product.product_quantity + quantity,
+            )
 
 
             change_product = Product.objects.get(id=product.id)
@@ -969,22 +968,24 @@ def save_purchase(request):
             due_amount=current_remaining,
         )
 
+        try:
+            order_summary.full_clean()
+                # validate against max_digits, etc.
 
-        order_summary.full_clean()
-            # validate against max_digits, etc.
+            order_summary.save()
+            purchases.summary = order_summary
+            purchases.save()
 
-        order_summary.save()
-        purchases.summary = order_summary
-        purchases.save()
+        except Exception as e:
         
-        # return JsonResponse(
-        #         {
-        #             "success": False,
-        #             "error": "Validation error",
-        #             "field_errors": e.message_dict,
-        #         },
-        #         status=400,
-        #     )
+            return JsonResponse(
+                    {
+                        "success": False,
+                        "error": "Validation error",
+                        "field_errors": e.message_dict,
+                    },
+                    status=400,
+                )
         # ---------- CHANGED PART ENDS HERE ----------
         
         latest_remaining = RemainingAmount.objects.filter(customer=customer).order_by('-id').first()
@@ -997,7 +998,6 @@ def save_purchase(request):
         # Save remaining amount for this order
         remaining_obj = RemainingAmount.objects.create(
             customer=customer,
-            orders=None,
             remaining_amount = total_remaining_after_purchase,
         )
         purchases.remaining = remaining_obj
@@ -1016,7 +1016,7 @@ def save_purchase(request):
             {"success": False, "error": f"Invalid JSON: {str(e)}"}, status=400
         )
     except Exception as e:
-        print(f"Error in save_invoice: {str(e)}")
+        print(f"Error in save_purchase: {str(e)}")
         return JsonResponse(
             {"success": False, "error": f"Server error: {str(e)}"}, status=500
         )
@@ -1963,8 +1963,9 @@ def fetch_product_activities(request, id: UUID):
                 "date": act.date.isoformat(),
                 "change": act.change,
                 "quantity": act.quantity,
-                "remarks": act.remarks,
+                "remarks": act.remarks if act.remarks else "---",
                 "order_id": act.order.id if act.order else None,
+                "purchase_id": act.purchase.id if act.purchase else None,
             }
         )
     return JsonResponse({"success": True, "activities": data})
