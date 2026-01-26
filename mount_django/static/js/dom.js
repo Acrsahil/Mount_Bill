@@ -1,48 +1,132 @@
 // DOM manipulation functions
 import { formatDate } from './utils.js';
 // RENDER INVOICE ITEMS
-import { editProduct,deleteProduct } from './product.js';
+import { editProduct,deleteProduct,saveProduct } from './product.js';
 import { openModal} from './bill_layout.js';
 import { editInvoiceSection} from './edit_invoice.js';
+import { saveCustomer } from './create_invoice.js';
+import { openAddProductModal } from './events.js';
+import { deleteInvoice } from './create_invoice.js';
 // Show product suggestions
+
+// Global tracker
+window.activeInvoiceItemId = null;
+
 export function showProductSuggestions(itemId, products, searchTerm = '', selectProductFromHint) {
     const hintContainer = document.getElementById(`search-hint-${itemId}`);
     if (!hintContainer) return;
 
-    const filteredProducts = searchTerm 
-        ? products.filter(product => 
-            product.name.toLowerCase().includes(searchTerm) ||
-                (product.category && product.category.toLowerCase().includes(searchTerm))
+    const filteredProducts = searchTerm
+        ? products.filter(product =>
+            product.name.toLowerCase().includes(searchTerm)
         )
         : products;
 
-    if (filteredProducts.length > 0) {
-        hintContainer.innerHTML = filteredProducts.map(product => `
-<div class="hint-item" data-product-id="${product.id}" 
-data-product-name="${product.name}" 
-data-product-selling-price="${product.selling_price}" 
-data-product-cost-price="${product.cost_price}" 
-data-product-category="${product.category || ''}">
-${product.name} - Selling: $${product.selling_price} | Cost: $${product.cost_price} ${product.category ? `(${product.category})` : ''}
-</div>
-`).join('');
-        hintContainer.style.display = 'block';
 
-        // Reattach click events
-        hintContainer.querySelectorAll('.hint-item').forEach(item => {
-            item.addEventListener('mousedown', function(e) {
-                e.preventDefault();
-                selectProductFromHint(itemId, this);
-            });
-        });
+    if (filteredProducts.length === 0) {
+        hintContainer.innerHTML = `
+            <div class="bg-white border border-gray-200 rounded-md shadow-md">
+                <button type="button"
+                    class="w-full px-3 py-2 text-left text-blue-600 hover:bg-gray-100 focus:outline-none add-product-btn">
+                    + Add Product
+                </button>
+            </div>
+        `;
     } else {
-        hintContainer.style.display = 'none';
-    }
+
+    hintContainer.innerHTML = `
+<div class="bg-white border border-gray-200 rounded-md shadow-md text-sm flex flex-col max-h-64">
+
+    <!-- Scroll container -->
+    <div class="overflow-y-auto">
+
+        <!-- Header (sticky) -->
+        <div class="grid grid-cols-4 gap-2 px-3 py-2 font-semibold bg-gray-100 border-b
+                    sticky top-0 z-10">
+            <div>Name</div>
+            <div class="text-right">Cost</div>
+            <div class="text-right">Selling</div>
+            <div class="text-right">Qty</div>
+        </div>
+
+        <!-- Product list -->
+        ${
+            filteredProducts.map(product => `
+                <div class="grid grid-cols-4 gap-2 px-4 py-2 hover:bg-blue-50
+                            cursor-pointer hint-item"
+                    data-product-id="${product.id}">
+                    <div>${product.name}</div>
+                    <div class="text-right">${product.cost_price}</div>
+                    <div class="text-right">${product.selling_price}</div>
+                    <div class="text-right">${product.quantity}</div>
+                </div>
+            `).join('')
+        }
+
+    </div>
+
+    <!-- Footer (sticky) -->
+    <div class="border-t bg-white sticky bottom-0 z-10">
+        <button type="button"
+            class="w-full px-3 py-2 text-left text-blue-600 hover:bg-gray-100
+                   focus:outline-none add-product-btn">
+            + Add Product
+        </button>
+    </div>
+
+</div>
+`;
+
+
+            }
+    hintContainer.style.display = 'block';
+
+    // Select product
+    hintContainer.querySelectorAll('.hint-item').forEach(item => {
+        item.addEventListener('mousedown', e => {
+            e.preventDefault();
+            selectProductFromHint(itemId, item);
+        });
+    });
+
+    // Add product
+    const addBtn = hintContainer.querySelector('.add-product-btn');
+    addBtn.onmousedown = e => {
+        e.preventDefault();
+        window.activeInvoiceItemId = itemId;
+
+        const productModal = document.getElementById('addProductModal');
+        openAddProductModal(productModal);
+
+        const productInput = document.querySelector(`.product-search-input[data-id="${itemId}"]`);
+        document.getElementById('productName').value = productInput ? productInput.value : '';
+    };
 }
 
+
+// Modal buttons setup (once)
+document.addEventListener('DOMContentLoaded', () => {
+    const productModal = document.getElementById('addProductModal');
+
+    const saveBtn = document.getElementById('saveProductBtn');
+    const closeBtn = document.getElementById('closeProductModal');
+    const cancelBtn = document.getElementById('cancelProductBtn');
+
+    saveBtn.onclick = () => saveProduct(productModal);
+
+    const closeModal = () => {
+        productModal.classList.add('hidden');
+        // Reset input of the currently active row
+        const productInput = document.querySelector(`.product-search-input[data-id="${window.activeInvoiceItemId}"]`);
+        if (productInput) productInput.value = '';
+    };
+
+    closeBtn.onclick = cancelBtn.onclick = closeModal;
+});
+
 // Show client suggestions
-export function showClientSuggestions(clients, searchTerm = '', selectClientFromHint) {
-    const hintContainer = document.getElementById('client-search-hint');
+export function showClientSuggestions(clients, searchTerm = '', selectClientFromHint,hintContainer) {
+    // const hintContainer = document.getElementById(searchHint);
     if (!hintContainer) return;
 
     console.log("show client suggestion?")
@@ -52,7 +136,6 @@ export function showClientSuggestions(clients, searchTerm = '', selectClientFrom
         )
         : clients;
         
-    console.log("clients: ",clients)
     if (filteredClients.length > 0) {
         hintContainer.innerHTML = filteredClients.map(client => `
  <div class="hint-item" data-client-id="${client.id}" 
@@ -72,7 +155,27 @@ ${client.name} - ${client.email || 'No email'}
             });
         });
     } else {
-        hintContainer.style.display = 'none';
+        console.log("yaa ho ni ")
+        hintContainer.innerHTML = '';
+         hintContainer.innerHTML = `
+           <div class="bg-white hint-empty">
+            <button
+                id="add-client-btn"
+                class="w-full text-left px-3 py-2 text-sm text-blue-600 
+                        bg-white border-none hover:bg-gray-100 focus:outline-none cursor-pointer">
+                + Add Client
+            </button>
+            </div>
+
+        `;
+        hintContainer.style.display = 'block';
+
+        const addBtn = document.getElementById('add-client-btn');
+        addBtn.onmousedown = async (e) => {
+            e.preventDefault();
+            await saveCustomer();
+            hintContainer.style.display = 'none';
+        };
     }
 }
 
@@ -85,19 +188,15 @@ ${client.name} - ${client.email || 'No email'}
 
 const mycurrentUrl = window.location.href;
 const eachpart = mycurrentUrl.split('/')
-console.log(eachpart)
-const order_id = eachpart[eachpart.length-2]
-console.log(order_id)
+const uuId = eachpart[eachpart.length-2]
 
 if(eachpart[eachpart.length-3] == 'invoices'){
-    editInvoiceSection(order_id)
+    editInvoiceSection(uuId,'invoices')
 }
-
-
-
-
-
-
+//for editing purchase
+if(eachpart[eachpart.length-3] == 'purchase'){
+    editInvoiceSection(uuId,'purchase')
+}
 
 // Show product name suggestions
 export function showProductNameSuggestions(products, searchTerm = '', fillProductDetails) {
@@ -208,9 +307,7 @@ export function hideSearchHints() {
 //removed the clientId,clientEmail,clientAddress from the UI so removed from here too and worked fine
 export function fillClientDetails(client) {
     document.getElementById('clientName').value = client.name;
-    // document.getElementById('clientId').value = `CLI-${client.id.toString().padStart(3, '0')}`;
-    // document.getElementById('clientEmail').value = client.email || '';
-    // document.getElementById('clientAddress').value = client.address || '';
+
 }
 
 // Clear client details
@@ -348,25 +445,31 @@ export function loadInvoices(invoices, invoicesTableBody, csrfToken = '') {
 <td>$${parseFloat(amount).toFixed(2)}</td>
 <td><span class="status status-${invoice.status || 'pending'}">${(invoice.status || 'pending').charAt(0).toUpperCase() + (invoice.status || 'pending').slice(1)}</span></td>
 <td class="action-cell">
-    <div class="action-btn action-edit">
+    <span class="action-btn action-edit">
         <i class="fas fa-edit"></i>
-    </div>
-    <div class="action-btn action-delete" data-token="${csrfToken}" data-id="${invoice.id}">
+    </span>
+    <span class="action-btn action-delete" data-token="${csrfToken}" data-id="${invoice.id}">
         <i class="fas fa-trash"></i>
-    </div>
+    </span>
 </td>
 `;
     // Add click event to view buttons using event delegation
-    row.addEventListener("click", (event) => {
-         const row = event.target.closest('tr');
-            // console.log("this is row",row.dataset)
-            if (!row) return;
-            const invoiceId = row.dataset.uid || parseInt(row.cells[0].innerText.split('-')[1]);
-            // console.log("this is invoiceId in addEventListener ",invoiceId)
-            openModal(invoice.uid);
+    row.addEventListener("click", () => {
+        openModal(invoice.uid);
+     });
+    
+    const editBtn = row.querySelector('.action-edit');
+    const deleteBtn = row.querySelector('.action-delete');
 
+    editBtn.addEventListener('click',(e)=>{
+        e.stopPropagation();
+        openModal(invoice.uid);
 
-        });
+    })
+    deleteBtn.addEventListener('click',async(e) => {
+        e.stopPropagation();
+        await deleteInvoice()
+    })
 
         invoicesTableBody.prepend(row);
     });

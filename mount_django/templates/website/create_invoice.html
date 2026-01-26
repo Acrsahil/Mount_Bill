@@ -5,16 +5,21 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/create_invoice.css' %}">
+<script src="https://cdn.tailwindcss.com"></script>
 {% endblock %}
 
 {% block content %}
+{% include "website/modal/add_product_modal.html" %}
+
+
 <div class="create-invoice-page" id="createInvoicePage">
     <div class="page-header">
         <div class="header-content">
+            {% if mode == 'purchase' %}
+            <h1 id="create_purchase_invoice"><i class="fas fa-file-invoice-dollar"></i> Create Purchase Bill</h1>
+            {% else %}
             <h1 id="create_new_invoice"><i class="fas fa-file-invoice-dollar"></i> Create New Invoice</h1>
-            <button class="cancel-button" id="cancelInvoiceBtn">
-                <i class="fas fa-times"></i>
-            </button>
+            {% endif %}
         </div>
     </div>
 
@@ -32,14 +37,27 @@
             </div>
             </div>
             <div class="right-column">
-            <div class="form-group">
+            {% if mode == 'purchase' %}
+            <div class = "form-group" id="billNoHeader">
+                <label for="billNumber" id="billNo">Bill No</label>
+                <input type="text" id="billNumber" class="form-control" value="Bill-001" readonly>
+            </div>
+             <div class="form-group" id="purchaseBillDate">
+                <label for="purchaseDate">Invoice Date</label>
+                <input type="date" id="purchaseDate" class="form-control" value="">
+            </div>
+            {% else %}
+            <div class="form-group"  id="invoiceNoHeader">
                 <label for="invoiceNumber">Invoice Number</label>
                 <input type="text" id="invoiceNumber" class="form-control" value="INV-001" readonly>
             </div>
-            <div class="form-group">
+            <div class="form-group" id="invoiceCreationDate">
                 <label for="invoiceDate">Invoice Date</label>
                 <input type="date" id="invoiceDate" class="form-control" value="">
             </div>
+           
+            {% endif %}
+
         </div>
         </div>
              
@@ -139,14 +157,21 @@
         
         <div class="page-footer">
             <button class="btn btn-light" id="cancelInvoiceBtnBottom">Cancel</button>
-            <button class="btn btn-primary" id="saveInvoiceBtn">Save Invoice</button>
             <button class="btn btn-primary" style="display:none;"  id="updateInvoiceBtn">Update Invoice</button>
+            <button class="btn btn-primary" style="display:none;"  id="updatePurchaseBtn">Update Purchase</button>
+            {% if mode == 'purchase' %}
+            <button class="btn btn-primary" id="savePurchaseBtn">Save Purchase</button>
+            {% else %}
+            <button class="btn btn-primary" id="saveInvoiceBtn">Save Invoice</button>
+            {%endif%}
         </div>
     </div>
-
 {% endblock %}
 
 {% block extra_js %}
+<script>
+    const pageMode = "{{mode}}";
+</script>
 <script>
 document.addEventListener('DOMContentLoaded', async () => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -163,6 +188,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             clientNameInput.value = data.client_name;
         }
     }
+  
 });
 </script>
 <script>
@@ -193,6 +219,7 @@ if (typeof window.djangoData === 'undefined') {
 
 <script>const csrfToken = "{{ csrf_token }}";</script>
 <script type="module" src="{% static 'js/create_invoice.js' %}"></script>
+<script type="module" src="{% static 'js/purchase.js' %}"></script>
 
 
 {% endblock %}

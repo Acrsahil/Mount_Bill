@@ -1,7 +1,8 @@
 // API calls for AJAX/fetch requests
 import { showAlert } from './utils.js';
-import { openAddProductModal, closeProductModalFunc } from './events.js';
+import { openAddProductModal, closeProductModalFunc,handleItemUpdate,handleRemoveItem } from './events.js';
 import { openModal } from './bill_layout.js';
+import { renderInvoiceItems,setupProductSearchHandlersForPage,updateTotals,updateItemTotal,showTotalSection,addInvoiceItem,selectProductFromHint } from './create_invoice.js';
 //for csrfToken for js
 function getCookie(name) {
     let cookieValue = null;
@@ -138,7 +139,6 @@ document.addEventListener('DOMContentLoaded', () => {
     })
     productCategories.addEventListener('input', () => {
         const searchTerm = productCategories.value.toLowerCase();
-        console.log("esko k xa tw", categories)
         const filtered = categories.filter(category => category.name.toLowerCase().includes(searchTerm))
         renderCategory(filtered)
     })
@@ -300,19 +300,6 @@ document.addEventListener('DOMContentLoaded', () => {
     addNewProductDetailBtn.addEventListener('click', () => {
         openAddProductModal(addProductModal);
     });
-
-    // const closeProductModal = document.getElementById('closeProductModal');
-    // closeProductModal.addEventListener('click', () => {
-    //     closeProductModalFunc(addProductModal)
-    // })
-    // const cancelProductBtn = document.getElementById('cancelProductBtn');
-    // cancelProductBtn.addEventListener('click', () => {
-    //     closeProductModalFunc(addProductModal)
-    // })
-    // const saveProductBtn = document.getElementById('saveProductBtn');
-    // saveProductBtn.addEventListener('click', () => {
-    //     saveProduct(addProductModal)
-    // })
 });
 
 // FILTER PRODUCTS
@@ -708,7 +695,42 @@ function loadProductActivity(activities, productsactivityTableBody) {
         activities.reverse().forEach((activity) => addProductActivityToTable(activity, productsactivityTableBody))
     }
 }
+
+//applying product to invoice
+export function applyProductToInvoice(itemId, product) {
+    const item = window.invoiceItems.find(i => i.id === itemId);
+    if (!item) return;
+
+    item.productId = product.id;
+    item.productName = product.name;
+    item.price = Number(product.selling_price);
+
+    const row = document
+        .querySelector(`.product-search-input[data-id="${itemId}"]`)
+        ?.closest('tr');
+
+    if (!row) return;
+
+    row.querySelector('.product-search-input').value = product.name;
+    row.querySelector('.item-price').value = product.selling_price;
+
+    updateItemTotal(itemId, window.invoiceItems);
+    updateTotals(window.invoiceItems, window.globalDiscount, window.globalTax);
+    showTotalSection();
+
+    const qty = row.querySelector('.item-quantity');
+    if (qty) {
+        setTimeout(() => {
+            qty.focus();
+            qty.select();
+        }, 50);
+    }
+    if (itemId == window.invoiceItems.length) {
+        addInvoiceItem();}
+}
+
 // Save product to database via AJAX
+
 export async function saveProduct(addProductModal) {
     const productsactivityTableBody = document.getElementById('productsactivityTableBody');
     const productName = document.getElementById('productName').value.trim();
@@ -760,11 +782,9 @@ export async function saveProduct(addProductModal) {
             body: JSON.stringify(productData)
         });
         const result = await response.json();
-        console.log('Server response:', result);
-        console.log("yo itemactivity ma k aayo", result.itemactivity)
+
         if (result.success) {
             if (!result.product.uid) {
-                console.error("Saved product missing UID:", result.product);
                 showAlert("Product saved but UID missing. Please refresh.", "error");
                 return;
             }
@@ -779,27 +799,32 @@ export async function saveProduct(addProductModal) {
 
             showAlert(result.message, 'success');
             // Close modal after short delay
-            setTimeout(() => {
-                const closeProductModalFunc = () => {
-                    if (addProductModal) {
-                        addProductModal.style.display = 'none';
-                    }
-                };
-                closeProductModalFunc();
-                // window.location.reload();
-                // Reset form
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            addProductModal.classList.remove('active');
+            addProductModal.classList.add('hidden'); // Use class instead of style
+            
+
+            // Reset form
                 document.getElementById('productName').value = '';
-                const priceField = document.getElementById('productSellingPrice') || document.getElementById('productPrice');
+                const priceField = document.getElementById('productSellingPrice') || document.getElementById('productCostPrice');
                 if (priceField) priceField.value = '';
+                document.getElementById('productCostPrice').value = '';
                 document.getElementById('productCategory').value = '';
                 document.getElementById('lowStockQuantity').value = '';
-                const lowStockConstraint = document.getElementById('lowStockConstraint');
+
+                document.getElementById('productQuantity').value = '';
                 const slider = document.getElementById('statusToggle');
                 if (slider) {
-                    slider.checked = false
+                    slider.checked = false;
                     slider.dispatchEvent(new Event('change'));
                 }
-            }, 1500);
+
+                // Apply product to invoice if needed
+                const invoiceItemsBody = document.getElementById('invoiceItemsBody');
+                if (invoiceItemsBody && window.activeInvoiceItemId) {
+                    applyProductToInvoice(window.activeInvoiceItemId, result.product);
+                }
+
         } else {
             showAlert('Error: ' + (result.error || 'Failed to save product'), 'error');
         }
@@ -1523,7 +1548,7 @@ export async function editProduct(productId) {
         // Show modal
 
         if (addProductModal) {
-            addProductModal.style.display = 'flex';
+            addProductModal.classList.remove('hidden');
         }
     }
 }
@@ -1644,7 +1669,7 @@ export async function updateProduct(addProductModal) {
             setTimeout(() => {
                 const closeProductModalFunc = () => {
                     if (addProductModal) {
-                        addProductModal.style.display = 'none';
+                        addProductModal.classList.add('hidden');
                     }
                 };
                 closeProductModalFunc();

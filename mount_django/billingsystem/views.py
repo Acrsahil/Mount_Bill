@@ -28,7 +28,8 @@ from .models import (
     PaymentOut,
     BalanceAdjustment,
     Expense,
-    ExpenseCategory
+    ExpenseCategory,
+    Purchase,
 )
 from .signals import DEFAULT_CATEGORIES
 
@@ -37,7 +38,7 @@ def invoice_uid(request,id):
     return JsonResponse({"uid": str(order.uid)})
 
 
-
+@login_required
 def filtered_products(request):
     user = request.user
     company = user.owned_company or user.active_company
@@ -74,7 +75,7 @@ def filtered_products(request):
     ]
     return JsonResponse({"products": products_data})
 
-
+@login_required
 def category_json(request):
     user = request.user
     company = user.owned_company or user.active_company
@@ -123,6 +124,7 @@ def products_json(request):
 
     return JsonResponse({"products": products_data, "count": products.count()})
 
+@login_required
 @never_cache
 def clients_json(request):
     user = request.user
@@ -131,9 +133,8 @@ def clients_json(request):
     if not company:
         return JsonResponse({"clients": [], "count": 0})
 
-    clients = (
-        Customer.objects.filter(company=company)
-    )
+    clients =Customer.objects.filter(company=company).order_by('-date')
+    
 
     clients_data = [
         {
@@ -150,6 +151,7 @@ def clients_json(request):
 
     return JsonResponse({"clients": clients_data, "client_count": clients.count()})
 
+@login_required
 def client_info_payment_id(request,id: UUID):
     user = request.user
     company = user.owned_company or user.active_company
@@ -422,7 +424,6 @@ def save_product(request):
 
 
 @login_required
-@csrf_exempt
 @require_POST
 @transaction.atomic
 def update_product(request, id):
@@ -474,7 +475,6 @@ def update_product(request, id):
 
 
 @login_required
-@csrf_exempt
 @require_POST
 @transaction.atomic
 def add_stock(request, id):
@@ -522,7 +522,6 @@ def add_stock(request, id):
 
 
 @login_required
-@csrf_exempt
 @require_POST
 @transaction.atomic
 def reduce_stock(request, id):
@@ -574,7 +573,6 @@ def reduce_stock(request, id):
 
 
 @login_required
-@csrf_exempt
 @require_POST
 @transaction.atomic
 def save_invoice(request):
@@ -681,6 +679,7 @@ def save_invoice(request):
             # Create bill entry
             Bill.objects.create(
                 order=order,
+                purchase = None,
                 product=product,
                 quantity=quantity,
                 discount=discountPercent,
@@ -813,24 +812,457 @@ def save_invoice(request):
             {"success": False, "error": f"Server error: {str(e)}"}, status=500
         )
 
+@login_required
+@require_POST
+@transaction.atomic
+def save_purchase(request):
+    try:
+        data = json.loads(request.body)
+     
+        client_name = data.get("clientName", "").strip()
+        purchase_date_str = data.get("purchaseDate", "")
+        purchase_items = data.get("items", [])
+        global_discount = Decimal(str(data.get("globalDiscountPercent", 0)))
 
-def sahilpage(request):
-    products = Product.objects.select_related("category").all()
-    return render(request, "billingsystem/index.html", {"products": products})
+        global_tax = Decimal(str(data.get("globalTaxPercent", 0)))
+        additional_charges = Decimal(str(data.get("additionalCharges", 0)))
+        charge_name_amount = data.get("additionalchargeName", [])
+        notes_here = data.get("noteshere", "").strip()
+        received_amount = Decimal(str(data.get("receivedAmount",0)))
+
+        user = request.user
+        company = None
+        company = user.owned_company or user.active_company
+
+        if not company:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "error": "You are not associated with any company. Please contact your administrator.",
+                },
+            )
+        if not client_name:
+            return JsonResponse(
+                {"success": False, "error": "Client name is required"}, status=400
+            )
+
+        if not purchase_items:
+            return JsonResponse(
+                {"success": False, "error": "At least one item is required"}, status=400
+            )
+        customer, created = Customer.objects.get_or_create(
+            name=client_name,
+            defaults={
+                "phone": "000-000-0000",
+            },
+        )
+
+        # Handle date conversion
+        if purchase_date_str:
+            try:
+                purchase_date = datetime.strptime(purchase_date_str, "%Y-%m-%d")
+                # Keep current time instead of 00:00:00
+                now = timezone.now()
+                purchase_date = purchase_date.replace(hour=now.hour, minute=now.minute, second=now.second, microsecond=now.microsecond)
+                purchase_date = timezone.make_aware(purchase_date)
+            except ValueError:
+                purchase_date = timezone.now()
+        else:
+            purchase_date = timezone.now()
+
+        purchases = Purchase.objects.create(
+                    company=company,
+                    customer=customer,
+                    summary = None,
+                    remaining = None,
+                    date=purchase_date,
+                    notes=notes_here)
+
+        # Process invoice items
+        total_amount = 0
+        for item in purchase_items:
+            product_name = item.get("productName", "").strip()
+            quantity = int(item.get("quantity", 1))
+            
+            price = Decimal(str(item.get("price", 0)))
+            discountPercent = Decimal(str(item.get("discountPercent", 0)))
+
+            if not product_name:
+                continue
+
+            # Find or create product - use selling price as default
+            default_category = ProductCategory.objects.first()
+            if not default_category:
+                default_category = ProductCategory.objects.create(name="General")
+
+            product, _ = Product.objects.get_or_create(
+                name=product_name,
+                defaults={
+                    "selling_price": price,
+                    "category": default_category,
+                },
+            )
+
+            # Create bill entry
+            Bill.objects.create(
+                order=None,
+                purchase = purchases,
+                product=product,
+                quantity=quantity,
+                discount=discountPercent,
+                product_price=Decimal(
+                    str(price)
+                ),  # Convert to Decimal    quantity=quantity,
+                bill_date=timezone.now(),
+            )
+
+            total_amount += (quantity * price) - (
+                (quantity * price) * (discountPercent / 100)
+            )
+
+            new_qty = product.product_quantity + quantity
+            ItemActivity.objects.create(
+                purchase=purchases,
+                type=f"Purchase #{purchases.id}",
+                product=product,
+                change=f"+{quantity}",
+                quantity=product.product_quantity + quantity,
+            )
 
 
-def product_details(request, pro_id, second_id):
-    pro = get_object_or_404(Product, pk=pro_id)
-    ans = pro_id + second_id
-    return render(
-        request,
-        "billingsystem/productprice.html",
-        {"pro": pro, "ans": ans},
+            change_product = Product.objects.get(id=product.id)
+            change_product.product_quantity = new_qty
+            change_product.save()
+
+        for charge in charge_name_amount:
+            charge_name = charge.get("chargeName")
+            charge_amount = charge.get("chargeAmount")
+            # creating additional entry
+            AdditionalCharges.objects.create(
+                additional_charges=None,
+                purchase_additional_charges =  purchases,
+                charge_name=charge_name,
+                additional_amount=charge_amount,
+            )
+        # grand total amount
+        final_amount = total_amount - (global_discount / 100) * total_amount
+        tax_amount = final_amount * (global_tax)
+        final_amount += tax_amount
+
+        final_amount += additional_charges
+        final_amount = Decimal(final_amount).quantize(
+            Decimal("0.00"), rounding=ROUND_HALF_UP
+        )
+
+        current_remaining = Decimal(str(final_amount)) - Decimal(str(received_amount))
+
+        # ---------- CHANGED PART STARTS HERE ----------
+        # Build OrderSummary (not saved yet)
+        order_summary = OrderSummary(
+            order=None,
+            total_amount=Decimal(str(total_amount)),
+            final_amount=Decimal(str(final_amount)),
+            discount=Decimal(str(global_discount)),
+            tax=Decimal(str(global_tax)),
+            received_amount=Decimal(str(received_amount)),
+            due_amount=current_remaining,
+        )
+
+        try:
+            order_summary.full_clean()
+                # validate against max_digits, etc.
+
+            order_summary.save()
+            purchases.summary = order_summary
+            purchases.save()
+
+        except Exception as e:
+        
+            return JsonResponse(
+                    {
+                        "success": False,
+                        "error": "Validation error",
+                        "field_errors": e.message_dict,
+                    },
+                    status=400,
+                )
+        # ---------- CHANGED PART ENDS HERE ----------
+        
+        latest_remaining = RemainingAmount.objects.filter(customer=customer).order_by('-id').first()
+        previous_remaining = latest_remaining.remaining_amount if latest_remaining else 0
+        
+
+        # subtract this order's remaining to previous remaining
+        total_remaining_after_purchase = Decimal(previous_remaining) - current_remaining
+
+        # Save remaining amount for this order
+        remaining_obj = RemainingAmount.objects.create(
+            customer=customer,
+            remaining_amount = total_remaining_after_purchase,
+        )
+        purchases.remaining = remaining_obj
+        purchases.save()
+        
+
+        return JsonResponse(
+            {
+                "success": True,
+                "message": "Purchase bill saved successfully!",
+            }
+        )
+
+    except json.JSONDecodeError as e:
+        return JsonResponse(
+            {"success": False, "error": f"Invalid JSON: {str(e)}"}, status=400
+        )
+    except Exception as e:
+        print(f"Error in save_purchase: {str(e)}")
+        return JsonResponse(
+            {"success": False, "error": f"Server error: {str(e)}"}, status=500
+        )
+
+
+@login_required
+def purchase_layout(request, id):
+    if request.method == "GET":
+        try:
+            purchases = Purchase.objects.get(uid=id)
+
+            # Check if order_list exists
+            if not purchases:
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "error": "Purchase not found",
+                        "message": f"No purchase found with ID: {id}",
+                    },
+                    status=404,
+                )
+
+            bill_info = Bill.objects.filter(purchase=purchases)
+            additionalcharge_info = AdditionalCharges.objects.filter(
+                purchase_additional_charges=purchases
+            )
+            note = purchases.notes
+
+            # Get basic order information with null checks
+            customer_name = purchases.customer.name if purchases.customer else "N/A"
+            customer_address = (
+                purchases.customer.address if purchases.customer else "N/A"
+            )
+            customer_Pan_id = (
+                purchases.customer.pan_id
+                if purchases.customer and purchases.customer.pan_id
+                else "N/A"
+            )
+            purchase_date = purchases.date
+            company_phone = purchases.company.phone if purchases.company else "N/A"
+            customer_phone = purchases.customer.phone if purchases.customer else "N/A"
+            company_name = purchases.company.name if purchases.company else "N/A"
+            purchase_id = purchases.id
+            uuid = purchases.uid
+
+            # Get summary information
+            
+            total_amount = purchases.summary.total_amount if purchases.summary.total_amount else 0
+            global_tax_percent = purchases.summary.tax if purchases.summary.tax else 0
+            global_discount_percent = purchases.summary.discount if purchases.summary.discount else 0
+            received_amount = (
+                        purchases.summary.received_amount if purchases.summary.received_amount else 0
+                    )
+            amount_due = purchases.summary.due_amount if purchases.summary.due_amount else 0
+            final_amount = purchases.summary.final_amount if purchases.summary.final_amount else 0
+
+            # Calculate derived amounts
+            dis_amount = (
+                (global_discount_percent / 100) * total_amount if global_discount_percent else 0
+            )
+            tax_amount = (
+                (global_tax_percent / 100) * (total_amount - dis_amount) if global_tax_percent else 0
+            )
+
+            # Prepare items list
+            items = []
+            if bill_info.exists():
+                for bill in bill_info:
+                    # Check if product exists
+                    if bill.product:
+                        per_discount = (
+                            (
+                                Decimal((bill.quantity) * Decimal(bill.product_price))
+                                * Decimal((bill.discount) / Decimal("100"))
+                            ).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+                            if bill.discount
+                            else 0
+                        )
+                        item = {
+                            "id": bill.id,
+                            "product_id": bill.product.id,
+                            "product_name": bill.product.name
+                            if bill.product.name
+                            else "Unknown Product",
+                            "quantity": bill.quantity if bill.quantity else 0,
+                            "rate": float(bill.product_price)
+                            if bill.product_price
+                            else 0,
+                            "discount": bill.discount if bill.discount else 0,
+                            "product_price": float(bill.product_price)
+                            if bill.product_price
+                            else 0,
+                            "perDiscount": per_discount,
+                            "line_total": (
+                                Decimal(bill.product_price) * Decimal(bill.quantity)
+                            )
+                            - per_discount
+                            if bill.product_price and bill.quantity
+                            else 0,
+                            "discount_percent": 0,
+                            "discount_amount": 0,
+                        }
+                    else:
+                        item = {
+                            "id": bill.id,
+                            "product_id": None,
+                            "product_name": "Product not found",
+                            "quantity": bill.quantity if bill.quantity else 0,
+                            "rate": 0,
+                            "product_price": 0,
+                            "line_total": 0,
+                            "discount_percent": 0,
+                            "discount_amount": 0,
+                        }
+                    items.append(item)
+
+            # Prepare additional charges
+            additional_charges = []
+            if additionalcharge_info.exists():
+                for charge in additionalcharge_info:
+                    charge_data = {
+                        "charge_name": charge.charge_name
+                        if charge.charge_name
+                        else "Additional Charge",
+                        "charge_amount": float(charge.additional_amount)
+                        if charge.additional_amount
+                        else 0,
+                        "charge_type": getattr(charge, "charge_type", "additional"),
+                    }
+                    additional_charges.append(charge_data)
+
+            # Build response data
+            response_data = {
+                "success": True,
+                "invoice": {
+                    "id": purchases.id,
+                    "uuid": uuid,
+                    "invoice_number": f"BILL-{purchase_id:03d}",
+                    "company_name": company_name,
+                    "company_phone": company_phone,
+                    "company_address": "Gokarneshwor-4, Kathmandu",
+                    "customer": {
+                        "name": customer_name,
+                        "address": customer_address,
+                        "phone": customer_phone,
+                        "pan_id": customer_Pan_id,
+                    },
+                    "dates": {
+                        "invoice_date": purchase_date.strftime("%Y-%m-%d")
+                        if purchase_date
+                        else None,
+                        "invoice_date_formatted": purchase_date.strftime("%Y %b %d")
+                        if purchase_date
+                        else "N/A",
+                    },
+                    "amounts": {
+                        "subtotal": float(total_amount),
+                        "total_amount": float(total_amount),
+                        "global_tax_percent": float(global_tax_percent),
+                        "global_tax_amount": float(tax_amount),
+                        "global_discount_percent": float(global_discount_percent),
+                        "global_discount_amount": float(dis_amount),
+                        "final_amount": float(final_amount),
+                        "received_amount": float(received_amount),
+                        "amount_due": float(amount_due),
+                        "balance": float(amount_due),
+                    },
+                    "payment_info": {
+                        "payment_mode": "Cash",
+                        "status": "Paid" if amount_due == 0 else "Pending",
+                    },
+                    "items": items,
+                    "additional_charges": additional_charges,
+                    "remarks": note,
+                },
+            }
+
+            return JsonResponse(response_data, safe=False)
+
+        except Purchase.DoesNotExist:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "error": "Purchase not found",
+                    "message": f"No purchase found with ID: {id}",
+                },
+                status=404,
+            )
+
+        except Exception as e:
+            # Log the full error for debugging
+            import traceback
+
+            error_details = traceback.format_exc()
+            print(f"Error in invoice_layout: {e}")
+            print(f"Traceback: {error_details}")
+
+            return JsonResponse(
+                {
+                    "success": False,
+                    "error": "Server error",
+                    "message": str(e),
+                    "details": "Check if all related objects (customer, company, product) exist in database",
+                },
+                status=500,
+            )
+
+    return JsonResponse(
+        {
+            "success": False,
+            "error": "Method not allowed",
+            "message": "Only GET method is allowed",
+        },
+        status=405,
     )
 
 
+@login_required
+def purchase_info(request):
+    try:
+        user = request.user
+        company = user.owned_company or user.active_company
+        if not company:
+            return JsonResponse({"expense_data": [], "expense_count": 0})
+      
+    
+        purchases = Purchase.objects.filter(company=company).order_by('-date')
+        purchase_count = purchases.count()
+        purchase_data = []
+        for purchase in purchases:
+            purchase_data.append({
+                    "uid":purchase.uid,
+                    "name": purchase.customer.name,
+                    "date": purchase.date,
+                    "total_amount": purchase.summary.final_amount,
+                    "dueAmount": purchase.summary.due_amount,
+                    "type":"purchaseRow"
+                })
+
+        return JsonResponse({"purchase_data": purchase_data,"purchase_count":purchase_count})
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
+
+@login_required
 @require_POST
-@csrf_exempt
 def save_client(request):
     try:
         # Parse JSON data from request
@@ -893,7 +1325,26 @@ def save_client(request):
 
     except Exception as e:
         return JsonResponse({"success": False, "error": f"Server error: {str(e)}"})
-    
+
+@login_required
+@require_POST
+def save_customer(request):
+    try:
+        data = json.loads(request.body)
+        name = data.get("clientName", "").strip()
+        user = request.user
+        company = user.owned_company or user.active_company
+        if not company:
+            return JsonResponse({"success": False, "error": "No active company found for user."})
+        
+        customer = Customer.objects.create(company=company,name=name)
+
+        RemainingAmount.objects.create(customer=customer, remaining_amount=0)
+        
+        return JsonResponse({"success":True,"name":customer.name})
+        
+    except Exception as e:
+        return JsonResponse({"success":False,"error":f"Server error:{str(e)}"})
    
 @require_http_methods(["DELETE"])
 def delete_client(request,id: UUID = None):
@@ -905,8 +1356,8 @@ def delete_client(request,id: UUID = None):
         print("Delete Client Error:", e)
         return JsonResponse({"success":False, "error":f"Server error: {str(e)}"})
 
+@login_required
 @require_POST
-@csrf_exempt
 def update_client(request,id):
     try:
         data = json.loads(request.body)
@@ -936,6 +1387,7 @@ def update_client(request,id):
     
 # update opening balance
 @login_required
+@require_POST
 @transaction.atomic
 def update_opening_balance(request,id:UUID):
     try:
@@ -957,7 +1409,6 @@ def update_opening_balance(request,id:UUID):
         return JsonResponse({"success":False,"error":f"Server error: {str(e)}"})
 
 @login_required
-@csrf_exempt
 @require_POST
 def delete_invoice(request, id):
     if request.method == "POST":
@@ -977,7 +1428,6 @@ def delete_product(request, id):
 
 
 @login_required
-@csrf_exempt
 def invoice_layout(request, id):
     if request.method == "GET":
         try:
@@ -994,7 +1444,7 @@ def invoice_layout(request, id):
                     status=404,
                 )
 
-            bill_info = Bill.objects.filter(order=order_list)
+            bill_info = Bill.objects.filter(order=order_list,purchase=None)
             ordersum_info = OrderSummary.objects.filter(order=order_list)
             additionalcharge_info = AdditionalCharges.objects.filter(
                 additional_charges=order_list
@@ -1118,7 +1568,7 @@ def invoice_layout(request, id):
             response_data = {
                 "success": True,
                 "invoice": {
-                    "order_id": order_id,
+                    "id": order_id,
                     "uuid": uuid,
                     "invoice_number": f"INV-{order_id:03d}",
                     "company_name": company_name,
@@ -1203,7 +1653,6 @@ def invoice_layout(request, id):
 def invoices(request, id=None):
     context = get_serialized_data(request.user, "invoices")
     if id:
-        print("hello")
         return render(request, "website/create_invoice.html", context)
     return render(request, "website/bill.html", context)
 
@@ -1221,6 +1670,12 @@ def expenses(request):
     context = get_serialized_data(request.user, "expenses")
     return render(request,"website/bill.html",context)
 
+def purchase(request,id:UUID = None):
+    context = get_serialized_data(request.user, "purchase")
+    if id:
+        return render(request, "website/create_invoice.html", context)
+    return render(request,"website/bill.html",context)
+    
 def products(request):
     context = get_serialized_data(request.user, "products")
     # context["product_number"] = context["product_count"]
@@ -1242,132 +1697,152 @@ def client_detail(request,id: UUID):
     return render(request, "website/client_detail.html", context)
 
 @login_required
-def fetch_transactions(request,id:UUID):
+def fetch_transactions(request,id:UUID = None):
     user = request.user
     company = user.owned_company or user.active_company
 
     if not company:
         return JsonResponse({"transactions": []})
-   
-    transactions = OrderList.objects.filter(customer__uid = id).order_by('-id')
-    payment_in_transactions = PaymentIn.objects.filter(customer__uid =id)
-    payment_out_transactions = PaymentOut.objects.filter(customer__uid = id)
-    client = Customer.objects.get(uid = id)
-    invoiceData = []
-    for transaction in transactions:
-        summary = getattr(transaction,"summary",None)
-        remaining = transaction.remaining.remaining_amount if hasattr(transaction, "remaining") else 0
-        invoiceData.append({
-            "id": transaction.id,
-            "date": transaction.order_date,
-            "finalAmount":summary.final_amount if summary else 0,
-            "remarks": transaction.notes,
-            "remainingAmount": remaining if remaining else 0,
-            "type": "sale"
+    if id:
+        transactions = OrderList.objects.filter(customer__uid = id).order_by('-id')
+        payment_in_transactions = PaymentIn.objects.filter(customer__uid =id)
+        payment_out_transactions = PaymentOut.objects.filter(customer__uid = id)
+        client = Customer.objects.get(uid = id)
+        purchases = Purchase.objects.filter(customer__uid = id)
+        invoiceData = []
+        for transaction in transactions:
+            summary = getattr(transaction,"summary",None)
+            remaining = transaction.remaining.remaining_amount if hasattr(transaction, "remaining") else 0
+            invoiceData.append({
+                "id": transaction.id,
+                "date": transaction.order_date,
+                "finalAmount":summary.final_amount if summary else 0,
+                "remarks": transaction.notes,
+                "remainingAmount": remaining if remaining else 0,
+                "type": "sale"
 
+            })
+        paymentInData=[]
+        for paymentIn in payment_in_transactions:
+            remainingAmount = paymentIn.remainings.remaining_amount 
+            paymentInData.append({
+                "id":paymentIn.id,
+                "date":paymentIn.date,
+                "payment_in":paymentIn.payment_in,
+                "remainingAmount": remainingAmount,
+                "remarks":paymentIn.remarks,
+                "type": "payment"
+            })
+        
+        paymentOutData = []
+        for paymentOut in payment_out_transactions:
+            paymentOutData.append({
+                "id":paymentOut.id,
+                "date":paymentOut.date,
+                "payment_out":paymentOut.payment_out,
+                "remainingAmount": paymentOut.remainings.remaining_amount,
+                "remarks":paymentOut.remarks,
+                "type": "paymentOut"
+
+            })
+        
+        clientData =[]
+        remaining = RemainingAmount.objects.filter(customer__uid = id).order_by('id').first()
+        clientData.append({
+            "date":client.date,
+            "balance":remaining.remaining_amount,
+            "type": "Opening"
         })
-    paymentInData=[]
-    for paymentIn in payment_in_transactions:
-        remainingAmount = paymentIn.remainings.remaining_amount 
-        paymentInData.append({
-            "id":paymentIn.id,
-            "date":paymentIn.date,
-            "payment_in":paymentIn.payment_in,
-            "remainingAmount": remainingAmount,
-            "remarks":paymentIn.remarks,
-            "type": "payment"
-        })
+
+        addAdjustmentBalance = []
+        balance_adjustments = BalanceAdjustment.objects.filter(customer__uid = id)
+        for balance_adjust in balance_adjustments:
+            addAdjustmentBalance.append({
+                "id":balance_adjust.id,
+                "date":balance_adjust.date,
+                "amount":abs(balance_adjust.amount),
+                "balance":balance_adjust.remainings.remaining_amount,
+                "remarks":balance_adjust.remarks,
+                "type":"add" if balance_adjust.amount > 0 else "reduce" 
+            })
+
+        purchase_data = []
+        for purchase in purchases:
+            purchase_data.append({
+                "id":purchase.id,
+                "date":purchase.date,
+                "total_amount":purchase.summary.final_amount,
+                "remaining":purchase.remaining.remaining_amount,
+                "type":"purchase",
+            })
+
+        mergedData = invoiceData + paymentInData + paymentOutData + clientData + addAdjustmentBalance + purchase_data
+        mergedData.sort(key=lambda x: x["date"], reverse=True)
     
-    paymentOutData = []
-    for paymentOut in payment_out_transactions:
-        paymentOutData.append({
-            "id":paymentOut.id,
-            "date":paymentOut.date,
-            "payment_out":paymentOut.payment_out,
-            "remainingAmount": paymentOut.remainings.remaining_amount,
-            "remarks":paymentOut.remarks,
-            "type": "paymentOut"
+    else:
+        transactions = OrderList.objects.filter(company=company)
+        payment_in_transactions = PaymentIn.objects.filter(company=company)
+        payment_out_transactions = PaymentOut.objects.filter(company=company)
+        purchases = Purchase.objects.filter(company=company)
 
-        })
-    
-    clientData =[]
-    remaining = RemainingAmount.objects.filter(customer__uid = id).order_by('id').first()
-    clientData.append({
-        "date":client.date,
-        "balance":remaining.remaining_amount,
-        "type": "Opening"
-    })
+        invoiceData = []
+        for transaction in transactions:
+            summary = getattr(transaction,"summary",None)
+            invoiceData.append({
+                "id": transaction.id,
+                "date": transaction.order_date,
+                "name":transaction.customer.name,
+                "finalAmount":summary.final_amount if summary else 0,
+                "receivedAmount":summary.received_amount if summary else 0,
+                "dueAmount": summary.due_amount,
+                "type": "sale"
 
-    addAdjustmentBalance = []
-    balance_adjustments = BalanceAdjustment.objects.filter(customer__uid = id)
-    for balance_adjust in balance_adjustments:
-        addAdjustmentBalance.append({
-            "id":balance_adjust.id,
-            "date":balance_adjust.date,
-            "amount":abs(balance_adjust.amount),
-            "balance":balance_adjust.remainings.remaining_amount,
-            "remarks":balance_adjust.remarks,
-            "type":"add" if balance_adjust.amount > 0 else "reduce" 
-        })
+            })
+        paymentInData=[]
+        for paymentIn in payment_in_transactions:
+            paymentInData.append({
+                "id":paymentIn.id,
+                "date":paymentIn.date,
+                "payment_in":paymentIn.payment_in,
+                "name":paymentIn.customer.name,
+                "type": "paymentIn"
+            })
+        
+        paymentOutData = []
+        for paymentOut in payment_out_transactions:
+            paymentOutData.append({
+                "id":paymentOut.id,
+                "date":paymentOut.date,
+                "payment_out":paymentOut.payment_out,
+                "name":paymentOut.customer.name,
+                "type": "paymentOut"
 
-    mergedData = invoiceData + paymentInData + paymentOutData + clientData + addAdjustmentBalance
-    mergedData.sort(key=lambda x: x["date"], reverse=True)
+            })
+
+        purchaseData = []
+        for purchase in purchases:
+            purchaseData.append({
+                "id":purchase.id,
+                "date":purchase.date,
+                "name":purchase.customer.name,
+                "total_amount":purchase.summary.final_amount,
+                "receivedAmount":purchase.summary.received_amount,
+                "dueAmount":purchase.summary.due_amount,
+                "type":"purchase"
+            })
+        mergedData = invoiceData + paymentInData + paymentOutData+purchaseData
+        mergedData.sort(key=lambda x: x["date"], reverse=True)
+
     return JsonResponse({"success":True,
                          "transactions":mergedData})
 
-
-def fetch_all_transactions(request):
-    user = request.user
-    company = user.owned_company or user.active_company
-
-    if not company:
-        return JsonResponse({"transactions": []})
-    transactions = OrderList.objects.all()
-    payment_in_transactions = PaymentIn.objects.all()
-    payment_out_transactions = PaymentOut.objects.all()
-    invoiceData = []
-    for transaction in transactions:
-        summary = getattr(transaction,"summary",None)
-        invoiceData.append({
-            "id": transaction.id,
-            "date": transaction.order_date,
-            "name":transaction.customer.name,
-            "finalAmount":summary.final_amount if summary else 0,
-            "receivedAmount":summary.received_amount if summary else 0,
-            "dueAmount": summary.due_amount,
-            "type": "sale"
-
-        })
-    paymentInData=[]
-    for paymentIn in payment_in_transactions:
-        paymentInData.append({
-            "id":paymentIn.id,
-            "date":paymentIn.date,
-            "payment_in":paymentIn.payment_in,
-            "name":paymentIn.customer.name,
-            "type": "paymentIn"
-        })
-    
-    paymentOutData = []
-    for paymentOut in payment_out_transactions:
-        paymentOutData.append({
-            "id":paymentOut.id,
-            "date":paymentOut.date,
-            "payment_out":paymentOut.payment_out,
-            "name":paymentOut.customer.name,
-            "type": "paymentOut"
-
-        })
-
-    mergedData = invoiceData + paymentInData + paymentOutData
-    mergedData.sort(key=lambda x: x["date"], reverse=True)
-    return JsonResponse({"transactions":mergedData})
-
-
+@login_required
 @require_POST
 @transaction.atomic
 def payment_in(request,id):
     try:
+        user=request.user
+        company = user.owned_company or user.active_company
         data = json.loads(request.body)
         payment_in = Decimal(str(data.get("payment_in")))
         payment_in_date = data.get("payment_in_date")
@@ -1383,7 +1858,7 @@ def payment_in(request,id):
                 orders=None,
                 remaining_amount=current_remaining)
             
-        paymentIn = PaymentIn.objects.create(customer_id=id,
+        paymentIn = PaymentIn.objects.create(company=company,customer_id=id,
                                             date=payment_in_date,
                                             remainings=new_remaining,
                                             payment_in=payment_in,
@@ -1443,6 +1918,7 @@ def fill_update_payment_out_modal(request,id):
 
 
 @login_required
+@require_POST
 @transaction.atomic
 def update_payment_in(request,id):
     try:
@@ -1474,6 +1950,7 @@ def update_payment_in(request,id):
         return JsonResponse({"success":False,"error": f"Server error: {str(e)}"}, status=500)
     
 @login_required
+@require_POST
 @transaction.atomic
 def update_payment_out(request,id):
     try:
@@ -1503,10 +1980,13 @@ def update_payment_out(request,id):
     except Exception as e:
         return JsonResponse({"success":False,"error": f"Server error: {str(e)}"}, status=500)
 
+@login_required
 @require_POST
 @transaction.atomic
 def payment_out(request,id):
     try:
+        user=request.user
+        company = user.owned_company or user.active_company
         data = json.loads(request.body)
         payment_out = Decimal(str(data.get("payment_out")))
         payment_out_date = data.get("payment_out_date")
@@ -1523,7 +2003,7 @@ def payment_out(request,id):
             remaining_amount=current_remaining
         )
 
-        paymentOut = PaymentOut.objects.create(customer_id=id,date=payment_out_date,remainings=new_remaining,payment_out=payment_out,remarks=payment_out_remark)
+        paymentOut = PaymentOut.objects.create(company=company,customer_id=id,date=payment_out_date,remainings=new_remaining,payment_out=payment_out,remarks=payment_out_remark)
         paymentOut.save()
 
         return JsonResponse({"success":True,"uid":paymentOut.customer.uid})
@@ -1533,7 +2013,7 @@ def payment_out(request,id):
         )
     
 
-
+@login_required
 @require_POST
 @transaction.atomic
 def balance_adjustment(request, id):
@@ -1585,6 +2065,7 @@ def balance_adjustment(request, id):
         )
 
 @login_required
+@require_POST
 @transaction.atomic
 def update_add_adjust(request,id):
     try:
@@ -1617,6 +2098,7 @@ def update_add_adjust(request,id):
     
 
 @login_required
+@require_POST
 @transaction.atomic
 def update_reduce_adjust(request,id):
     try:
@@ -1677,7 +2159,7 @@ def product_detail(request, id: UUID = None):
         context["item_activity"] = item_activity
     return render(request, "website/product_detail.html", context)
 
-
+@login_required
 def fetch_product_activities(request, id: UUID):
     user = request.user
     company = user.owned_company or user.active_company
@@ -1696,15 +2178,15 @@ def fetch_product_activities(request, id: UUID):
                 "date": act.date.isoformat(),
                 "change": act.change,
                 "quantity": act.quantity,
-                "remarks": act.remarks,
+                "remarks": act.remarks if act.remarks else "---",
                 "order_id": act.order.id if act.order else None,
+                "purchase_id": act.purchase.id if act.purchase else None,
             }
         )
     return JsonResponse({"success": True, "activities": data})
 
 
 @login_required
-@csrf_exempt
 @require_POST
 @transaction.atomic
 def update_stock(request, id):
@@ -1783,6 +2265,7 @@ def create_invoice_page(request):
     try:
         # Get serialized data for the invoice creation page
         context = get_serialized_data(request.user, "dashboard")
+        context['mode'] = 'invoice'
         return render(request, "website/create_invoice.html", context)
     except Exception:
         return render(
@@ -1796,6 +2279,11 @@ def create_invoice_page(request):
                 "active_tab": "invoices",
             },
         )
+@login_required
+def create_purchases(request):
+    context = get_serialized_data(request.user, "purchase")
+    context['mode'] = 'purchase'
+    return render(request,"website/create_invoice.html",context)
 
 @login_required 
 def customer_totals(request):
@@ -1819,12 +2307,25 @@ def customer_totals(request):
         "toGive":toGive
     }
 
-    totalSales = OrderSummary.objects.all()
+    totalSales = OrderList.objects.filter(company=company)
     totalAmount = Decimal("0")
     for totalSale in totalSales:
-        totalAmount += Decimal(totalSale.final_amount)
+        totalAmount += Decimal(str(totalSale.summary.final_amount))
 
-    return JsonResponse({"amount":amount,"totalSale":totalAmount})
+    expenses = Expense.objects.filter(company=company)
+    expenses_total = Decimal("0")
+    for expense in expenses:
+        expenses_total +=Decimal(str(expense.total_amount))
+
+    totalPurchase = Purchase.objects.filter(company=company)
+    totalPurchaseAmount = Decimal("0")
+    print('total kati tw',totalPurchaseAmount)
+    for purchase in totalPurchase:
+        totalPurchaseAmount += Decimal(str(purchase.summary.final_amount))
+    print('total kati tw',totalPurchaseAmount)
+
+
+    return JsonResponse({"amount":amount,"totalSale":totalAmount,"expense_total":expenses_total,"purchase_total":totalPurchaseAmount})
 
 @login_required       
 def expense_category(request):
@@ -1849,6 +2350,7 @@ def expense_category(request):
     return JsonResponse({"expense_categories": expense_categories})
 
 @login_required
+@require_POST
 @transaction.atomic
 def save_expenses(request):
     try:
@@ -1874,6 +2376,7 @@ def save_expenses(request):
         return JsonResponse({"success": False, "error": f"Server error: {str(e)}"}, status=500)
 
 @login_required
+@require_POST
 @transaction.atomic
 def update_expense(request,id):
     try:
@@ -1941,6 +2444,7 @@ def expense_info(request,id = None):
 
 
 @login_required
+@require_POST
 @transaction.atomic
 def save_category(request):
     try:

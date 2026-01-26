@@ -43,13 +43,13 @@ window.productCategories = productCategories;
 // DOM Elements
 const invoiceNumber = document.getElementById('invoiceNumber');
 const invoiceDate = document.getElementById('invoiceDate');
+const purchaseDate = document.getElementById('purchaseDate');
 const clientNameInput = document.getElementById('clientName');
 const clientSearchHint = document.getElementById('client-search-hint');
 const invoiceItemsBody = document.getElementById('invoiceItemsBody');
 const addItemBtn = document.getElementById('addItemBtn');
 const checkAmount = document.getElementById('checkAmount');
-console.log(checkAmount);
-const cancelInvoiceBtn = document.getElementById('cancelInvoiceBtn');
+
 const cancelInvoiceBtnBottom = document.getElementById('cancelInvoiceBtnBottom');
 
 // get the charge section
@@ -57,17 +57,33 @@ const totalCharges = document.getElementById('totalCharges');
 
 // Initialize the page
 document.addEventListener('DOMContentLoaded', function () {
-    const saveInvoiceBtn = document.getElementById('saveInvoiceBtn');
-    // Save invoice button
-    if (saveInvoiceBtn) {
-        saveInvoiceBtn.addEventListener('click', () => saveInvoice());
+
+    if(pageMode === 'invoice'){
+        const saveInvoiceBtn = document.getElementById('saveInvoiceBtn');
+        // Save invoice button
+        if (saveInvoiceBtn) {
+            saveInvoiceBtn.addEventListener('click', () => saveInvoice());
+        }
+
     }
-    console.log('Create Invoice Page loaded');
+    
+    if(pageMode === 'purchase'){
+         const savePurchaseBtn = document.getElementById('savePurchaseBtn');
+    savePurchaseBtn.addEventListener('click',async()=>{
+        
+        await savePurchase()
+    })
+    }
 
     // Set today's date as default
     if (invoiceDate) {
         const today = new Date().toISOString().split('T')[0];
         invoiceDate.value = today;
+    }
+
+    if (purchaseDate) {
+        const today = new Date().toISOString().split('T')[0];
+        purchaseDate.value = today;
     }
 
     // Generate next invoice number
@@ -164,8 +180,64 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 });
 
+//function to save customer from invoice
+export async function saveCustomer(){
+    const clientName = document.getElementById('clientName')?.value;
+
+    try{
+            const customer_name = {
+                clientName:clientName,
+            }
+        // Send AJAX request to Django
+            const response = await fetch(`/dashboard/save-customer/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': window.djangoData.csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify(customer_name)
+            });
+    
+            const result = await response.json();
+            if(result.success){
+                document.getElementById('clientName').value=result.name;
+                console.log("successfull")
+            }
+        }catch (error) {
+            console.error('Error saving:', error);
+}
+}
+
+//delete invoice 
+export async function deleteInvoice(){
+    const deleteBtn = document.querySelector('.action-delete');
+    if (!deleteBtn || !confirm("Are you sure you want to delete this invoice?")) return;
+    
+    const invoiceId = deleteBtn.getAttribute("data-id");
+    const csrfToken = deleteBtn.getAttribute("data-token");
+    
+    try {
+        const response = await fetch(`/dashboard/delete_invoice/${invoiceId}/`, {
+            method: "POST",
+            headers: { "X-CSRFToken": csrfToken, "X-Requested-With": "XMLHttpRequest" }
+        });
+
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        
+        const data = await response.json();
+        if (data.success) deleteBtn.closest("tr").remove();
+        else alert('Delete failed: ' + (data.message || 'Unknown error'));
+        
+    } catch (error) {
+        console.error('Delete error:', error);
+        alert('Network error. Please try again.');
+    }
+}
+
+
 //function to show total section
-function showTotalSection() {
+export function showTotalSection() {
     if (totalCharges) {
         totalCharges.style.display = 'block';
     }
@@ -227,11 +299,6 @@ function setupPageEventListeners() {
     // Add item button
     if (addItemBtn) {
         addItemBtn.addEventListener('click', () => addInvoiceItem());
-    }
-
-    // Cancel buttons
-    if (cancelInvoiceBtn) {
-        cancelInvoiceBtn.addEventListener('click', () => cancelInvoice());
     }
 
     if (cancelInvoiceBtnBottom) {
@@ -368,7 +435,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 //sending additional charges name and amount
-function additionalChargeName() {
+export function additionalChargeName() {
     const charges = [];
     const chargesDiv = window.additionalContainer.querySelectorAll('.additional-input');
     chargesDiv.forEach(div => {
@@ -376,7 +443,6 @@ function additionalChargeName() {
         const chargeAmount = parseFloat(div.querySelector('input[type="number"]').value) || 0;
         charges.push({ chargeName, chargeAmount });
     });
-    console.log(charges);
     return charges;
 }
 
@@ -393,8 +459,8 @@ export function setupClientSearch() {
 
 function handleClientSearchFocus() {
     if (clientSearchHint) {
-        console.log("focus chaliraxa?")
-        showClientSuggestions(window.clients, '', (hintElement) => selectClientFromHint(hintElement));
+        const searchHint = document.getElementById('client-search-hint');
+        showClientSuggestions(window.clients, '', (hintElement) => selectClientFromHint(hintElement),searchHint);
 
         // Add click event to hints
         clientSearchHint.querySelectorAll('.hint-item').forEach(item => {
@@ -407,9 +473,9 @@ function handleClientSearchFocus() {
 }
 
 function handleClientSearch(e) {
-    console.log("input jaadaexa?")
     const searchTerm = e.target.value.toLowerCase();
-    showClientSuggestions(window.clients, searchTerm, (hintElement) => selectClientFromHint(hintElement));
+    const searchHint = document.getElementById('client-search-hint');
+    showClientSuggestions(window.clients, searchTerm, (hintElement) => selectClientFromHint(hintElement),searchHint);
 }
 
 function handleClientSearchKeydown(e) {
@@ -499,6 +565,7 @@ function handleProductSearchFocus(e) {
     const hintContainer = document.getElementById(`search-hint-${itemId}`);
 
     if (hintContainer) {
+        console.log("yaa hudae thyo kei")
         showProductSuggestions(itemId, window.products, '', (itemId, hintElement) => selectProductFromHint(itemId, hintElement));
 
         hintContainer.querySelectorAll('.hint-item').forEach(item => {
@@ -636,11 +703,8 @@ function handleProductSearchBlur(e) {
     }, 200);
 }
 
-function selectProductFromHint(itemId, hintElement) {
+export function selectProductFromHint(itemId, hintElement) {
     const productId = hintElement.getAttribute('data-product-id');
-    const productName = hintElement.getAttribute('data-product-name');
-    const sellingPrice = hintElement.getAttribute('data-product-selling-price');
-    const category = hintElement.getAttribute('data-product-category');
 
     const product = window.products.find(p => p.id === parseInt(productId));
     if (!product) return;
@@ -767,7 +831,7 @@ export function renderInvoiceItems(invoiceItems, invoiceItemsBody, setupProductS
 }
 
 // Add invoice item
-function addInvoiceItem() {
+export function addInvoiceItem() {
     const itemId = window.invoiceItems.length + 1;
 
     const newItem = {
@@ -1105,6 +1169,124 @@ export async function saveInvoice() {
         }
     } catch (error) {
         console.error('Error saving invoice:', error);
+        showAlert('Network error. Please check your connection and try again.', 'error');
+        saveBtn.innerHTML = originalText;
+        saveBtn.disabled = false;
+    }
+}
+
+
+//saving purchase bill
+export async function savePurchase() {
+    const customerName = document.getElementById('clientName');
+    const clientName = customerName.value.trim();
+    const purchaseDateValue = purchaseDate.value;
+    const receivedAmount = window.receivableAmount ? parseFloat(window.receivableAmount.value) || 0 : 0;
+
+    // Get discount and tax values
+    const discountPercentageInput = document.getElementById('globalDiscount');
+    const taxPercentageInput = document.getElementById('globalTax');
+
+    const discountPercent = discountPercentageInput ? parseFloat(discountPercentageInput.value) || 0 : 0;
+    const taxPercent = taxPercentageInput ? parseFloat(taxPercentageInput.value) || 0 : 0;
+    
+    let noteshere = "";
+    if (is_addnotebtn) {
+        noteshere = document.getElementById('note').value;
+    }
+
+    const additionalchargeName = additionalChargeName();
+
+    // Validation
+    if (!clientName) {
+        showAlert('Please enter client name', 'error');
+        clientName.focus();
+        return;
+    }
+
+    if (window.invoiceItems.length === 0) {
+        showAlert('Please add at least one item to the purchase', 'error');
+        return;
+    }
+
+    // Show loading state
+    const saveBtn = document.getElementById('savePurchaseBtn');
+    const originalText = saveBtn.innerHTML;
+
+    saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving Invoice...';
+    saveBtn.disabled = true;
+
+    try {
+        const purchaseData = {
+            clientName: clientName,
+            purchaseDate: purchaseDateValue,
+            items: window.invoiceItems.map(item => ({
+                productName: item.productName || '',
+                description: item.description || '',
+                quantity: item.quantity || 1,
+                price: item.price || 0,
+                discount: item.discount || 0,
+                discountPercent: item.discountPercent || 0,
+            })),
+            globalDiscountPercent: Number(globalDiscount).toFixed(2),
+            globalTaxPercent: Number(globalTax).toFixed(2),
+            additionalCharges: window.additionalChargesTotal,
+            additionalchargeName: additionalchargeName,
+            noteshere: noteshere,
+            receivedAmount: receivedAmount,
+        };
+
+
+
+        console.log('Sending purchase data:->>>>>>>>>>>>>>>>>>>>>>>', purchaseData);
+
+        const response = await fetch('/dashboard/save-purchase/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify(purchaseData)
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            if (result.field_errors) {
+                const fe = result.field_errors;
+
+                // Prefer total_amount, but fall back to any field/non-field errors.
+                const candidate =
+                    fe.total_amount ??
+                    fe.__all__ ??              // model.clean() often uses __all__
+                    fe.non_field_errors ??     // sometimes this key is used
+                    Object.values(fe)[0];      // fallback: first field
+
+                const msg = Array.isArray(candidate) ? candidate[0] : candidate || result.error || 'Validation error';
+                showAlert(msg, 'error');
+            } else {
+                showAlert(result.error || 'Something went wrong', 'error');
+            }
+            return;
+        }
+
+
+
+        if (result.success) {
+            showAlert(result.message, 'success');
+
+            //Redirect to dashboard after short delay
+            setTimeout(() => {
+                window.location.href = '/dashboard/purchase/';
+            }, 1000);
+        } else {
+            showAlert('Error: ' + (result.error || 'Failed to save purchase bill'), 'error');
+            saveBtn.innerHTML = originalText;
+            saveBtn.disabled = false;
+        }
+    } catch (error) {
+        console.error('Error saving purchase bill:', error);
         showAlert('Network error. Please check your connection and try again.', 'error');
         saveBtn.innerHTML = originalText;
         saveBtn.disabled = false;

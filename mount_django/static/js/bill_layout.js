@@ -34,27 +34,22 @@ export async function getData(api_url) {
     }
 }
 
-export function openModal(invoiceId) {
+export function openModal(invoiceId,type='') {
 
+    let url;
     modal.style.display = "flex";
-    console.log("this is invoiceId",invoiceId)
-    // const row = event.target.closest('tr');
-    // const invoice_id = parseInt(row.cells[0].innerText.split('-')[1]);
-    // console.log("invoice ko id",invoice_id)
-    const url = `/dashboard/invoice-layout/${invoiceId}/`;  // Add trailing slash
-
-
+    if(type === 'purchaseRow'){
+        url = `/dashboard/purchase-layout/${invoiceId}/`;
+    }
+    else{
+        url = `/dashboard/invoice-layout/${invoiceId}/`;  // Add trailing slash
+    }
 
     getData(url).then(data => {
         if (data && data.success) {
 
-            console.log(window.isready)
-            console.log("Invoice:", data.invoice);
-            console.log("Customer:", data.invoice.customer.name);
-            console.log("Total:", data.invoice.amounts.total_amount);
 
-
-            document.getElementById("invoiceNumbers").innerText = data.invoice.order_id
+            document.getElementById("invoiceNumbers").innerText = data.invoice.id
 
             document.getElementById("companyName").innerText = data.invoice.company_name
             document.getElementById("companyPhone").innerText = data.invoice.company_phone
@@ -89,7 +84,6 @@ export function openModal(invoiceId) {
             const tablebody = document.getElementById("itemsBody");
 
             const len = data.invoice.items.length
-            console.log("this is length->> ",len)
             // Create the td element
 
             for(let i = 0; i<len; i++){
@@ -202,28 +196,37 @@ export function openModal(invoiceId) {
             }else{
                 document.getElementById("dueam").style.display = "none"
             }
+            
+           if(type==='purchaseRow'){
+            const invoice_editbtn = document.getElementById('editbtn')
 
+            if(invoice_editbtn){
+                invoice_editbtn.addEventListener('click',()=>{
 
+                    window.location.href = `/dashboard/purchase/${data.invoice.uuid}`
 
-
+                })
+            }
+           }
+           else{
             const invoice_editbtn = document.getElementById('editbtn')
 
             if(invoice_editbtn){
                 invoice_editbtn.addEventListener('click',()=>{
 
                     const temp = document.getElementById("create_new_invoice")
-
                     window.location.href = `/dashboard/invoices/${data.invoice.uuid}`
-
-
 
                 })
             }
 
+           } 
+            
+
 
         }
     }).catch(error => {
-            console.error("Error fetching invoice:", error);
+            console.error("Error fetching", error);
         });
 }
 

@@ -5,7 +5,7 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="{% static 'css/product.css' %}">
 <link rel="stylesheet" href="{% static 'css/bill.css' %}">
-{% comment %} <link rel="stylesheet" href="{% static 'css/bill_modal.css' %}"> {% endcomment %}
+<link rel="stylesheet" href="{% static 'css/bill_modal.css' %}"> 
 
 {% endblock %}
 
@@ -18,7 +18,7 @@
             document.getElementById("addProductModal").style.display = "none";
         }
     </script>
-{% comment %} {% include "website/bill_layout.html" %} {% endcomment %}
+ {% include "website/bill_layout.html" %} 
 <!--addstock buttons-->
 <div class="stock-popup" id="addStockPopup">
     <button class="popup-btn" id="addStock">Add Stock</button>
@@ -407,4 +407,4 @@ if (typeof window.djangoData === 'undefined') {
 <script type="module" src="{%static 'js/product.js'%}"></script>
 <script type="module" src="{%static 'js/bill_layout.js'%}"></script>
 <script type="module" src="{% static 'js/main.js' %}"></script>
-{%endblock%}
+{%endblock%} 

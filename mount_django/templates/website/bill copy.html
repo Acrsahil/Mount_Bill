@@ -414,7 +414,7 @@
 {% include "website/bill_layout.html" %}
 
 <!-- Add Product Modal - WITH SUGGESTIONS -->
-<div class="modal" id="addProductModal">
+{% comment %} <div class="modal" id="addProductModal">
     <div class="modal-content">
         <div class="modal-header">
             <h3>Add New Product</h3>
@@ -454,7 +454,7 @@
                         {% comment %} <div class="search-hint" id="product-category-search-hint" style="display: none; position: absolute; background: white; border: 1px solid #ddd; max-height: 150px; overflow-y: auto; z-index: 1000; width: 100%;">
                             <!-- Category suggestions will appear here -->
                         </div> {% endcomment %}
-                    </div>
+                    {% comment %} </div>
                 </div>
             </div>
             <div class="flex justify-between items-center w-full mb-4">
@@ -518,7 +518,7 @@
             </ul>
         </div>
     </div>
-</div>
+</div> {% endcomment %} 
 
 {% comment %} <!--stock buttons-->
 <div class="stock-popup" id="addStockPopup">

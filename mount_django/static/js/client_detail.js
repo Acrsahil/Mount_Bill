@@ -463,7 +463,7 @@ export function addClientsToList(clients) {
 
     clientdetaillist.innerHTML = '';
     clients.forEach(client => {
-        clientdetaillist.appendChild(renderClient(client));
+        clientdetaillist.prepend(renderClient(client));
     });
     
     
@@ -506,7 +506,6 @@ window.addEventListener('popstate',()=>{
 //Transaction table fill up 
 export async function fetchTransactions(clientUid){
     const clientTransactionTableBody = document.getElementById('clientTransactionTableBody');
-    const dashboardTableBody = document.getElementById("dashboardTableBody")
     const res = await fetch(`/dashboard/fetch-transactions/${clientUid}`);
     const data = await res.json();
     if(clientTransactionTableBody){
@@ -514,44 +513,8 @@ export async function fetchTransactions(clientUid){
         // Load each row
         data.transactions.forEach(transaction => loadTransactions(transaction, clientTransactionTableBody));
     }
-    // if(dashboardTableBody){
-    //     dashboardTableBody.innerHTML = '';
-    //     // Load each row
-    //     data.transactions.forEach(transaction => loadTransactionInDashboard(transaction, dashboardTableBody));
-    // }
     
 }
-
-// function loadTransactionInDashboard(transaction, dashboardTableBody){
-//     const row = document.createElement('tr');
-    
-//     row.classList.add(
-//     "cursor-pointer",
-//     "hover:bg-gray-100",
-//     "transition"
-// );
-//     row.dataset.type = transaction.type;
-//     row.dataset.id = transaction.id || "";
-//     if (transaction.type === 'sale') {
-//         row.innerHTML = `
-//         <td>Sales Invoice #${transaction.id}>
-//         <td>${transaction.date.split('T')[0]}</td>
-//         <td>${transaction.finalAmount}</td>
-//         <td>Sale</td>
-//         <td>${transaction.remainingAmount}</td>
-//         <td>${transaction.remarks || "---"}</td>`;
-
-//     }else if (transaction.type === 'payment') {
-//         row.innerHTML = `
-//         <td>Payment In#${transaction.id}</td>
-//         <td>${transaction.date.split('T')[0]}</td>
-//         <td>${transaction.payment_in}</td>
-//         <td>Payment</td>
-//         <td>${transaction.remainingAmount}</td>
-//         <td>${transaction.remarks || "---"}</td>`;
-//     }
-//     dashboardTableBody.appendChild(row)
-// }
 
 function loadTransactions(transaction, tableBody) {
 
@@ -613,6 +576,14 @@ function loadTransactions(transaction, tableBody) {
         <td>--</td>
         <td>${transaction.balance}</td>
         <td>${transaction.remarks}</td>`;
+    }else if (transaction.type === 'purchase' ) {
+        row.innerHTML = `
+        <td>Purchase #${transaction.id}</td>
+        <td>${transaction.date.split('T')[0]}</td>
+        <td>${transaction.total_amount}</td>
+        <td>--</td>
+        <td>${transaction.remaining}</td>
+        <td>---</td>`;
     }
 
     tableBody.appendChild(row);

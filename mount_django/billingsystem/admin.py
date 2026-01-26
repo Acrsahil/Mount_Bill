@@ -19,7 +19,8 @@ from .models import (
     PaymentOut,
     BalanceAdjustment,
     ExpenseCategory,
-    Expense
+    Expense,
+    Purchase,
 )
 
 
@@ -163,6 +164,7 @@ class ProductCategoryAdmin(admin.ModelAdmin):
 class ProductAdmin(admin.ModelAdmin):
     list_display = (
         "uid",
+        "id",
         "name",
         "cost_price",
         "selling_price",
@@ -186,7 +188,6 @@ class OrderListAdmin(admin.ModelAdmin):
         "company",
         "order_date",
         "created_by",
-        "payment_status",
     )
     list_filter = ("company", "order_date")
     search_fields = ("customer__name", "company__name", "created_by__username")
@@ -261,6 +262,7 @@ class RemainingAmountAdmin(admin.ModelAdmin):
 class ItemActivityAdmin(admin.ModelAdmin):
     list_display = (
         "order",
+        "purchase",
         "product",
         "type",
         "date",
@@ -308,4 +310,9 @@ class ExpenseCategoryAdmin(admin.ModelAdmin):
 @admin.register(Expense)
 class ExpenseAdmin(admin.ModelAdmin):
     list_display=("date","expense_number","total_amount","remarks","category",)
+    search_fields = ("date",)
+
+@admin.register(Purchase)
+class PurchaseAdmin(admin.ModelAdmin):
+    list_display=("uid","date","customer","summary")
     search_fields = ("date",)

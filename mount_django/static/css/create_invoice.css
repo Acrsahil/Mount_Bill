@@ -29,7 +29,7 @@ body {
     display: flex;
     flex-direction: column;
     max-width: 100vw;
-    overflow: scroll;
+    overflow: visible;
 }
 
 /* Page Header */
@@ -614,11 +614,22 @@ td{
 /* CSS Changes */
 
 .page-content{
-    overflow: scroll;
+    overflow-x: hidden;
     max-width: 100vw;
 }
+/* Force modal to stay in viewport */
+#addProductModal {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 9999 !important;
+}
+
+/* Protect Tailwind hidden utility */
+.hidden {
+    display: none !important;
+}
 body{
-    overflow: scroll;
+    overflow-x: hidden;
 }
 
 .product-search-input::placeholder, .client-search-input::placeholder {

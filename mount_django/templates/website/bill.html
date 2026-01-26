@@ -299,12 +299,12 @@
                 <i class="fas fa-money-bill-wave w-5 text-center mr-3 text-balck"></i>
                 <span class="font-medium text-sm">Expenses</span>
             </li>
+            <li class="menu-item flex items-center p-3 rounded-lg hover:text-white hover:bg-[#4361ee] transition-all duration-200 cursor-pointer {% if active_tab == 'purchase' %}bg-[#4361ee] border-l-4 border-white  text-gray-100{% endif %}" data-tab="purchase">
+                <i class="fas fa-tags w-5 text-center mr-3 text-balck"></i>
+                <span class="font-medium text-sm">Purchase</span>
+            </li>
 
             <!-- Other menu items remain the same -->
-            <li class="menu-item flex items-center p-3 rounded-lg hover:text-white hover:bg-[#4361ee] transition-all duration-200 cursor-pointer {% if active_tab == 'categories' %}bg-[#4361ee] border-l-4 border-white  text-gray-100{% endif %}" data-tab="categories">
-                <i class="fas fa-tags w-5 text-center mr-3 text-balck"></i>
-                <span class="font-medium text-sm">Categories</span>
-            </li>
 
             <li class="menu-item flex items-center p-3 rounded-lg hover:text-white hover:bg-[#4361ee] transition-all duration-200 cursor-pointer {% if active_tab == 'stock' %}bg-[#4361ee] border-l-4 border-white text-white{% endif %}" data-tab="stock">
                 <i class="fas fa-warehouse w-5 text-center mr-3 text-balck"></i>
@@ -419,8 +419,8 @@
                         <div class="bg-red-100 rounded-lg border border-gray-200 p-3 hover:shadow-sm transition-shadow">
                             <div class="flex items-center justify-between">
                                 <div>
-                                    <p class="text-xs text-gray-500 mb-1">Expense (Poush)</p>
-                                    <h3 class="text-lg font-bold text-gray-800" id="overdueAmount">0</h3>
+                                    <p class="text-xs text-gray-500 mb-1">Expense</p>
+                                    <h3 class="text-lg font-bold text-gray-800" id="expenseTotalAmount">0</h3>
                                 </div>
                                 <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
                                     <i class="text-red-500 fa-solid fa-wallet mr-1 text-xs"></i>
@@ -428,6 +428,19 @@
                             </div>
                             
                         </div>
+                        <div class="bg-red-100 rounded-lg border border-gray-200 p-3 hover:shadow-sm transition-shadow">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-xs text-gray-500 mb-1">Purchase</p>
+                                    <h3 class="text-lg font-bold text-gray-800" id="totalPurchase">0</h3>
+                                </div>
+                                <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+                                    <i class="text-red-500 fa-solid fa-wallet mr-1 text-xs"></i>
+                                </div>
+                            </div>
+                            
+                        </div>
+                        
                     </div>
 
                     <!-- Income vs Expense Chart -->
@@ -900,48 +913,46 @@
 
         </div>
         <!-- Expenses Tab -->
- <div
-  id="expenses"
-  class="tab-content {% if active_tab == 'expenses' %}active{% endif %}
-         flex items-center justify-center h-full w-full"
->
-    <!-- CENTER WRAPPER -->
-    <div class="flex flex-col items-center text-center hidden" id="emptyExpense">
-        
-        <!-- Icon -->
-        <div class="mb-6">
-            <div class="relative w-40 h-48 flex items-center justify-center">
-                <div class="absolute w-44 h-44 rounded-full bg-gray-100"></div>
+  <div id="expenses"
+  class="tab-content {% if active_tab == 'expenses' %}active{% endif %} 
+         flex items-center justify-center h-screen w-full">
+  <!-- CENTER WRAPPER -->
+  <div class="flex flex-col items-center text-center hidden" id="emptyExpense">
+      
+      <!-- Icon -->
+      <div class="mb-6">
+          <div class="relative w-40 h-48 flex items-center justify-center">
+              <div class="absolute w-44 h-44 rounded-full bg-gray-100"></div>
 
-                <div class="relative w-32 h-40 bg-white rounded-xl shadow-sm">
-                    <div class="h-10 bg-gray-400 rounded-t-xl px-3 py-2 space-y-1">
-                        <div class="w-8 h-1.5 bg-white rounded"></div>
-                        <div class="w-12 h-1.5 bg-white rounded opacity-80"></div>
-                    </div>
+              <div class="relative w-32 h-40 bg-white rounded-xl shadow-sm">
+                  <div class="h-10 bg-gray-400 rounded-t-xl px-3 py-2 space-y-1">
+                      <div class="w-8 h-1.5 bg-white rounded"></div>
+                      <div class="w-12 h-1.5 bg-white rounded opacity-80"></div>
+                  </div>
 
-                    <div class="p-4 space-y-3">
-                        <div class="w-20 h-1.5 bg-gray-300 rounded"></div>
-                        <div class="w-24 h-1.5 bg-gray-300 rounded"></div>
-                        <div class="w-16 h-1.5 bg-gray-300 rounded"></div>
-                        <div class="w-22 h-1.5 bg-gray-300 rounded"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
+                  <div class="p-4 space-y-3">
+                      <div class="w-20 h-1.5 bg-gray-300 rounded"></div>
+                      <div class="w-24 h-1.5 bg-gray-300 rounded"></div>
+                      <div class="w-16 h-1.5 bg-gray-300 rounded"></div>
+                      <div class="w-22 h-1.5 bg-gray-300 rounded"></div>
+                  </div>
+              </div>
+          </div>
+      </div>
 
-        <!-- Title -->
-        <h2 class="text-2xl font-medium mb-4 text-gray-700">
-            Create Expenses
-        </h2>
+      <!-- Title -->
+      <h2 class="text-2xl font-medium mb-4 text-gray-700">
+          Create Expense
+      </h2>
 
-        <!-- Button -->
-        <button id="addExpenses"
-          class="bg-gradient-to-r from-[#4361ee] to-[#3a0ca3] text-white font-medium py-2 px-6 rounded shadow"
-        >
-            + Add New Expense
-        </button>
+      <!-- Button -->
+      <button id="addExpenses"
+        class="bg-gradient-to-r from-[#4361ee] to-[#3a0ca3] text-white font-medium py-2 px-6 rounded shadow"
+      >
+          + Add New Expense
+      </button>
 
-    </div>
+  </div>
 
 <div id = "expensesWithTable" class="p-6 space-y-4 bg-gray-50 min-h-screen hidden">
 
@@ -963,7 +974,7 @@
             <input type="text" placeholder="Search..." class="pl-7 pr-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-[#4361ee] focus:border-[#4361ee] outline-none w-40">
         </div>
 
-      <button class="bg-gray-200 px-3 py-2 rounded hover:bg-gray-300 transition">
+      <button class="bg-gray-200 px-3 py-2 rounded hover:bg-gray-300 transition" id="allCategory">
         All Category
       </button>
       <button class="bg-gray-200 px-3 py-2 rounded hover:bg-gray-300 transition">
@@ -1006,238 +1017,120 @@
 </div>
 
 
+<!--Purchase tab-->
+<div
+  id="purchase"
+  class="tab-content {% if active_tab == 'purchase' %}active{% endif %} 
+         flex items-center justify-center h-screen w-full">
+  <!-- CENTER WRAPPER -->
+  <div class="flex flex-col items-center text-center hidden" id="emptyPurchase">
+      
+      <!-- Icon -->
+      <div class="mb-6">
+          <div class="relative w-40 h-48 flex items-center justify-center">
+              <div class="absolute w-44 h-44 rounded-full bg-gray-100"></div>
+
+              <div class="relative w-32 h-40 bg-white rounded-xl shadow-sm">
+                  <div class="h-10 bg-gray-400 rounded-t-xl px-3 py-2 space-y-1">
+                      <div class="w-8 h-1.5 bg-white rounded"></div>
+                      <div class="w-12 h-1.5 bg-white rounded opacity-80"></div>
+                  </div>
+
+                  <div class="p-4 space-y-3">
+                      <div class="w-20 h-1.5 bg-gray-300 rounded"></div>
+                      <div class="w-24 h-1.5 bg-gray-300 rounded"></div>
+                      <div class="w-16 h-1.5 bg-gray-300 rounded"></div>
+                      <div class="w-22 h-1.5 bg-gray-300 rounded"></div>
+                  </div>
+              </div>
+          </div>
+      </div>
+
+      <!-- Title -->
+      <h2 class="text-2xl font-medium mb-4 text-gray-700">
+          Create Purchase
+      </h2>
+
+      <!-- Button -->
+      <button id="addPurchase"
+        class="bg-gradient-to-r from-[#4361ee] to-[#3a0ca3] text-white font-medium py-2 px-6 rounded shadow"
+      >
+          + Add New Purchase
+      </button>
+
+  </div>
+
+  <div id = "purchaseWithTable" class="p-6 space-y-4 bg-gray-50 min-h-screen hidden">
+
+  <!-- Row 1: Header -->
+  <div class="flex items-center justify-between">
+    <h2 class="text-2xl font-semibold">Purchase()</h2>
+    <button class="bg-gradient-to-r from-[#4361ee] to-[#3a0ca3] text-white px-4 py-2 rounded"id="addNewPurchase">
+      + Create Purchase Bill
+    </button>
+  </div>
+
+  <!-- Row 2: Search & Filters -->
+  <div class="flex flex-wrap items-center justify-between gap-4">
+    <!-- Left side filters -->
+    <div class="flex flex-wrap items-center gap-2">
+      <!-- Search input with icon -->
+      <div class="relative">
+            <i class="fas fa-search absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400 text-xs"></i>
+            <input type="text" placeholder="Search..." class="pl-7 pr-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-[#4361ee] focus:border-[#4361ee] outline-none w-40">
+        </div>
+
+      <button class="bg-gray-200 px-3 py-2 rounded hover:bg-gray-300 transition" id="allPurchaseCategory">
+        All Category
+      </button>
+      <button class="bg-gray-200 px-3 py-2 rounded hover:bg-gray-300 transition">
+        All Payment Mode
+      </button>
+      <button class="bg-gray-200 px-3 py-2 rounded hover:bg-gray-300 transition">
+        All Dates
+      </button>
+    </div>
+
+    <!-- Right side sort -->
+    <div>
+      <button class="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300 transition">
+        Sort By
+      </button>
+    </div>
+  </div>
+
+  <!-- Row 3: Table -->
+  <div class="overflow-x-auto">
+    <table class="min-w-full border border-gray-200 bg-white rounded">
+      <thead class="bg-gray-100">
+        <tr>
+          <th class="px-4 py-2 text-left border-b">Bill No</th>
+          <th class="px-4 py-2 text-left border-b">Party Name</th>
+          <th class="px-4 py-2 text-left border-b">Date</th>
+          <th class="px-4 py-2 text-left border-b">Status</th>
+          <th class="px-4 py-2 text-left border-b">Total Amount</th>
+          <th class="px-4 py-2 text-left border-b">Unpaid Amount</th>
+          <th class="px-4 py-2 text-left border-b">Action</th>
+        </tr>
+      </thead>
+      <tbody id ="purchaseTableBody">
+        <!-- Dynamic rows go here -->
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+</div>
+
 
 
     
 </div>
 
-<!-- INVOICE VIEW MODAL (Added this section) -->
-
-<!-- Add Product Modal - WITH SUGGESTIONS -->
-<div id="addProductModal" class="app-modal fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 hidden" id="addProductModal">
-    <div class="relative top-10 mx-auto p-0 w-full max-w-2xl">
-        <div class="relative bg-white rounded-lg shadow-lg">
-            <!-- Modal Header -->
-            <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t border-gray-200">
-                <h3 class="text-xl font-semibold text-gray-900">Add New Product</h3>
-                <button class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-2xl p-1.5 ml-auto inline-flex items-center" id="closeProductModal">
-                    &times;
-                </button>
-            </div>
-
-            <!-- Modal Body -->
-            <div class="p-4 md:p-5 space-y-4">
-                <!-- Product Name -->
-                <div class="relative">
-                    <label for="productName" class="block mb-2 text-sm font-medium text-gray-900">Product Name *</label>
-                    <input type="text" id="productName" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
-                </div>
-
-                <!-- Product Quantity -->
-                <div class="productQuantities">
-                    <div class="grid grid-cols-1 gap-4">
-                        <div>
-                            <label for="productQuantity" class="block mb-2 text-sm font-medium text-gray-900">Product Quantity</label>
-                            <input type="number" id="productQuantity" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="0.00" min="0" step="0.01" required>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Price and Category Row -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <!-- Cost Price -->
-                    <div>
-                        <label for="productCostPrice" class="block mb-2 text-sm font-medium text-gray-900">Cost Price ($) *</label>
-                        <input type="number" id="productCostPrice" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="0.00" min="0" step="0.01" required>
-                    </div>
-
-                    <!-- Selling Price -->
-                    <div>
-                        <label for="productSellingPrice" class="block mb-2 text-sm font-medium text-gray-900">Selling Price ($) *</label>
-                        <input type="number" id="productSellingPrice" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="0.00" min="0" step="0.01" required>
-                    </div>
-
-                    <!-- Category -->
-                    <div class="relative">
-                        <label for="productCategory" class="block mb-2 text-sm font-medium text-gray-900">Category</label>
-                        <input type="text" id="productCategory" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="Type category name (Tab to complete)...">
-                    </div>
-                </div>
-
-                <!-- Low Stock Alert -->
-                <div class="flex justify-between items-center w-full mb-4">
-                    <h2 class="flex items-center gap-2 text-lg font-medium text-gray-900">
-                        Low Stock Alert
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z" />
-                        </svg>
-                    </h2>
-
-                    <label class="relative inline-flex w-[45px] h-[28px] cursor-pointer">
-                        <input id="statusToggle" type="checkbox" class="sr-only peer" />
-                        <!-- Track -->
-                        <span class="absolute inset-0 bg-gray-300 rounded-full transition peer-checked:bg-blue-500"></span>
-                        <!-- Knob -->
-                        <span class="absolute left-[3px] bottom-[3px] top-[3px] w-[21px] h-[21px] bg-white rounded-full transition-transform duration-300 peer-checked:translate-x-[19px]"></span>
-                    </label>
-                </div>
-
-                <!-- Low Stock Quantity (Hidden by default) -->
-                <div id="lowStockConstraint" class="flex flex-col gap-2 hidden">
-                    <div class="flex flex-col w-full">
-                        <label class="block mb-2 text-sm font-medium text-gray-900">Low Stock Quantity</label>
-                        <input id="lowStockQuantity" type="text" placeholder="Enter Stock Quantity" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" />
-                    </div>
-                </div>
-            </div>
-
-            <!-- Modal Footer -->
-            <div class="flex items-center justify-end p-4 md:p-5 border-t border-gray-200 rounded-b gap-3">
-                <button class="px-5 py-2.5 text-sm font-medium text-gray-900 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200" id="cancelProductBtn">Cancel</button>
-                <button class="px-5 py-2.5 text-sm font-medium text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-300" id="saveProductBtn">Save Product</button>
-                <button class="px-5 py-2.5 text-sm font-medium text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-300 hidden" id="updateProductBtn">Update Product</button>
-            </div>
-
-            <!-- Category Database (Hidden by default) -->
-            <div class="category-db absolute z-10 bg-white border border-gray-300 rounded-lg shadow-lg hidden" id="categoryDB">
-                <ul id="catelists" class="py-2 text-sm text-gray-700">
-                    <!-- dynamically all the list are here -->
-                    <li id="general" class="px-4 py-2 hover:bg-gray-100 cursor-pointer">General</li>
-                </ul>
-            </div>
-        </div>
-    </div>
-</div>
-
-
-<!-- Add Client Modal -->
-{% comment %} <div class="app-modal" id="addClientModal">
-    <div class="app-modal-content">
-        <div class="app-modal-header">
-            <h3>Add New Client</h3>
-            <button class="app-modal-close" id="closeClientModal">&times;</button>
-        </div>
-        <div class="app-modal-choice">
-            <button type="button" class="app-tab-link active" data-tab="client-info">Client Info</button>
-            <button type="button" class="app-tab-link" data-tab="additional-info">Additional Info</button>
-        </div>
-        <div class="app-modal-body">
-            <div id="client-info" class="app-tab-content active">
-                <div class="app-form-group">
-                    <label for="clientNameInput">Client Name *</label>
-                    <input type="text" id="clientNameInput" class="app-form-control" placeholder="Enter client name" required>
-                </div>
-                <div class="app-form-row">
-                    <div class="app-form-col">
-                        <div class="app-form-group">
-                            <label for="clientPhoneInput">Phone Number *</label>
-                            <input type="tel" id="clientPhoneInput" class="app-form-control" placeholder="Enter phone number" required>
-                        </div>
-                    </div>
-                    <div class="app-form-col">
-                        <div class="app-form-group">
-                            <label for="clientEmailInput">Email</label>
-                            <input type="email" id="clientEmailInput" class="app-form-control" placeholder="Enter email">
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div id="additional-info" class="app-tab-content">
-                <div class="app-form-group">
-                    <label for="clientAddressInput">Address</label>
-                    <textarea id="clientAddressInput" class="app-form-control" rows="2" placeholder="Enter address"></textarea>
-                </div>
-                <div class="app-form-row">
-                    <div class="app-form-col">
-                        <div class="app-form-group">
-                            <label for="clientPanNoInput">PAN Number</label>
-                            <input type="text" id="clientPanNoInput" class="app-form-control" placeholder="Enter PAN Number">
-                        </div>
-                    </div>
-                    <div class="app-form-col">
-                        <div class="app-form-group">
-                            <label for="clientType">Client Type</label>
-                            <select id="clientType" class="app-form-control">
-                                <option value="regular">Regular</option>
-                                <option value="business">Business</option>
-                                <option value="wholesale">Wholesale</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="app-modal-footer">
-            <button class="app-btn app-btn-light" id="cancelClientBtn">Cancel</button>
-            <button class="app-btn app-btn-primary" id="saveClientBtn">Save Client</button>
-        </div>
-    </div>
-</div>  {% endcomment %}
 {% include "website/modal/client_add_modal.html" %}
 {% include "website/modal/expense_modal.html" %}
-<!-- Create Invoice Modal -->
-<div class="app-modal" id="createInvoiceModal">
-    <div class="app-modal-content" style="max-width: 800px;">
-        <div class="app-modal-header">
-            <h3>Create New Invoice</h3>
-            <button class="app-modal-close" id="closeInvoiceModal">&times;</button>
-        </div>
-        <div class="app-modal-body">
-            <div class="app-form-row">
-                <div class="app-form-col">
-                    <div class="app-form-group">
-                        <label for="invoiceClient">Client *</label>
-                        <select id="invoiceClient" class="app-form-control" required>
-                            <option value="">Select a client</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="app-form-col">
-                    <div class="app-form-group">
-                        <label for="invoiceDate">Invoice Date *</label>
-                        <input type="date" id="invoiceDate" class="app-form-control" required>
-                    </div>
-                </div>
-            </div>
-            <div class="app-form-group">
-                <label>Add Products</label>
-                <div style="position: relative;">
-                    <input type="text" id="invoiceProductSearch" class="app-form-control" placeholder="Search products...">
-                    <div class="search-hint" id="invoice-product-search-hint"></div>
-                </div>
-            </div>
-            <div class="app-form-group">
-                <div style="overflow-x: auto;">
-                    <table style="width: 100%; border-collapse: collapse;">
-                        <thead>
-                            <tr style="background-color: #f9fafb;">
-                                <th style="padding: 10px; text-align: left;">Product</th>
-                                <th style="padding: 10px; text-align: left;">Price</th>
-                                <th style="padding: 10px; text-align: left;">Quantity</th>
-                                <th style="padding: 10px; text-align: left;">Total</th>
-                                <th style="padding: 10px; text-align: left;">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="invoiceItems">
-                            <!-- Invoice items will be added here -->
-                        </tbody>
-                        <tfoot>
-                            <tr>
-                                <td colspan="3" style="text-align: right; padding: 10px; font-weight: bold;">Total:</td>
-                                <td id="invoiceTotal" style="padding: 10px; font-weight: bold;">$0.00</td>
-                                <td></td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
-            </div>
-        </div>
-        <div class="app-modal-footer">
-            <button class="app-btn app-btn-light" id="cancelInvoiceBtn">Cancel</button>
-            <button class="app-btn app-btn-primary" id="saveInvoiceBtn">Create Invoice</button>
-        </div>
-    </div>
-</div>
+{% include "website/modal/add_product_modal.html" %}
 
 <!-- Modals Javascripts -->
  <script>
@@ -1264,7 +1157,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const cancelButtons = {
         product: document.getElementById('cancelProductBtn'),
         client: document.getElementById('cancelClientBtn'),
-        invoice: document.getElementById('cancelInvoiceBtn')
     };
 
     // Function to open modal
@@ -1451,7 +1343,8 @@ document.addEventListener('DOMContentLoaded', function() {
             pageTitle.textContent = 'Customers';
         } else if (tabName === 'expenses') {
             pageTitle.textContent = 'Expenses';
-        
+        }else if (tabName === 'purchase') {
+            pageTitle.textContent = 'Purchase';
         }else {
             pageTitle.textContent = tabName.charAt(0).toUpperCase() + tabName.slice(1);
         }
@@ -1525,5 +1418,6 @@ console.log('Active tab:', window.djangoData.active_tab);
 <script type="module" src="{% static 'js/main.js' %}"></script>
 <script type="module" src="{% static 'js/event.js' %}"></script>
 <script type="module" src="{% static 'js/expense.js' %}"></script>
+<script type="module" src="{% static 'js/purchase.js' %}"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 {% endblock %}
