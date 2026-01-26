@@ -871,15 +871,11 @@ def save_purchase(request):
         else:
             purchase_date = timezone.now()
 
-        last_bill = (Purchase.objects.select_for_update().aggregate(Max("bill_no"))["bill_no__max"] or 0)
-        bill_no = last_bill + 1
         purchases = Purchase.objects.create(
                     company=company,
                     customer=customer,
                     summary = None,
                     remaining = None,
-                    bill_no=bill_no,
-                    amount=Decimal(str(received_amount)),
                     date=purchase_date,
                     notes=notes_here)
 
@@ -1013,11 +1009,6 @@ def save_purchase(request):
             {
                 "success": True,
                 "message": "Purchase bill saved successfully!",
-                "purchase": {
-                    "client": customer.name,
-                    "total_amount": order_summary.total_amount,
-                    "items_count": len(purchase_items),
-                },
             }
         )
 
@@ -1492,138 +1483,132 @@ def client_detail(request,id: UUID):
     return render(request, "website/client_detail.html", context)
 
 @login_required
-def fetch_transactions(request,id:UUID):
+def fetch_transactions(request,id:UUID = None):
     user = request.user
     company = user.owned_company or user.active_company
 
     if not company:
         return JsonResponse({"transactions": []})
-   
-    transactions = OrderList.objects.filter(customer__uid = id).order_by('-id')
-    payment_in_transactions = PaymentIn.objects.filter(customer__uid =id)
-    payment_out_transactions = PaymentOut.objects.filter(customer__uid = id)
-    client = Customer.objects.get(uid = id)
-    invoiceData = []
-    for transaction in transactions:
-        summary = getattr(transaction,"summary",None)
-        remaining = transaction.remaining.remaining_amount if hasattr(transaction, "remaining") else 0
-        invoiceData.append({
-            "id": transaction.id,
-            "date": transaction.order_date,
-            "finalAmount":summary.final_amount if summary else 0,
-            "remarks": transaction.notes,
-            "remainingAmount": remaining if remaining else 0,
-            "type": "sale"
+    if id:
+        transactions = OrderList.objects.filter(customer__uid = id).order_by('-id')
+        payment_in_transactions = PaymentIn.objects.filter(customer__uid =id)
+        payment_out_transactions = PaymentOut.objects.filter(customer__uid = id)
+        client = Customer.objects.get(uid = id)
+        invoiceData = []
+        for transaction in transactions:
+            summary = getattr(transaction,"summary",None)
+            remaining = transaction.remaining.remaining_amount if hasattr(transaction, "remaining") else 0
+            invoiceData.append({
+                "id": transaction.id,
+                "date": transaction.order_date,
+                "finalAmount":summary.final_amount if summary else 0,
+                "remarks": transaction.notes,
+                "remainingAmount": remaining if remaining else 0,
+                "type": "sale"
 
+            })
+        paymentInData=[]
+        for paymentIn in payment_in_transactions:
+            remainingAmount = paymentIn.remainings.remaining_amount 
+            paymentInData.append({
+                "id":paymentIn.id,
+                "date":paymentIn.date,
+                "payment_in":paymentIn.payment_in,
+                "remainingAmount": remainingAmount,
+                "remarks":paymentIn.remarks,
+                "type": "payment"
+            })
+        
+        paymentOutData = []
+        for paymentOut in payment_out_transactions:
+            paymentOutData.append({
+                "id":paymentOut.id,
+                "date":paymentOut.date,
+                "payment_out":paymentOut.payment_out,
+                "remainingAmount": paymentOut.remainings.remaining_amount,
+                "remarks":paymentOut.remarks,
+                "type": "paymentOut"
+
+            })
+        
+        clientData =[]
+        remaining = RemainingAmount.objects.filter(customer__uid = id).order_by('id').first()
+        clientData.append({
+            "date":client.date,
+            "balance":remaining.remaining_amount,
+            "type": "Opening"
         })
-    paymentInData=[]
-    for paymentIn in payment_in_transactions:
-        remainingAmount = paymentIn.remainings.remaining_amount 
-        paymentInData.append({
-            "id":paymentIn.id,
-            "date":paymentIn.date,
-            "payment_in":paymentIn.payment_in,
-            "remainingAmount": remainingAmount,
-            "remarks":paymentIn.remarks,
-            "type": "payment"
-        })
+
+        addAdjustmentBalance = []
+        balance_adjustments = BalanceAdjustment.objects.filter(customer__uid = id)
+        for balance_adjust in balance_adjustments:
+            addAdjustmentBalance.append({
+                "id":balance_adjust.id,
+                "date":balance_adjust.date,
+                "amount":abs(balance_adjust.amount),
+                "balance":balance_adjust.remainings.remaining_amount,
+                "remarks":balance_adjust.remarks,
+                "type":"add" if balance_adjust.amount > 0 else "reduce" 
+            })
+
+        mergedData = invoiceData + paymentInData + paymentOutData + clientData + addAdjustmentBalance
+        mergedData.sort(key=lambda x: x["date"], reverse=True)
     
-    paymentOutData = []
-    for paymentOut in payment_out_transactions:
-        paymentOutData.append({
-            "id":paymentOut.id,
-            "date":paymentOut.date,
-            "payment_out":paymentOut.payment_out,
-            "remainingAmount": paymentOut.remainings.remaining_amount,
-            "remarks":paymentOut.remarks,
-            "type": "paymentOut"
+    else:
+        transactions = OrderList.objects.filter(company=company)
+        payment_in_transactions = PaymentIn.objects.filter(company=company)
+        payment_out_transactions = PaymentOut.objects.filter(company=company)
+        purchases = Purchase.objects.filter(company=company)
 
-        })
-    
-    clientData =[]
-    remaining = RemainingAmount.objects.filter(customer__uid = id).order_by('id').first()
-    clientData.append({
-        "date":client.date,
-        "balance":remaining.remaining_amount,
-        "type": "Opening"
-    })
+        invoiceData = []
+        for transaction in transactions:
+            summary = getattr(transaction,"summary",None)
+            invoiceData.append({
+                "id": transaction.id,
+                "date": transaction.order_date,
+                "name":transaction.customer.name,
+                "finalAmount":summary.final_amount if summary else 0,
+                "receivedAmount":summary.received_amount if summary else 0,
+                "dueAmount": summary.due_amount,
+                "type": "sale"
 
-    addAdjustmentBalance = []
-    balance_adjustments = BalanceAdjustment.objects.filter(customer__uid = id)
-    for balance_adjust in balance_adjustments:
-        addAdjustmentBalance.append({
-            "id":balance_adjust.id,
-            "date":balance_adjust.date,
-            "amount":abs(balance_adjust.amount),
-            "balance":balance_adjust.remainings.remaining_amount,
-            "remarks":balance_adjust.remarks,
-            "type":"add" if balance_adjust.amount > 0 else "reduce" 
-        })
+            })
+        paymentInData=[]
+        for paymentIn in payment_in_transactions:
+            paymentInData.append({
+                "id":paymentIn.id,
+                "date":paymentIn.date,
+                "payment_in":paymentIn.payment_in,
+                "name":paymentIn.customer.name,
+                "type": "paymentIn"
+            })
+        
+        paymentOutData = []
+        for paymentOut in payment_out_transactions:
+            paymentOutData.append({
+                "id":paymentOut.id,
+                "date":paymentOut.date,
+                "payment_out":paymentOut.payment_out,
+                "name":paymentOut.customer.name,
+                "type": "paymentOut"
 
-    mergedData = invoiceData + paymentInData + paymentOutData + clientData + addAdjustmentBalance
-    mergedData.sort(key=lambda x: x["date"], reverse=True)
+            })
+
+        purchaseData = []
+        for purchase in purchases:
+            purchaseData.append({
+                "date":purchase.date,
+                "name":purchase.customer.name,
+                "total_amount":purchase.summary.final_amount,
+                "receivedAmount":purchase.summary.received_amount,
+                "dueAmount":purchase.summary.due_amount,
+                "type":"purchase"
+            })
+        mergedData = invoiceData + paymentInData + paymentOutData+purchaseData
+        mergedData.sort(key=lambda x: x["date"], reverse=True)
+
     return JsonResponse({"success":True,
                          "transactions":mergedData})
-
-@login_required
-def fetch_all_transactions(request):
-    user = request.user
-    company = user.owned_company or user.active_company
-
-    if not company:
-        return JsonResponse({"transactions": []})
-    transactions = OrderList.objects.filter(company=company)
-    payment_in_transactions = PaymentIn.objects.filter(company=company)
-    payment_out_transactions = PaymentOut.objects.filter(company=company)
-    purchases = Purchase.objects.filter(company=company)
-
-    invoiceData = []
-    for transaction in transactions:
-        summary = getattr(transaction,"summary",None)
-        invoiceData.append({
-            "id": transaction.id,
-            "date": transaction.order_date,
-            "name":transaction.customer.name,
-            "finalAmount":summary.final_amount if summary else 0,
-            "receivedAmount":summary.received_amount if summary else 0,
-            "dueAmount": summary.due_amount,
-            "type": "sale"
-
-        })
-    paymentInData=[]
-    for paymentIn in payment_in_transactions:
-        paymentInData.append({
-            "id":paymentIn.id,
-            "date":paymentIn.date,
-            "payment_in":paymentIn.payment_in,
-            "name":paymentIn.customer.name,
-            "type": "paymentIn"
-        })
-    
-    paymentOutData = []
-    for paymentOut in payment_out_transactions:
-        paymentOutData.append({
-            "id":paymentOut.id,
-            "date":paymentOut.date,
-            "payment_out":paymentOut.payment_out,
-            "name":paymentOut.customer.name,
-            "type": "paymentOut"
-
-        })
-
-    purchaseData = []
-    for purchase in purchases:
-        purchaseData.append({
-            "date":purchase.date,
-            "name":purchase.customer.name,
-            "total_amount":purchase.summary.final_amount,
-            "receivedAmount":purchase.amount,
-            "dueAmount":purchase.summary.due_amount,
-            "type":"purchase"
-        })
-    mergedData = invoiceData + paymentInData + paymentOutData+purchaseData
-    mergedData.sort(key=lambda x: x["date"], reverse=True)
-    return JsonResponse({"transactions":mergedData})
 
 @login_required
 @require_POST

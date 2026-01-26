@@ -164,6 +164,7 @@ class ProductCategoryAdmin(admin.ModelAdmin):
 class ProductAdmin(admin.ModelAdmin):
     list_display = (
         "uid",
+        "id",
         "name",
         "cost_price",
         "selling_price",
@@ -312,5 +313,5 @@ class ExpenseAdmin(admin.ModelAdmin):
 
 @admin.register(Purchase)
 class PurchaseAdmin(admin.ModelAdmin):
-    list_display=("date","amount","customer","summary")
+    list_display=("date","customer","summary")
     search_fields = ("date",)

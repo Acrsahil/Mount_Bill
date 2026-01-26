@@ -1,9 +1,8 @@
 //Transaction table fill up 
 export async function fetchTransactionForDashboard(){
     const dashboardTableBody = document.getElementById('dashboardTableBody');
-    const res = await fetch(`/dashboard/fetch-all-transactions/`);
+    const res = await fetch(`/dashboard/fetch-transactions/`);
     const data = await res.json();
-    console.log("k k value aaudae xa",data)
     if(dashboardTableBody){
         dashboardTableBody.innerHTML = '';
         // Load each row
@@ -54,7 +53,7 @@ function loadTransactionInDashboard(transaction, dashboardTableBody){
         <td>Purchase</td>
         <td>${transaction.name}</td>
         <td>${transaction.total_amount}</td>
-        <td>${transaction.receivedAmount}</td>
+        <td>${Number(transaction.receivedAmount) === 0 ? '----' : transaction.receivedAmount}</td>
         <td>${Number(transaction.dueAmount) === 0 ? '---' : transaction.dueAmount}</td>`;
     }
     dashboardTableBody.appendChild(row)

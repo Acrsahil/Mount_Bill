@@ -59,7 +59,7 @@ async function renderPurchase(){
     const purchaseTableBody = document.getElementById('purchaseTableBody')
     if(!purchaseTableBody) return;
     purchaseTableBody.innerHTML='';
-console.log("yaa k xa",purchase_data)
+
     const total_length = purchase_data.length;
 
     purchase_data.forEach((purchase,index) => {loadPurchaseDataToTable(total_length-index,purchase,purchaseTableBody)});
