@@ -50,7 +50,7 @@ function loadTransactionInDashboard(transaction, dashboardTableBody){
     }else if (transaction.type === 'purchase') {
         row.innerHTML = `
         <td>${transaction.date.split('T')[0]}</td>
-        <td>Purchase</td>
+        <td>Purchase #${transaction.id}</td>
         <td>${transaction.name}</td>
         <td>${transaction.total_amount}</td>
         <td>${Number(transaction.receivedAmount) === 0 ? '----' : transaction.receivedAmount}</td>

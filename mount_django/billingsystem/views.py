@@ -133,9 +133,8 @@ def clients_json(request):
     if not company:
         return JsonResponse({"clients": [], "count": 0})
 
-    clients = (
-        Customer.objects.filter(company=company)
-    )
+    clients =Customer.objects.filter(company=company).order_by('-date')
+    
 
     clients_data = [
         {
@@ -1494,6 +1493,7 @@ def fetch_transactions(request,id:UUID = None):
         payment_in_transactions = PaymentIn.objects.filter(customer__uid =id)
         payment_out_transactions = PaymentOut.objects.filter(customer__uid = id)
         client = Customer.objects.get(uid = id)
+        purchases = Purchase.objects.filter(customer__uid = id)
         invoiceData = []
         for transaction in transactions:
             summary = getattr(transaction,"summary",None)
@@ -1551,7 +1551,17 @@ def fetch_transactions(request,id:UUID = None):
                 "type":"add" if balance_adjust.amount > 0 else "reduce" 
             })
 
-        mergedData = invoiceData + paymentInData + paymentOutData + clientData + addAdjustmentBalance
+        purchase_data = []
+        for purchase in purchases:
+            purchase_data.append({
+                "id":purchase.id,
+                "date":purchase.date,
+                "total_amount":purchase.summary.final_amount,
+                "remaining":purchase.remaining.remaining_amount,
+                "type":"purchase",
+            })
+
+        mergedData = invoiceData + paymentInData + paymentOutData + clientData + addAdjustmentBalance + purchase_data
         mergedData.sort(key=lambda x: x["date"], reverse=True)
     
     else:
@@ -1597,6 +1607,7 @@ def fetch_transactions(request,id:UUID = None):
         purchaseData = []
         for purchase in purchases:
             purchaseData.append({
+                "id":purchase.id,
                 "date":purchase.date,
                 "name":purchase.customer.name,
                 "total_amount":purchase.summary.final_amount,
@@ -2083,14 +2094,22 @@ def customer_totals(request):
     totalSales = OrderList.objects.filter(company=company)
     totalAmount = Decimal("0")
     for totalSale in totalSales:
-        totalAmount += Decimal(totalSale.summary.final_amount)
+        totalAmount += Decimal(str(totalSale.summary.final_amount))
 
     expenses = Expense.objects.filter(company=company)
     expenses_total = Decimal("0")
     for expense in expenses:
-        expenses_total +=Decimal(expense.total_amount)
+        expenses_total +=Decimal(str(expense.total_amount))
 
-    return JsonResponse({"amount":amount,"totalSale":totalAmount,"expense_total":expenses_total})
+    totalPurchase = Purchase.objects.filter(company=company)
+    totalPurchaseAmount = Decimal("0")
+    print('total kati tw',totalPurchaseAmount)
+    for purchase in totalPurchase:
+        totalPurchaseAmount += Decimal(str(purchase.summary.final_amount))
+    print('total kati tw',totalPurchaseAmount)
+
+
+    return JsonResponse({"amount":amount,"totalSale":totalAmount,"expense_total":expenses_total,"purchase_total":totalPurchaseAmount})
 
 @login_required       
 def expense_category(request):
