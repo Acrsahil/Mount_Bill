@@ -1769,11 +1769,12 @@ def fetch_transactions(request,id:UUID = None):
         purchase_data = []
         for purchase in purchases:
             purchase_data.append({
+                "uid":purchase.uid,
                 "id":purchase.id,
                 "date":purchase.date,
                 "total_amount":purchase.summary.final_amount,
                 "remaining":purchase.remaining.remaining_amount,
-                "type":"purchase",
+                "type":"purchaseRow",
             })
 
         mergedData = invoiceData + paymentInData + paymentOutData + clientData + addAdjustmentBalance + purchase_data

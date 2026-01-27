@@ -527,6 +527,7 @@ function loadTransactions(transaction, tableBody) {
 );
     row.dataset.type = transaction.type;
     row.dataset.id = transaction.id || "";
+    row.dataset.uid = transaction.uid || "";
     if (transaction.type === 'sale') {
         row.innerHTML = `
         <td>Sales Invoice #${transaction.id}>
@@ -576,7 +577,7 @@ function loadTransactions(transaction, tableBody) {
         <td>--</td>
         <td>${transaction.balance}</td>
         <td>${transaction.remarks}</td>`;
-    }else if (transaction.type === 'purchase' ) {
+    }else if (transaction.type === 'purchaseRow' ) {
         row.innerHTML = `
         <td>Purchase #${transaction.id}</td>
         <td>${transaction.date.split('T')[0]}</td>
@@ -647,6 +648,8 @@ function loadTransactions(transaction, tableBody) {
             //fill the form 
             await fillBalanceAdjustForm(row.dataset.id);
             EditAdjustModal.style.display = 'flex';
+        }else if(row.dataset.type === 'purchaseRow'){
+            openModal(row.dataset.uid,row.dataset.type)
         }
     })
 }

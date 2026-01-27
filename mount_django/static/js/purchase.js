@@ -95,8 +95,7 @@ function loadPurchaseDataToTable(index,purchase,purchaseTableBody){
     purchaseTableBody.appendChild(row);
     
     row.onclick = () =>{
-        console.log("id xaina rw",row.dataset.uid)
-        openModal(row.dataset.uid ,"purchaseRow")
+        openModal(row.dataset.uid ,purchase.type)
     }
 
 }
