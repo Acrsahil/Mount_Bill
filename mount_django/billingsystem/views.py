@@ -1248,6 +1248,7 @@ def purchase_info(request):
         purchase_data = []
         for purchase in purchases:
             purchase_data.append({
+                    "id":purchase.id,
                     "uid":purchase.uid,
                     "name": purchase.customer.name,
                     "date": purchase.date,
@@ -1260,6 +1261,11 @@ def purchase_info(request):
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
 
+@require_http_methods("DELETE")
+def delete_purchase(request,id):
+    purchase = Purchase.objects.get(id = id)
+    purchase.delete()
+    return JsonResponse({"success":True,"message":"Purchase Bill deleted successfully!!"})
 
 @login_required
 @require_POST

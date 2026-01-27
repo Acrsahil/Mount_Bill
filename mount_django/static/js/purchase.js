@@ -89,7 +89,7 @@ function loadPurchaseDataToTable(index,purchase,purchaseTableBody){
     <span class="action-btn action-edit">
         <i class="fas fa-edit"></i>
     </span>
-    <span class="action-btn action-delete">
+    <span class="action-btn action-delete" data-id ="${purchase.id}">
         <i class="fas fa-trash"></i>
     </span>
     </td>`
@@ -98,5 +98,34 @@ function loadPurchaseDataToTable(index,purchase,purchaseTableBody){
     row.onclick = () =>{
         openModal(row.dataset.uid ,purchase.type)
     }
+    const deleteBtn = row.querySelector('.action-delete');
+    deleteBtn.addEventListener('click',async(e)=>{
+        e.stopPropagation();
+        await deletePurchase(deleteBtn)
+    })
 
+}
+
+//delete purchase 
+export async function deletePurchase(deleteBtn){
+    if (!deleteBtn || !confirm("Are you sure you want to delete this purchase bill?")) return;
+    
+    const purchaseId = deleteBtn.getAttribute("data-id");
+    
+    try {
+        const response = await fetch(`/dashboard/delete_purchase/${purchaseId}/`, {
+            method: "DELETE",
+            headers: { "X-CSRFToken": window.djangoData.csrfToken, "X-Requested-With": "XMLHttpRequest" }
+        });
+
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        
+        const data = await response.json();
+        if (data.success) deleteBtn.closest("tr").remove();
+        else alert('Delete failed: ' + (data.message || 'Unknown error'));
+        
+    } catch (error) {
+        console.error('Delete error:', error);
+        alert('Network error. Please try again.');
+    }
 }

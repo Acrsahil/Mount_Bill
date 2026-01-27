@@ -24,6 +24,7 @@ const csrfToken = getCookie('csrftoken');
 
 //for stock filter
 document.addEventListener('DOMContentLoaded', () => {
+    
     const slidercheck = document.getElementById('statusToggle');
     const lowStockConstraint = document.getElementById('lowStockConstraint')
 
@@ -113,12 +114,13 @@ document.addEventListener('DOMContentLoaded', () => {
 const categoryDB = document.getElementById('categoryDB');
 const productCategories = document.getElementById('productCategory');
 
+if(productCategories){
 productCategories.addEventListener('click', (e) => {
     e.stopPropagation();
     categoryDB.classList.remove('hidden');
     loadCategories(); // populate dynamically
 });
-
+}
 // click outside to hide
 document.addEventListener('click', () => {
     categoryDB.classList.add('hidden');
@@ -1015,17 +1017,30 @@ export function addProductToList(product, productList) {
     });
 }
 
-
+let countercount=1
 window.addEventListener('popstate', () => {
+    console.log('products.js loaded');
     renderDetails(productsCache);
 
     // Highlight li again
     const uidInUrl = selectedIdFromUrl();
     document.querySelectorAll('.productlists').forEach(li => {
         if (String(li.dataset.uid) === String(uidInUrl)) {
-            li.classList.add('selected');
+            li.classList.add(
+            'selected',
+            'bg-blue-100',
+            'border-blue-200',
+            'text-blue-700',
+            'font-medium'
+        );
         } else {
-            li.classList.remove('selected');
+            li.classList.remove(
+            'selected',
+            'bg-blue-100',
+            'border-blue-200',
+            'text-blue-700',
+            'font-medium'
+        );
         }
     });
 })
