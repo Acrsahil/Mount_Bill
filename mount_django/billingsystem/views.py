@@ -1261,11 +1261,25 @@ def purchase_info(request):
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
 
-@require_http_methods("DELETE")
-def delete_purchase(request,id):
-    purchase = Purchase.objects.get(id = id)
-    purchase.delete()
-    return JsonResponse({"success":True,"message":"Purchase Bill deleted successfully!!"})
+
+@require_http_methods(["DELETE"])
+@login_required
+@transaction.atomic
+def delete_purchase(request, id):
+    try:
+        purchase = get_object_or_404(Purchase, id=id)
+        purchase.delete()
+
+        return JsonResponse({
+            "success": True,
+            "message": "Purchase bill deleted successfully!"
+        })
+
+    except Exception as e:
+        return JsonResponse(
+            {"success": False, "message": "Something went wrong"},
+            status=500
+        )
 
 @login_required
 @require_POST

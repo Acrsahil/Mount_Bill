@@ -62,13 +62,11 @@ async function renderPurchase(){
     if(!purchaseTableBody) return;
     purchaseTableBody.innerHTML='';
 
-    const total_length = purchase_data.length;
-
-    purchase_data.forEach((purchase,index) => {loadPurchaseDataToTable(total_length-index,purchase,purchaseTableBody)});
+    purchase_data.forEach((purchase,index) => {loadPurchaseDataToTable(purchase,purchaseTableBody)});
 }
 
 //loading expense data to table
-function loadPurchaseDataToTable(index,purchase,purchaseTableBody){
+function loadPurchaseDataToTable(purchase,purchaseTableBody){
 
     const row = document.createElement('tr');
     row.dataset.uid = purchase.uid;
@@ -79,7 +77,7 @@ function loadPurchaseDataToTable(index,purchase,purchaseTableBody){
 );
 
     row.innerHTML=`
-    <td>${index}</td>
+    <td>${purchase.id}</td>
     <td>${purchase.name}</td>
     <td>${purchase.date.split('T')[0]}</td>
     <td>Paid/Unpaid</td>

@@ -61,7 +61,7 @@ const totalCharges = document.getElementById('totalCharges');
 async function purchaseCount(){
     const res = await fetch(`/dashboard/purchase-info/`);
     const data = await res.json();
-    return data.purchase_count;
+    return data.purchase_data[0].id;
 }
 
 // Initialize the page
@@ -91,7 +91,7 @@ document.addEventListener('DOMContentLoaded',async function () {
         await savePurchase()
     })
     if (billNumber) {
-        const purchase_count = await purchaseCount()+1
+        const purchase_count = await purchaseCount() + 1
         billNumber.value = `Bill - ${purchase_count.toString().padStart(3, '0')}`;
     }
     if (purchaseDate) {
