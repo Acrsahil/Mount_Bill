@@ -1136,7 +1136,6 @@ export function loadProducts(products, productsTableBody, editProduct, deletePro
 document.addEventListener('DOMContentLoaded', () => {
     const deleteBtn = document.querySelector('.delete-product-btn');
     const editBtn = document.querySelector('.edit-product-btn');
-    // const adjustBtns = document.querySelector('.adjust-stock-btn');
     if(!deleteBtn)return;
     deleteBtn.addEventListener('click', function () {
         const id = deleteBtn.dataset.productId;
@@ -1232,9 +1231,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const adjustBtn = e.target.closest('.adjust-stock-btn');
 
         if (adjustBtn) {
-            console.log("am i getting clicked??")
             const productId = adjustBtn.dataset.productId;
-            console.log("yaa id ko value k ho??", productId);
             const modal = document.getElementById('addStockModal');
             const modal1 = document.getElementById('reduceStockModal');
             modal.dataset.productId = productId;

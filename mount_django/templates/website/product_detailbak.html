@@ -1,4 +1,4 @@
-{% extends "layout.html" %}
+{% comment %} {% extends "layout.html" %}
 {% load static %}
 
 {% block extra_css %}
@@ -65,11 +65,11 @@
         </div>
 
     </div>
-</div>
+</div> {% endcomment %}
 
 
 <!--reduceStock popup-->
-<div class="modal" id="reduceStockModal">
+{% comment %} <div class="modal" id="reduceStockModal">
     <div class="modal-content">
         <div class="modal-header">
             <h3>Reduce Stock</h3>
@@ -143,11 +143,11 @@
                     <div class="form-group" style="position: relative;">
                         <label for="productCategory">Category</label>
                         <input type="text" id="productCategory" class="form-control product-category-search-input" 
-                               placeholder="Type category name (Tab to complete)...">
+                               placeholder="Type category name (Tab to complete)..."> {% endcomment %}
                         {% comment %} <div class="search-hint" id="product-category-search-hint" style="display: none; position: absolute; background: white; border: 1px solid #ddd; max-height: 150px; overflow-y: auto; z-index: 1000; width: 100%;">
                             <!-- Category suggestions will appear here -->
                         </div> {% endcomment %}
-                    </div>
+                    {% comment %} </div>
                 </div>
             </div>
             <div class="flex justify-between items-center w-full mb-4">
@@ -348,14 +348,14 @@
 </div>
 
 </main>
-</div>
+</div> {% endcomment %}
 
 <!--stock buttons-->
 {% comment %} <div class="stock-popup" id="addStockPopup">
     <button class="popup-btn" id="addStock">Add Stock</button>
     <button class="popup-btn" id="removeStock">Remove Stock</button>
 </div>  {% endcomment %}
-<div class="category-popup" id="categoryPopup">
+{% comment %} <div class="category-popup" id="categoryPopup">
   <div class="popup-content">
             <div class="search-box-category">
                 <i class="fas fa-search"></i>
@@ -407,4 +407,4 @@ if (typeof window.djangoData === 'undefined') {
 <script type="module" src="{%static 'js/product.js'%}"></script>
 <script type="module" src="{%static 'js/bill_layout.js'%}"></script>
 <script type="module" src="{% static 'js/main.js' %}"></script>
-{%endblock%} 
+{%endblock%}  {% endcomment %}
