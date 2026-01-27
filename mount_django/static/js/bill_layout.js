@@ -33,10 +33,27 @@ export async function getData(api_url) {
         console.error('Error:', error);
     }
 }
+//invoice modal function that tells what to show in the modal
+function setModal(type){
+    const invoiceLabel = document.getElementById('invoiceLabel');
+    const invoiceNo = document.getElementById('invoiceNo');
+    const amountType = document.getElementById('amountType');
 
+    if(type === 'purchaseRow'){
+        invoiceLabel.textContent = 'Puchase Bill #'
+        invoiceNo.textContent = 'Bill No:'
+        amountType.textContent = 'Paid:'
+    }
+    else{
+        invoiceLabel.textContent = 'INVOICE #';
+        invoiceNo.textContent = 'Invoice No:';
+        amountType.textContent = 'Received:'
+    }
+}
 export function openModal(invoiceId,type='') {
 
     let url;
+    setModal(type)
     modal.style.display = "flex";
     if(type === 'purchaseRow'){
         url = `/dashboard/purchase-layout/${invoiceId}/`;

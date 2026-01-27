@@ -1211,7 +1211,7 @@ def purchase_layout(request, id):
             import traceback
 
             error_details = traceback.format_exc()
-            print(f"Error in invoice_layout: {e}")
+            print(f"Error in purchase_layout: {e}")
             print(f"Traceback: {error_details}")
 
             return JsonResponse(
