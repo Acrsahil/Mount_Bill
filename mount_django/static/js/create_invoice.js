@@ -66,6 +66,7 @@ async function purchaseCount(){
 
 // Initialize the page
 document.addEventListener('DOMContentLoaded',async function () {
+    if (typeof pageMode !== 'undefined') {
     if(pageMode === 'invoice'){
         const saveInvoiceBtn = document.getElementById('saveInvoiceBtn');
         // Save invoice button
@@ -99,6 +100,7 @@ document.addEventListener('DOMContentLoaded',async function () {
         purchaseDate.value = today;
     }
     }
+}
     
 
     // Setup event listeners

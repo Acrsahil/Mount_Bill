@@ -1707,7 +1707,7 @@ def settings(request):
     return render(request, "website/bill.html", context)
 
 
-def client_detail(request,id: UUID):
+def client_detail(request,id: UUID = None):
     context = get_serialized_data(request.user, "dashboard")
     if id:
         customer = get_object_or_404(Customer,uid=id)

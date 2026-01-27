@@ -102,6 +102,7 @@ function renderFromUrl(){
     }
 }
 
+
 async function deleteClient(clientId){
     const confirmed = confirm("Are you sure you want to delete this client?")
     if(confirmed){
@@ -114,7 +115,6 @@ async function deleteClient(clientId){
                 },
             });
     const data = await res.json()
-    console.log(data.success)
 
     if(data.success){
         
@@ -127,7 +127,7 @@ async function deleteClient(clientId){
         
         const row = document.querySelector(`#clientsTableBody-${clientId.toString()}`);
         if (row) row.remove();
-        renderFromUrl()        
+        renderFromUrl()
         showAlert(data.message,'success');
     }
     else {
@@ -311,7 +311,6 @@ function getClientFromUid(uid, clients){
 
 //function to get latest client remaining amount
 async function clientLatestRemaining(clientId){
-    console.log("Fetching client info for:", clientId);
     const res = await fetch(`/dashboard/clients-info/${clientId}/`);
     if (!res.ok) {
         throw new Error("Failed to fetch client info");
@@ -421,8 +420,8 @@ export function renderClient(client) {
         deleteClientBtn.dataset.clientId = client.id;
 
     }
-    li.addEventListener('click', () => {
-        fetchclients()
+    li.addEventListener('click', async() => {
+        // fetchclients()
         document.querySelectorAll('.clientlists').forEach(c => {
             c.classList.remove(
                 'selected',
@@ -443,6 +442,7 @@ export function renderClient(client) {
         );
 
         history.pushState({}, '', `/dashboard/client-detail/${client.uid}`);
+        renderFromUrl();
         updateClientInfo(client.uid)
         fetchTransactions(client.uid)
         

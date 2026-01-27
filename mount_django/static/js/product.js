@@ -123,21 +123,21 @@ productCategories.addEventListener('click', (e) => {
 }
 // click outside to hide
 document.addEventListener('click', () => {
+    if(categoryDB){
     categoryDB.classList.add('hidden');
+    }
 });
 
 // select category
-categoryDB.addEventListener('click', (e) => {
+if(categoryDB){
+    categoryDB.addEventListener('click', (e) => {
     if (e.target.tagName === 'LI') {
         productCategories.value = e.target.textContent;
         categoryDB.classList.add('hidden');
     }
 });
-
-
-
-
-
+    
+}
 
 
 document.addEventListener('DOMContentLoaded', () => {
