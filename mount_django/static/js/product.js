@@ -630,19 +630,6 @@ async function fetchProductActivities(productUid, productsactivityTableBody) {
 }
 
 
-
-export async function invoice_uid(id) {
-    const url = `/dashboard/invoice-uid/${id}/`; 
-    try {
-        const response = await fetch(url);
-        const data = await response.json();
-        return data.uid;
-
-    } catch (error) {
-        console.error('Error:', error);
-    }
-}
-
 function addProductActivityToTable(activity, productsactivityTableBody) {
     if (!productsactivityTableBody) return;
 
@@ -658,7 +645,7 @@ function addProductActivityToTable(activity, productsactivityTableBody) {
     );
 
     // Conditional styling for activity row
-    row.dataset.orderId = activity.order_id;
+    row.dataset.orderUid = activity.order_uid;
     row.dataset.activityId = activity.id;
     row.classList.add("cursor-pointer", "hover:bg-blue-100");
 
@@ -673,15 +660,11 @@ function addProductActivityToTable(activity, productsactivityTableBody) {
 
     // Click event handler
     row.addEventListener('click', () => {
-        if (row.dataset.orderId && parseInt(row.dataset.orderId) > 0) {
+        if (row.dataset.orderUid && parseInt(row.dataset.orderUid) > 0) {
+             openModal(row.dataset.orderUid)
             
-            invoice_uid(row.dataset.orderId).then(data => {
-                
-                openModal(data)
-            });
 
-        } else if (row.dataset.activityId && (!row.dataset.orderId || row.dataset.orderId === 'null')) {
-            console.log("Editing activity");
+        } else if (row.dataset.activityId && (!row.dataset.orderUid || row.dataset.orderUid === 'null')) {
             editAddActivity(row.dataset.activityId);
         }
     });

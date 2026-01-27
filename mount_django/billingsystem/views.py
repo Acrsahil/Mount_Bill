@@ -33,10 +33,6 @@ from .models import (
 )
 from .signals import DEFAULT_CATEGORIES
 
-def invoice_uid(request,id):
-    order = OrderList.objects.get(id=id)
-    return JsonResponse({"uid": str(order.uid)})
-
 
 @login_required
 def filtered_products(request):
@@ -1714,6 +1710,7 @@ def fetch_transactions(request,id:UUID = None):
             summary = getattr(transaction,"summary",None)
             remaining = transaction.remaining.remaining_amount if hasattr(transaction, "remaining") else 0
             invoiceData.append({
+                "uid":transaction.uid,
                 "id": transaction.id,
                 "date": transaction.order_date,
                 "finalAmount":summary.final_amount if summary else 0,
@@ -2180,7 +2177,7 @@ def fetch_product_activities(request, id: UUID):
                 "change": act.change,
                 "quantity": act.quantity,
                 "remarks": act.remarks if act.remarks else "---",
-                "order_id": act.order.id if act.order else None,
+                "order_uid": act.order.uid if act.order else None,
                 "purchase_id": act.purchase.id if act.purchase else None,
             }
         )

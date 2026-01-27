@@ -3,7 +3,6 @@ import { selectClientFromHint,saveClient,selectType,selectedType,selectedOpening
 import{ activateTabAll } from "./client.js";
 import { showAlert } from "./utils.js";
 import { openModal } from './bill_layout.js';
-import { invoice_uid } from './product.js';
 document.addEventListener('DOMContentLoaded', () => {
 
     const toReceiveBtn = document.getElementById("toReceive");
@@ -593,10 +592,7 @@ function loadTransactions(transaction, tableBody) {
             openUpdateOpeningFunc()
         }
         else if(row.dataset.type === "sale"){
-            invoice_uid(row.dataset.id).then(data => {
-                
-                openModal(data)
-            });
+        openModal(row.dataset.uid)
         }
         else if(row.dataset.type === "payment"){
             const updatePaymentIn = document.getElementById('updatePaymentIn');
