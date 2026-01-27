@@ -2177,8 +2177,10 @@ def fetch_product_activities(request, id: UUID):
                 "change": act.change,
                 "quantity": act.quantity,
                 "remarks": act.remarks if act.remarks else "---",
+                "order_id": act.order.id if act.order else None,
                 "order_uid": act.order.uid if act.order else None,
-                "purchase_id": act.purchase.id if act.purchase else None,
+                "purchase_id":act.purchase.id if act.purchase else None,
+                "purchase_uid": act.purchase.uid if act.purchase else None,
             }
         )
     return JsonResponse({"success": True, "activities": data})

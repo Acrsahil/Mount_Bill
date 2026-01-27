@@ -626,6 +626,7 @@ function loadTransactions(transaction, tableBody) {
             const editAdjust = document.getElementById('editAdjust');
             const EditAdjustModal = document.getElementById('EditAdjustModal');
 
+            if(!editAdjust) return;
             editAdjust.dataset.type = row.dataset.type;
             adjustAddAmount.dataset.id = row.dataset.id;
 
@@ -666,6 +667,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     const deleteAdjust = document.getElementById('deleteAdjust');
     const editAdjust = document.getElementById('editAdjust');
 
+    if(!editAdjust) return;
     //after edit button clicks
     editAdjust.addEventListener('click',()=>{
         if(editAdjust.dataset.type === "add"){
@@ -1388,6 +1390,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     const updatePaymentOut = document.getElementById('updatePaymentOut');
     const editBtn = document.getElementById('editPaymentIn');
     
+    if(!editBtn) return;
     editBtn.addEventListener('click',()=>{
     
         document.getElementById('cancelEditPaymentIn').classList.remove('hidden');

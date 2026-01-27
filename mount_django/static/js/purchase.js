@@ -35,6 +35,7 @@ function showFirstPage(){
 }
 function showPurchaseWithTable(){
     const purchaseWithTable = document.getElementById('purchaseWithTable');
+    if(!purchaseWithTable) return;
     const emptyPurchase = document.getElementById('emptyPurchase')
     purchaseWithTable.classList.remove('hidden');
     emptyPurchase.classList.add('hidden');

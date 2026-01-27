@@ -645,7 +645,10 @@ function addProductActivityToTable(activity, productsactivityTableBody) {
     );
 
     // Conditional styling for activity row
+    row.dataset.order_id = activity.order_id
     row.dataset.orderUid = activity.order_uid;
+    row.dataset.productUid = activity.purchase_uid;
+    row.dataset.type = activity.type;
     row.dataset.activityId = activity.id;
     row.classList.add("cursor-pointer", "hover:bg-blue-100");
 
@@ -660,11 +663,11 @@ function addProductActivityToTable(activity, productsactivityTableBody) {
 
     // Click event handler
     row.addEventListener('click', () => {
-        if (row.dataset.orderUid && parseInt(row.dataset.orderUid) > 0) {
+        if (row.dataset.order_id && parseInt(row.dataset.order_id) > 0) {
              openModal(row.dataset.orderUid)
             
 
-        } else if (row.dataset.activityId && (!row.dataset.orderUid || row.dataset.orderUid === 'null')) {
+        }else if (row.dataset.activityId && (!row.dataset.orderUid || row.dataset.orderUid === 'null')) {
             editAddActivity(row.dataset.activityId);
         }
     });
