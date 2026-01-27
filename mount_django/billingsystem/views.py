@@ -1211,7 +1211,7 @@ def purchase_layout(request, id):
             import traceback
 
             error_details = traceback.format_exc()
-            print(f"Error in invoice_layout: {e}")
+            print(f"Error in purchase_layout: {e}")
             print(f"Traceback: {error_details}")
 
             return JsonResponse(
@@ -1248,6 +1248,7 @@ def purchase_info(request):
         purchase_data = []
         for purchase in purchases:
             purchase_data.append({
+                    "id":purchase.id,
                     "uid":purchase.uid,
                     "name": purchase.customer.name,
                     "date": purchase.date,
@@ -1260,6 +1261,25 @@ def purchase_info(request):
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
 
+
+@require_http_methods(["DELETE"])
+@login_required
+@transaction.atomic
+def delete_purchase(request, id):
+    try:
+        purchase = get_object_or_404(Purchase, id=id)
+        purchase.delete()
+
+        return JsonResponse({
+            "success": True,
+            "message": "Purchase bill deleted successfully!"
+        })
+
+    except Exception as e:
+        return JsonResponse(
+            {"success": False, "message": "Something went wrong"},
+            status=500
+        )
 
 @login_required
 @require_POST
@@ -1687,7 +1707,7 @@ def settings(request):
     return render(request, "website/bill.html", context)
 
 
-def client_detail(request,id: UUID):
+def client_detail(request,id: UUID = None):
     context = get_serialized_data(request.user, "dashboard")
     if id:
         customer = get_object_or_404(Customer,uid=id)
@@ -1714,6 +1734,7 @@ def fetch_transactions(request,id:UUID = None):
             summary = getattr(transaction,"summary",None)
             remaining = transaction.remaining.remaining_amount if hasattr(transaction, "remaining") else 0
             invoiceData.append({
+                "uid":transaction.uid,
                 "id": transaction.id,
                 "date": transaction.order_date,
                 "finalAmount":summary.final_amount if summary else 0,
@@ -1769,11 +1790,12 @@ def fetch_transactions(request,id:UUID = None):
         purchase_data = []
         for purchase in purchases:
             purchase_data.append({
+                "uid":purchase.uid,
                 "id":purchase.id,
                 "date":purchase.date,
                 "total_amount":purchase.summary.final_amount,
                 "remaining":purchase.remaining.remaining_amount,
-                "type":"purchase",
+                "type":"purchaseRow",
             })
 
         mergedData = invoiceData + paymentInData + paymentOutData + clientData + addAdjustmentBalance + purchase_data
@@ -2179,8 +2201,10 @@ def fetch_product_activities(request, id: UUID):
                 "change": act.change,
                 "quantity": act.quantity,
                 "remarks": act.remarks if act.remarks else "---",
+                "order_uid": act.order.uid if act.order else None,
                 "order_id": act.order.id if act.order else None,
                 "purchase_id": act.purchase.id if act.purchase else None,
+                "purchase_uid": act.purchase.uid if act.purchase else None,
             }
         )
     return JsonResponse({"success": True, "activities": data})

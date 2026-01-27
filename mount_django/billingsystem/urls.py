@@ -38,6 +38,7 @@ urlpatterns = [
     path("save-invoice/", views.save_invoice, name="save_invoice"),
     path("save-purchase/",views.save_purchase,name="save_purchase"),
     path("purchase-info/",views.purchase_info,name="purchase_info"),
+    path("delete_purchase/<int:id>/",views.delete_purchase,name="delete_purchase"),
     path("purchase-layout/<uuid:id>/", views.purchase_layout, name="purchase_layout"),
     path("save-customer/",views.save_customer,name="save_customer"),
     path("delete_invoice/<int:id>/", views.delete_invoice, name="delete_invoice"),
