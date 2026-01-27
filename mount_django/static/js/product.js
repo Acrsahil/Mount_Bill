@@ -630,6 +630,19 @@ async function fetchProductActivities(productUid, productsactivityTableBody) {
 }
 
 
+
+export async function invoice_uid(id) {
+    const url = `/dashboard/invoice-uid/${id}/`; 
+    try {
+        const response = await fetch(url);
+        const data = await response.json();
+        return data.uid;
+
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
 function addProductActivityToTable(activity, productsactivityTableBody) {
     if (!productsactivityTableBody) return;
 
@@ -645,10 +658,10 @@ function addProductActivityToTable(activity, productsactivityTableBody) {
     );
 
     // Conditional styling for activity row
-    row.dataset.order_id = activity.order_id
     row.dataset.orderUid = activity.order_uid;
-    row.dataset.productUid = activity.purchase_uid;
-    row.dataset.type = activity.type;
+    row.dataset.order_id = activity.order_id;
+    row.dataset.purchaseUid = activity.purchase_uid;
+    row.dataset.purchaseId = activity.purchase_id;
     row.dataset.activityId = activity.id;
     row.classList.add("cursor-pointer", "hover:bg-blue-100");
 
@@ -667,7 +680,9 @@ function addProductActivityToTable(activity, productsactivityTableBody) {
              openModal(row.dataset.orderUid)
             
 
-        }else if (row.dataset.activityId && (!row.dataset.orderUid || row.dataset.orderUid === 'null')) {
+        }else if (row.dataset.purchaseId && parseInt(row.dataset.purchaseId) > 0) {
+            openModal(row.dataset.purchaseUid, "purchaseRow");
+        }else{
             editAddActivity(row.dataset.activityId);
         }
     });

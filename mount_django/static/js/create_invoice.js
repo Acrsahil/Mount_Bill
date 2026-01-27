@@ -57,7 +57,6 @@ const totalCharges = document.getElementById('totalCharges');
 
 // Initialize the page
 document.addEventListener('DOMContentLoaded', function () {
-
     if(pageMode === 'invoice'){
         const saveInvoiceBtn = document.getElementById('saveInvoiceBtn');
         // Save invoice button
