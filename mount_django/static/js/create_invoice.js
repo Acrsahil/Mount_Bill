@@ -61,7 +61,8 @@ const totalCharges = document.getElementById('totalCharges');
 async function purchaseCount(){
     const res = await fetch(`/dashboard/purchase-info/`);
     const data = await res.json();
-    return data.purchase_data[0].id;
+    if(data.purchase_data[0]) return data.purchase_data[0].id;
+    else return 0;
 }
 
 // Initialize the page
