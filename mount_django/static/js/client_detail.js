@@ -3,7 +3,6 @@ import { selectClientFromHint,saveClient,selectType,selectedType,selectedOpening
 import{ activateTabAll } from "./client.js";
 import { showAlert } from "./utils.js";
 import { openModal } from './bill_layout.js';
-import { invoice_uid } from './product.js';
 document.addEventListener('DOMContentLoaded', () => {
 
     const toReceiveBtn = document.getElementById("toReceive");
@@ -103,6 +102,7 @@ function renderFromUrl(){
     }
 }
 
+
 async function deleteClient(clientId){
     const confirmed = confirm("Are you sure you want to delete this client?")
     if(confirmed){
@@ -115,7 +115,6 @@ async function deleteClient(clientId){
                 },
             });
     const data = await res.json()
-    console.log(data.success)
 
     if(data.success){
         
@@ -128,7 +127,7 @@ async function deleteClient(clientId){
         
         const row = document.querySelector(`#clientsTableBody-${clientId.toString()}`);
         if (row) row.remove();
-        renderFromUrl()        
+        renderFromUrl()
         showAlert(data.message,'success');
     }
     else {
@@ -312,7 +311,6 @@ function getClientFromUid(uid, clients){
 
 //function to get latest client remaining amount
 async function clientLatestRemaining(clientId){
-    console.log("Fetching client info for:", clientId);
     const res = await fetch(`/dashboard/clients-info/${clientId}/`);
     if (!res.ok) {
         throw new Error("Failed to fetch client info");
@@ -422,8 +420,8 @@ export function renderClient(client) {
         deleteClientBtn.dataset.clientId = client.id;
 
     }
-    li.addEventListener('click', () => {
-        fetchclients()
+    li.addEventListener('click', async() => {
+        // fetchclients()
         document.querySelectorAll('.clientlists').forEach(c => {
             c.classList.remove(
                 'selected',
@@ -444,6 +442,7 @@ export function renderClient(client) {
         );
 
         history.pushState({}, '', `/dashboard/client-detail/${client.uid}`);
+        renderFromUrl();
         updateClientInfo(client.uid)
         fetchTransactions(client.uid)
         
@@ -527,6 +526,7 @@ function loadTransactions(transaction, tableBody) {
 );
     row.dataset.type = transaction.type;
     row.dataset.id = transaction.id || "";
+    row.dataset.uid = transaction.uid || "";
     if (transaction.type === 'sale') {
         row.innerHTML = `
         <td>Sales Invoice #${transaction.id}>
@@ -576,7 +576,7 @@ function loadTransactions(transaction, tableBody) {
         <td>--</td>
         <td>${transaction.balance}</td>
         <td>${transaction.remarks}</td>`;
-    }else if (transaction.type === 'purchase' ) {
+    }else if (transaction.type === 'purchaseRow' ) {
         row.innerHTML = `
         <td>Purchase #${transaction.id}</td>
         <td>${transaction.date.split('T')[0]}</td>
@@ -592,10 +592,7 @@ function loadTransactions(transaction, tableBody) {
             openUpdateOpeningFunc()
         }
         else if(row.dataset.type === "sale"){
-            invoice_uid(row.dataset.id).then(data => {
-                
-                openModal(data)
-            });
+        openModal(row.dataset.uid)
         }
         else if(row.dataset.type === "payment"){
             const updatePaymentIn = document.getElementById('updatePaymentIn');
@@ -629,6 +626,7 @@ function loadTransactions(transaction, tableBody) {
             const editAdjust = document.getElementById('editAdjust');
             const EditAdjustModal = document.getElementById('EditAdjustModal');
 
+            if(!editAdjust) return;
             editAdjust.dataset.type = row.dataset.type;
             adjustAddAmount.dataset.id = row.dataset.id;
 
@@ -647,6 +645,8 @@ function loadTransactions(transaction, tableBody) {
             //fill the form 
             await fillBalanceAdjustForm(row.dataset.id);
             EditAdjustModal.style.display = 'flex';
+        }else if(row.dataset.type === 'purchaseRow'){
+            openModal(row.dataset.uid,row.dataset.type)
         }
     })
 }
@@ -667,6 +667,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     const deleteAdjust = document.getElementById('deleteAdjust');
     const editAdjust = document.getElementById('editAdjust');
 
+    if(!editAdjust) return;
     //after edit button clicks
     editAdjust.addEventListener('click',()=>{
         if(editAdjust.dataset.type === "add"){
@@ -1389,6 +1390,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     const updatePaymentOut = document.getElementById('updatePaymentOut');
     const editBtn = document.getElementById('editPaymentIn');
     
+    if(!editBtn) return;
     editBtn.addEventListener('click',()=>{
     
         document.getElementById('cancelEditPaymentIn').classList.remove('hidden');

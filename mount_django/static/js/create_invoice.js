@@ -24,7 +24,6 @@ const products = Array.isArray(window.djangoData.products) ? window.djangoData.p
 const productCategories = Array.isArray(window.djangoData.product_cat) ? window.djangoData.product_cat : [];
 let clients = Array.isArray(window.djangoData.clients) ? window.djangoData.clients : [];
 
-console.log("heram clients: ", clients)
 const csrfToken = window.djangoData.csrfToken || "";
 
 // Make these available globally
@@ -35,6 +34,7 @@ window.csrfToken = csrfToken;
 // State management
 window.invoiceItems = [];
 window.nextInvoiceNumber = invoices.length > 0 ? Math.max(...invoices.map(i => parseInt(i.number?.replace('INV-', '') || 0))) + 1 : 1;
+
 window.globalDiscount = 0;
 window.globalTax = 0;
 window.clients = clients;
@@ -42,6 +42,7 @@ window.productCategories = productCategories;
 
 // DOM Elements
 const invoiceNumber = document.getElementById('invoiceNumber');
+const billNumber = document.getElementById('billNumber');
 const invoiceDate = document.getElementById('invoiceDate');
 const purchaseDate = document.getElementById('purchaseDate');
 const clientNameInput = document.getElementById('clientName');
@@ -55,41 +56,52 @@ const cancelInvoiceBtnBottom = document.getElementById('cancelInvoiceBtnBottom')
 // get the charge section
 const totalCharges = document.getElementById('totalCharges');
 
-// Initialize the page
-document.addEventListener('DOMContentLoaded', function () {
 
+//function to fetch the purchase length to fill the create purchase bill
+async function purchaseCount(){
+    const res = await fetch(`/dashboard/purchase-info/`);
+    const data = await res.json();
+    return data.purchase_data[0].id;
+}
+
+// Initialize the page
+document.addEventListener('DOMContentLoaded',async function () {
+    if (typeof pageMode !== 'undefined') {
     if(pageMode === 'invoice'){
         const saveInvoiceBtn = document.getElementById('saveInvoiceBtn');
         // Save invoice button
         if (saveInvoiceBtn) {
             saveInvoiceBtn.addEventListener('click', () => saveInvoice());
         }
-
+        // Generate next invoice number
+    if (invoiceNumber) {
+        invoiceNumber.value = `INV-${window.nextInvoiceNumber.toString().padStart(3, '0')}`;
     }
-    
-    if(pageMode === 'purchase'){
-         const savePurchaseBtn = document.getElementById('savePurchaseBtn');
-    savePurchaseBtn.addEventListener('click',async()=>{
-        
-        await savePurchase()
-    })
-    }
-
     // Set today's date as default
     if (invoiceDate) {
         const today = new Date().toISOString().split('T')[0];
         invoiceDate.value = today;
     }
 
+    }
+    
+    if(pageMode === 'purchase'){
+        const savePurchaseBtn = document.getElementById('savePurchaseBtn');
+        savePurchaseBtn.addEventListener('click',async()=>{
+        
+        await savePurchase()
+    })
+    if (billNumber) {
+        const purchase_count = await purchaseCount() + 1
+        billNumber.value = `Bill - ${purchase_count.toString().padStart(3, '0')}`;
+    }
     if (purchaseDate) {
         const today = new Date().toISOString().split('T')[0];
         purchaseDate.value = today;
     }
-
-    // Generate next invoice number
-    if (invoiceNumber) {
-        invoiceNumber.value = `INV-${window.nextInvoiceNumber.toString().padStart(3, '0')}`;
     }
+}
+    
 
     // Setup event listeners
     setupPageEventListeners();

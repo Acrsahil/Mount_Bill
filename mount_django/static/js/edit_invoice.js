@@ -12,6 +12,7 @@ function presstab(input){
 export function editInvoiceSection(id,type){
     let url;
     if(type === 'invoices'){
+        
         document.getElementById('create_new_invoice').innerText = "Edit Sales Invoice"
         document.getElementById("saveInvoiceBtn").style.display = 'none'
         document.getElementById("updatePurchaseBtn").style.display = 'none'
@@ -22,6 +23,7 @@ export function editInvoiceSection(id,type){
         url = `/dashboard/invoice-layout/${id}/`;  // Add trailing slash
     }
     else{
+        if(!document.getElementById('create_new_invoice')) return;
         document.getElementById('create_new_invoice').innerText = "Edit Purchase Invoice"
         document.getElementById("saveInvoiceBtn").style.display = 'none'
         document.getElementById("updatePurchaseBtn").style.display = 'flex'

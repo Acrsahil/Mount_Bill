@@ -24,6 +24,7 @@ const csrfToken = getCookie('csrftoken');
 
 //for stock filter
 document.addEventListener('DOMContentLoaded', () => {
+    
     const slidercheck = document.getElementById('statusToggle');
     const lowStockConstraint = document.getElementById('lowStockConstraint')
 
@@ -111,43 +112,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
 //category on the addProductModal
 const categoryDB = document.getElementById('categoryDB');
-const productCategories = document.getElementById('productCategory')
-document.addEventListener('DOMContentLoaded', () => {
-    if(!productCategories) return;
-    productCategories.addEventListener('click', (e) => {
-        e.stopPropagation();
-        console.log("i am supposed to be here")
-        const rect = productCategories.getBoundingClientRect();
-        categoryDB.style.top = rect.bottom + window.scrollX + 'px';
-        categoryDB.style.left = rect.left + window.scrollY + 'px';
+const productCategories = document.getElementById('productCategory');
 
-        loadCategories()
-        categoryDB.style.display = 'block';
-    })
-    //hide popup when clicked outside 
-    document.addEventListener('click', () => {
-        categoryDB.style.display = 'none';
-    });
+if(productCategories){
+productCategories.addEventListener('click', (e) => {
+    e.stopPropagation();
+    categoryDB.classList.remove('hidden');
+    loadCategories(); // populate dynamically
+});
+}
+// click outside to hide
+document.addEventListener('click', () => {
+    if(categoryDB){
+    categoryDB.classList.add('hidden');
+    }
+});
 
-    //putting the value from popup to input 
-    productCategories.value = 'General';
+// select category
+if(categoryDB){
     categoryDB.addEventListener('click', (e) => {
-        const li = e.target;
-        if (li.tagName === 'LI') {
-            productCategories.value = li.textContent
-        }
-    })
-    productCategories.addEventListener('input', () => {
-        const searchTerm = productCategories.value.toLowerCase();
-        const filtered = categories.filter(category => category.name.toLowerCase().includes(searchTerm))
-        renderCategory(filtered)
-    })
-    loadCategories()
-})
-
-
-
-
+    if (e.target.tagName === 'LI') {
+        productCategories.value = e.target.textContent;
+        categoryDB.classList.add('hidden');
+    }
+});
+    
+}
 
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -250,10 +240,15 @@ function renderCategory(categoryArray) {
 
     categoryArray.forEach(category => {
         const li = document.createElement('li');
-        li.classList.add('categoryProductModal');
-        li.textContent = category.name;
-        li.dataset.id = category.id;
-        li.style.fontSize = '20px';
+          li.classList.add(
+        'categoryProductModal',         
+        'px-4', 'py-2',      
+        'cursor-pointer',        
+        'transition',            
+        'hover:bg-gray-300'      
+    );
+    li.textContent = category.name;
+    li.dataset.id = category.id;
 
         catelists.insertBefore(li, general)
     });
@@ -658,7 +653,10 @@ function addProductActivityToTable(activity, productsactivityTableBody) {
     );
 
     // Conditional styling for activity row
-    row.dataset.orderId = activity.order_id;
+    row.dataset.orderUid = activity.order_uid;
+    row.dataset.order_id = activity.order_id;
+    row.dataset.purchaseUid = activity.purchase_uid;
+    row.dataset.purchaseId = activity.purchase_id;
     row.dataset.activityId = activity.id;
     row.classList.add("cursor-pointer", "hover:bg-blue-100");
 
@@ -673,15 +671,13 @@ function addProductActivityToTable(activity, productsactivityTableBody) {
 
     // Click event handler
     row.addEventListener('click', () => {
-        if (row.dataset.orderId && parseInt(row.dataset.orderId) > 0) {
+        if (row.dataset.order_id && parseInt(row.dataset.order_id) > 0) {
+             openModal(row.dataset.orderUid)
             
-            invoice_uid(row.dataset.orderId).then(data => {
-                
-                openModal(data)
-            });
 
-        } else if (row.dataset.activityId && (!row.dataset.orderId || row.dataset.orderId === 'null')) {
-            console.log("Editing activity");
+        }else if (row.dataset.purchaseId && parseInt(row.dataset.purchaseId) > 0) {
+            openModal(row.dataset.purchaseUid, "purchaseRow");
+        }else{
             editAddActivity(row.dataset.activityId);
         }
     });
@@ -1021,17 +1017,30 @@ export function addProductToList(product, productList) {
     });
 }
 
-
+let countercount=1
 window.addEventListener('popstate', () => {
+    console.log('products.js loaded');
     renderDetails(productsCache);
 
     // Highlight li again
     const uidInUrl = selectedIdFromUrl();
     document.querySelectorAll('.productlists').forEach(li => {
         if (String(li.dataset.uid) === String(uidInUrl)) {
-            li.classList.add('selected');
+            li.classList.add(
+            'selected',
+            'bg-blue-100',
+            'border-blue-200',
+            'text-blue-700',
+            'font-medium'
+        );
         } else {
-            li.classList.remove('selected');
+            li.classList.remove(
+            'selected',
+            'bg-blue-100',
+            'border-blue-200',
+            'text-blue-700',
+            'font-medium'
+        );
         }
     });
 })
@@ -1135,7 +1144,6 @@ export function loadProducts(products, productsTableBody, editProduct, deletePro
 document.addEventListener('DOMContentLoaded', () => {
     const deleteBtn = document.querySelector('.delete-product-btn');
     const editBtn = document.querySelector('.edit-product-btn');
-    // const adjustBtns = document.querySelector('.adjust-stock-btn');
     if(!deleteBtn)return;
     deleteBtn.addEventListener('click', function () {
         const id = deleteBtn.dataset.productId;
@@ -1231,9 +1239,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const adjustBtn = e.target.closest('.adjust-stock-btn');
 
         if (adjustBtn) {
-            console.log("am i getting clicked??")
             const productId = adjustBtn.dataset.productId;
-            console.log("yaa id ko value k ho??", productId);
             const modal = document.getElementById('addStockModal');
             const modal1 = document.getElementById('reduceStockModal');
             modal.dataset.productId = productId;

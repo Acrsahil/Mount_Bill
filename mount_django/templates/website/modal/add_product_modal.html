@@ -46,7 +46,17 @@
                     <div class="relative">
                         <label for="productCategory" class="block mb-2 text-sm font-medium text-gray-900">Category</label>
                         <input type="text" id="productCategory" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="Type category name (Tab to complete)...">
+
+                        <!-- Category Database (Hidden by default) -->
+                        <div class="category-db absolute z-10 bg-white border border-gray-300 rounded-lg shadow-lg hidden w-full left-0" id="categoryDB">
+                            <ul id="catelists" class="py-2 text-sm text-gray-700">
+                                <!-- dynamically all the list are here -->
+                                <li id="general" class="px-4 py-2 hover:bg-gray-100 cursor-pointer">General</li>
+                            </ul>
+                        </div>
                     </div>
+
+
                 </div>
 
                 <!-- Low Stock Alert -->
@@ -81,14 +91,6 @@
                 <button class="px-5 py-2.5 text-sm font-medium text-gray-900 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200" id="cancelProductBtn">Cancel</button>
                 <button class="px-5 py-2.5 text-sm font-medium text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-300" id="saveProductBtn">Save Product</button>
                 <button class="px-5 py-2.5 text-sm font-medium text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-300 hidden" id="updateProductBtn">Update Product</button>
-            </div>
-
-            <!-- Category Database (Hidden by default) -->
-            <div class="category-db absolute z-10 bg-white border border-gray-300 rounded-lg shadow-lg hidden" id="categoryDB">
-                <ul id="catelists" class="py-2 text-sm text-gray-700">
-                    <!-- dynamically all the list are here -->
-                    <li id="general" class="px-4 py-2 hover:bg-gray-100 cursor-pointer">General</li>
-                </ul>
             </div>
         </div>
     </div>
