@@ -32,3 +32,4 @@ frontend/lerna-debug.log*
 *.njsproj
 *.sln
 *.sw?
+frontend/.vite/
