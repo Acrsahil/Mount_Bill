@@ -1,6 +1,34 @@
+# --- Backend & General ---
 env/
 myenv/
 *.pyc
 __pycache__/
 db.sqlite3
 *.sqlite3
+.DS_Store
+er.xml
+
+# --- Frontend (Nested Paths) ---
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+frontend/*.local
+
+# Logs
+frontend/logs
+frontend/*.log
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/pnpm-debug.log*
+frontend/lerna-debug.log*
+
+# --- Editor Directories ---
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
